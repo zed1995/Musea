@@ -23,6 +23,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
       return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
     } catch (e) {
       return Left(Failure.unknown(message: e.toString()));
     }
@@ -37,6 +39,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
       return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
     } catch (e) {
       return Left(Failure.unknown(message: e.toString()));
     }
