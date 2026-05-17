@@ -70,7 +70,6 @@ class CollectionDetailPage extends ConsumerWidget {
                 photos: photos,
                 onPhotoTap: (photo) => context.push('/photo/${photo.id}'),
                 onUserTap: (photo) => context.push('/profile/${photo.user.username}'),
-                showDownloadButton: false,
               ),
               loading: () => const SliverFillRemaining(
                 child: Center(child: LoadingIndicator()),

@@ -16,6 +16,7 @@ class Photo {
   final String urlThumb;
   final int likes;
   final int downloads;
+  final int? views;
   final User user;
   final ExifData? exif;
   final LocationData? location;
@@ -37,6 +38,7 @@ class Photo {
     required this.urlThumb,
     required this.likes,
     required this.downloads,
+    this.views,
     required this.user,
     this.exif,
     this.location,

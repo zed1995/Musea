@@ -12,8 +12,7 @@ class PhotoFeed extends StatelessWidget {
     this.onPhotoTap,
     this.onUserTap,
     this.onLikeTap,
-    this.onDownloadTap,
-    this.showDownloadButton = true,
+    this.onBookmarkTap,
   });
 
   final List<Photo> photos;
@@ -21,8 +20,7 @@ class PhotoFeed extends StatelessWidget {
   final void Function(Photo photo)? onPhotoTap;
   final void Function(Photo photo)? onUserTap;
   final void Function(Photo photo)? onLikeTap;
-  final void Function(Photo photo)? onDownloadTap;
-  final bool showDownloadButton;
+  final void Function(Photo photo)? onBookmarkTap;
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +34,7 @@ class PhotoFeed extends StatelessWidget {
     }
 
     return SliverPadding(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate(
           (context, index) {
@@ -52,8 +50,7 @@ class PhotoFeed extends StatelessWidget {
               onPhotoTap: onPhotoTap != null ? () => onPhotoTap!(photo) : null,
               onUserTap: onUserTap != null ? () => onUserTap!(photo) : null,
               onLikeTap: onLikeTap != null ? () => onLikeTap!(photo) : null,
-              onDownloadTap: onDownloadTap != null ? () => onDownloadTap!(photo) : null,
-              showDownloadButton: showDownloadButton,
+              onBookmarkTap: onBookmarkTap != null ? () => onBookmarkTap!(photo) : null,
             );
           },
           childCount: photos.length + (isLoadingMore ? 1 : 0),

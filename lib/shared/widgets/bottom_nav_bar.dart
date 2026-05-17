@@ -7,25 +7,64 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
+    final selectedIndex = _calculateSelectedIndex(location);
 
-    return NavigationBar(
-      selectedIndex: _calculateSelectedIndex(location),
-      onDestinationSelected: (index) => _onItemTapped(index, context),
-      destinations: const [
-        NavigationDestination(
-          icon: Icon(Icons.explore_outlined),
-          selectedIcon: Icon(Icons.explore),
-          label: 'Discover',
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.95),
+            border: Border(
+              top: BorderSide(color: Colors.black.withValues(alpha: 0.06)),
+            ),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children: [
+              _NavItem(
+                icon: selectedIndex == 0 ? Icons.explore : Icons.explore_outlined,
+                label: 'Discover',
+                isActive: selectedIndex == 0,
+                onTap: () => _onItemTapped(0, context),
+              ),
+              _NavItem(
+                icon: Icons.search,
+                label: 'Explore',
+                isActive: selectedIndex == 1,
+                onTap: () => _onItemTapped(1, context),
+              ),
+              _NavItem(
+                icon: selectedIndex == 2
+                    ? Icons.collections_bookmark
+                    : Icons.collections_bookmark_outlined,
+                label: 'Collections',
+                isActive: selectedIndex == 2,
+                onTap: () => _onItemTapped(2, context),
+              ),
+              _NavItem(
+                icon: selectedIndex == 3 ? Icons.person : Icons.person_outline,
+                label: 'Profile',
+                isActive: selectedIndex == 3,
+                onTap: () => _onItemTapped(3, context),
+              ),
+            ],
+          ),
         ),
-        NavigationDestination(
-          icon: Icon(Icons.search_outlined),
-          selectedIcon: Icon(Icons.search),
-          label: 'Explore',
-        ),
-        NavigationDestination(
-          icon: Icon(Icons.collections_bookmark_outlined),
-          selectedIcon: Icon(Icons.collections_bookmark),
-          label: 'Collections',
+        Container(
+          padding: const EdgeInsets.only(bottom: 4, top: 4),
+          color: Colors.white.withValues(alpha: 0.95),
+          child: Center(
+            child: Container(
+              width: 128,
+              height: 4,
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -35,6 +74,7 @@ class BottomNavBar extends StatelessWidget {
     if (location.startsWith('/discover')) return 0;
     if (location.startsWith('/explore')) return 1;
     if (location.startsWith('/collections')) return 2;
+    if (location.startsWith('/profile')) return 3;
     return 0;
   }
 
@@ -42,13 +82,57 @@ class BottomNavBar extends StatelessWidget {
     switch (index) {
       case 0:
         context.go('/discover');
-        break;
       case 1:
         context.go('/explore');
-        break;
       case 2:
         context.go('/collections');
-        break;
+      case 3:
+        context.go('/profile');
     }
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.label,
+    required this.isActive,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String label;
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        constraints: const BoxConstraints(minWidth: 64),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              icon,
+              size: 24,
+              color: isActive ? const Color(0xFF18181B) : const Color(0xFFA1A1AA),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                color: isActive ? const Color(0xFF18181B) : const Color(0xFFA1A1AA),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

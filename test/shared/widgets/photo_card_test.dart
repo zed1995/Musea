@@ -47,17 +47,16 @@ void main() {
 
     expect(find.text('Test User'), findsOneWidget);
     expect(find.text('1.2k'), findsOneWidget);
-    expect(find.byIcon(Icons.download), findsOneWidget);
+    expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
   });
 
-  testWidgets('PhotoCard hides download button when showDownloadButton is false',
-      (tester) async {
-    final photo = createTestPhoto();
+  testWidgets('PhotoCard displays bookmark icon', (tester) async {
+    final photo = createTestPhoto(likes: 10);
     await tester.pumpWidget(wrapApp(
-      PhotoCard(photo: photo, showDownloadButton: false),
+      PhotoCard(photo: photo),
     ));
 
-    expect(find.byIcon(Icons.download), findsNothing);
+    expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
   });
 
   testWidgets('PhotoCard triggers onPhotoTap on tap', (tester) async {

@@ -6,11 +6,8 @@ import 'package:musea/features/collections/presentation/providers/collections_pr
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// A simple smoke test to verify the CollectionsPage renders without crashing.
-/// The collectionsProvider is overridden with a synchronous function that
-/// returns an empty list (not wrapped in a Future), avoiding real network
-/// calls and their pending timers.
 void main() {
-  testWidgets('CollectionsPage renders with app bar title', (tester) async {
+  testWidgets('CollectionsPage shows empty state when no collections', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -24,7 +21,7 @@ void main() {
       ),
     );
 
-    // Verify the app bar title renders
-    expect(find.text('Collections'), findsOneWidget);
+    // Verify the empty state message renders
+    expect(find.text('No collections'), findsOneWidget);
   });
 }

@@ -102,7 +102,7 @@ class DioClient {
         throw NetworkException(message: 'No internet connection');
       
       default:
-        throw NetworkException(message: 'Unexpected error occurred');
+        throw NetworkException(message: error.message ?? 'Unexpected error occurred');
     }
   }
 }
