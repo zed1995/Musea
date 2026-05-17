@@ -97,8 +97,8 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                 data: (photos) => PhotoFeed(
                   photos: photos,
                   isLoadingMore: false,
-                  onPhotoTap: (photo) => context.go('/photo/${photo.id}'),
-                  onUserTap: (photo) => context.go('/profile/${photo.user.username}'),
+                  onPhotoTap: (photo) => context.push('/photo/${photo.id}'),
+                  onUserTap: (photo) => context.push('/profile/${photo.user.username}'),
                   onLikeTap: (photo) => _toggleLike(photo),
                   onDownloadTap: (photo) => _handleDownload(context),
                 ),
