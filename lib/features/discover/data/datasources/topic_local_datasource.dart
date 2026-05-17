@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:musea/features/discover/data/models/topic_model.dart';
 
@@ -20,18 +21,27 @@ class TopicLocalDataSourceImpl implements TopicLocalDataSource {
   @override
   Future<void> cacheTopics(List<TopicModel> topics) async {
     final topicBox = await box;
-    // Cache as JSON strings instead of objects to avoid Hive serialization issues
-    final jsonList = topics.map((topic) => topic.toJson()).toList();
-    await topicBox.put(_topicsKey, jsonList);
+    // Convert to JSON and remove cover_photo to avoid Hive serialization issues
+    final jsonList = topics.map((topic) {
+      final json = topic.toJson();
+      // Remove cover_photo as it contains PhotoModel which can't be serialized by Hive
+      json.remove('cover_photo');
+      return json;
+    }).toList();
+    
+    // Convert to JSON string to ensure Hive can store it
+    final jsonString = jsonEncode(jsonList);
+    await topicBox.put(_topicsKey, jsonString);
   }
 
   @override
   Future<List<TopicModel>> getCachedTopics() async {
     final topicBox = await box;
-    final jsonList = topicBox.get(_topicsKey);
-    if (jsonList == null || jsonList is! List) return [];
+    final jsonString = topicBox.get(_topicsKey);
+    if (jsonString == null || jsonString is! String) return [];
     
     try {
+      final jsonList = jsonDecode(jsonString) as List;
       return jsonList
           .map((json) => TopicModel.fromJson(json as Map<String, dynamic>))
           .toList();

@@ -43,8 +43,7 @@ class PreviewPhotoModel with _$PreviewPhotoModel {
   const factory PreviewPhotoModel({
     required String id,
     String? slug,
-    @JsonKey(name: 'thumb') required String thumbUrl,
-    @JsonKey(name: 'small') required String smallUrl,
+    @JsonKey(name: 'urls') required PreviewPhotoUrlsModel urls,
   }) = _PreviewPhotoModel;
 
   factory PreviewPhotoModel.fromJson(Map<String, dynamic> json) =>
@@ -53,7 +52,18 @@ class PreviewPhotoModel with _$PreviewPhotoModel {
   PreviewPhoto toEntity() => PreviewPhoto(
     id: id,
     slug: slug,
-    thumbUrl: thumbUrl,
-    smallUrl: smallUrl,
+    thumbUrl: urls.thumb,
+    smallUrl: urls.small,
   );
+}
+
+@freezed
+class PreviewPhotoUrlsModel with _$PreviewPhotoUrlsModel {
+  const factory PreviewPhotoUrlsModel({
+    required String thumb,
+    required String small,
+  }) = _PreviewPhotoUrlsModel;
+
+  factory PreviewPhotoUrlsModel.fromJson(Map<String, dynamic> json) =>
+      _$PreviewPhotoUrlsModelFromJson(json);
 }

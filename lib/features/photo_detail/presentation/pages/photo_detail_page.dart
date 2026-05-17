@@ -171,13 +171,15 @@ class _PhotoDetailContent extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(photo.user.name, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
-                    if (photo.user.bio != null && photo.user.bio!.isNotEmpty)
-                      Text(photo.user.bio!, style: AppTextStyles.caption),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(photo.user.name, style: AppTextStyles.bodyLarge.copyWith(fontWeight: FontWeight.w600)),
+                      if (photo.user.bio != null && photo.user.bio!.isNotEmpty)
+                        Text(photo.user.bio!, style: AppTextStyles.caption, maxLines: 1, overflow: TextOverflow.ellipsis),
                   ],
+                ),
                 ),
               ],
             ),
