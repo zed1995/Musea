@@ -1,6 +1,8 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
 import 'package:musea/features/discover/presentation/pages/discover_page.dart';
+import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
+import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/shared/widgets/bottom_nav_bar.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -28,35 +30,44 @@ final appRouter = GoRouter(
           path: '/explore',
           name: 'explore',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: ExplorePage(),
+            child: ExplorePlaceholderPage(),
           ),
         ),
         GoRoute(
           path: '/collections',
           name: 'collections',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: CollectionsPage(),
-          ),
-        ),
-        GoRoute(
-          path: '/profile',
-          name: 'profile',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: ProfilePage(),
+            child: CollectionsPlaceholderPage(),
           ),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/photo/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return PhotoDetailPage(photoId: id);
+      },
+    ),
+    GoRoute(
+      path: '/profile/:username',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final username = state.pathParameters['username']!;
+        return ProfilePage(username: username);
+      },
     ),
   ],
 );
 
 class ScaffoldWithNavBar extends StatelessWidget {
-  final Widget child;
-
   const ScaffoldWithNavBar({
     super.key,
     required this.child,
   });
+
+  final Widget child;
 
   @override
   Widget build(BuildContext context) {
@@ -67,35 +78,24 @@ class ScaffoldWithNavBar extends StatelessWidget {
   }
 }
 
-class ExplorePage extends StatelessWidget {
-  const ExplorePage({super.key});
+class ExplorePlaceholderPage extends StatelessWidget {
+  const ExplorePlaceholderPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: Text('Explore Page')),
+      body: Center(child: Text('Explore - Coming in Phase 3')),
     );
   }
 }
 
-class CollectionsPage extends StatelessWidget {
-  const CollectionsPage({super.key});
+class CollectionsPlaceholderPage extends StatelessWidget {
+  const CollectionsPlaceholderPage({super.key});
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: Text('Collections Page')),
-    );
-  }
-}
-
-class ProfilePage extends StatelessWidget {
-  const ProfilePage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Profile Page')),
+      body: Center(child: Text('Collections - Coming in Phase 2')),
     );
   }
 }

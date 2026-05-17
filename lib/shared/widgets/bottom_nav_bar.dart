@@ -7,7 +7,7 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.toString();
-    
+
     return NavigationBar(
       selectedIndex: _calculateSelectedIndex(location),
       onDestinationSelected: (index) => _onItemTapped(index, context),
@@ -27,11 +27,6 @@ class BottomNavBar extends StatelessWidget {
           selectedIcon: Icon(Icons.collections_bookmark),
           label: 'Collections',
         ),
-        NavigationDestination(
-          icon: Icon(Icons.person_outline),
-          selectedIcon: Icon(Icons.person),
-          label: 'Profile',
-        ),
       ],
     );
   }
@@ -40,7 +35,6 @@ class BottomNavBar extends StatelessWidget {
     if (location.startsWith('/discover')) return 0;
     if (location.startsWith('/explore')) return 1;
     if (location.startsWith('/collections')) return 2;
-    if (location.startsWith('/profile')) return 3;
     return 0;
   }
 
@@ -54,9 +48,6 @@ class BottomNavBar extends StatelessWidget {
         break;
       case 2:
         context.go('/collections');
-        break;
-      case 3:
-        context.go('/profile');
         break;
     }
   }
