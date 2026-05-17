@@ -16,7 +16,7 @@ class TopicModel with _$TopicModel {
     String? description,
     @JsonKey(name: 'total_photos') required int totalPhotos,
     @JsonKey(name: 'cover_photo') PhotoModel? coverPhoto,
-    List<String>? links,
+    TopicLinksModel? links,
   }) = _TopicModel;
 
   factory TopicModel.fromJson(Map<String, dynamic> json) =>
@@ -29,6 +29,18 @@ class TopicModel with _$TopicModel {
     description: description,
     totalPhotos: totalPhotos,
     coverPhoto: coverPhoto?.toEntity(),
-    link: links?.isNotEmpty == true ? links!.first : null,
+    link: links?.self,
   );
+}
+
+@freezed
+class TopicLinksModel with _$TopicLinksModel {
+  const factory TopicLinksModel({
+    String? self,
+    String? html,
+    String? photos,
+  }) = _TopicLinksModel;
+
+  factory TopicLinksModel.fromJson(Map<String, dynamic> json) =>
+      _$TopicLinksModelFromJson(json);
 }
