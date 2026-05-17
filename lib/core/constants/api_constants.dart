@@ -1,3 +1,5 @@
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
 class ApiConstants {
   ApiConstants._();
 
@@ -9,7 +11,16 @@ class ApiConstants {
   static const String users = '/users';
   static const String collections = '/collections';
   
-  static const String clientId = 'YOUR_UNSPLASH_CLIENT_ID';
+  static String get clientId {
+    final id = dotenv.env['UNSPLASH_CLIENT_ID'];
+    if (id == null || id == 'YOUR_UNSPLASH_CLIENT_ID_HERE') {
+      throw Exception(
+        'UNSPLASH_CLIENT_ID not configured. Please check your .env file.\n'
+        'See docs/ENV_SETUP.md for instructions.',
+      );
+    }
+    return id;
+  }
   
   static const int defaultPerPage = 20;
   static const int searchPerPage = 30;
