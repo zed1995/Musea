@@ -64,3 +64,4 @@ flutter:
   
   assets:
     - .env
+    - assets/branding/
