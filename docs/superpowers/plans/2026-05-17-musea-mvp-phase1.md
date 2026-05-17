@@ -21,7 +21,7 @@
 dependencies:
   # ... existing ...
   photo_view: ^0.15.0          # Image zoom/pan/fullscreen in detail page
-  image_gallery_saver: ^4.1.0  # Save downloaded images to device gallery
+  image_gallery_saver: ^2.0.3  # Save downloaded images to device gallery
 ```
 
 - [ ] **Step 2: Run flutter pub get**
