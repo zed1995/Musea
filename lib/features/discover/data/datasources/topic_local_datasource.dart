@@ -9,7 +9,7 @@ abstract class TopicLocalDataSource {
 
 class TopicLocalDataSourceImpl implements TopicLocalDataSource {
   static const String _boxName = 'topics_cache';
-  static const String _topicsKey = 'topics';
+  static const String _topicsKey = 'topics_json';
   Box<dynamic>? _box;
 
   Future<Box<dynamic>> get box async {
@@ -20,6 +20,7 @@ class TopicLocalDataSourceImpl implements TopicLocalDataSource {
   @override
   Future<void> cacheTopics(List<TopicModel> topics) async {
     final topicBox = await box;
+    // Cache as JSON strings instead of objects to avoid Hive serialization issues
     final jsonList = topics.map((topic) => topic.toJson()).toList();
     await topicBox.put(_topicsKey, jsonList);
   }
@@ -30,9 +31,14 @@ class TopicLocalDataSourceImpl implements TopicLocalDataSource {
     final jsonList = topicBox.get(_topicsKey);
     if (jsonList == null || jsonList is! List) return [];
     
-    return jsonList
-        .map((json) => TopicModel.fromJson(json as Map<String, dynamic>))
-        .toList();
+    try {
+      return jsonList
+          .map((json) => TopicModel.fromJson(json as Map<String, dynamic>))
+          .toList();
+    } catch (e) {
+      // If deserialization fails, return empty list
+      return [];
+    }
   }
 
   @override
