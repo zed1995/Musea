@@ -23,24 +23,20 @@ class PhotoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(10),
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(10),
         child: GestureDetector(
           onTap: onPhotoTap,
           child: Stack(
             children: [
-              _buildPhoto(),
+              Hero(
+                tag: photo.id,
+                child: _buildPhoto(),
+              ),
               _buildBottomOverlay(),
             ],
           ),
@@ -51,7 +47,9 @@ class PhotoCard extends StatelessWidget {
 
   Widget _buildPhoto() {
     double aspectRatio = photo.width / photo.height;
-    if (aspectRatio > 0 && aspectRatio < 1 && (photo.height / photo.width) > 3) {
+    if (aspectRatio > 0 &&
+        aspectRatio < 1 &&
+        (photo.height / photo.width) > 3) {
       aspectRatio = 0.6;
     }
     if (aspectRatio <= 0) aspectRatio = 1.5;
@@ -75,7 +73,8 @@ class PhotoCard extends StatelessWidget {
               width: double.infinity,
               placeholder: (context, url) => Container(
                 color: Color(int.parse(photo.color.replaceFirst('#', '0xFF'))),
-                child: const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                child: const Center(
+                    child: CircularProgressIndicator(strokeWidth: 2)),
               ),
               errorWidget: (context, url, error) => Container(
                 color: AppColors.gray200,
@@ -91,97 +90,78 @@ class PhotoCard extends StatelessWidget {
       left: 0,
       right: 0,
       child: Container(
-        padding: const EdgeInsets.fromLTRB(14, 24, 14, 12),
+        padding: const EdgeInsets.fromLTRB(12, 46, 12, 12),
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.bottomCenter,
             end: Alignment.topCenter,
             colors: [
-              Colors.black.withValues(alpha: 0.55),
-              Colors.black.withValues(alpha: 0.45),
-              Colors.black.withValues(alpha: 0.30),
-              Colors.black.withValues(alpha: 0.18),
-              Colors.black.withValues(alpha: 0.06),
-              Colors.black.withValues(alpha: 0.01),
+              Colors.black.withValues(alpha: 0.50),
+              Colors.black.withValues(alpha: 0.22),
+              Colors.black.withValues(alpha: 0.03),
               Colors.transparent,
             ],
-            stops: const [0.0, 0.1, 0.3, 0.5, 0.68, 0.85, 1.0],
+            stops: const [0.0, 0.35, 0.72, 1.0],
           ),
         ),
         child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            GestureDetector(
-              onTap: onUserTap,
-              child: Row(
-                children: [
-                  Container(
-                    width: 32,
-                    height: 32,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: Colors.white.withValues(alpha: 0.7),
-                        width: 2,
+            Expanded(
+              child: GestureDetector(
+                onTap: onUserTap,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.22),
+                            blurRadius: 5,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.2),
-                          blurRadius: 4,
-                          offset: const Offset(0, 1),
+                      child: CircleAvatar(
+                        radius: 13,
+                        backgroundImage: CachedNetworkImageProvider(
+                          photo.user.profileImageMedium,
                         ),
-                      ],
-                    ),
-                    child: CircleAvatar(
-                      radius: 14,
-                      backgroundImage: CachedNetworkImageProvider(
-                        photo.user.profileImageMedium,
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 10),
-                  Text(
-                    photo.user.name,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                    const SizedBox(width: 7),
+                    Expanded(
+                      child: Text(
+                        photo.user.name,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w600,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-            const Spacer(),
+            const SizedBox(width: 10),
             Row(
               children: [
-                GestureDetector(
+                _OverlayPillButton(
+                  icon: Icons.favorite_border,
+                  label: _formatCount(photo.likes),
                   onTap: onLikeTap,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(Icons.favorite, size: 16, color: Colors.white),
-                        const SizedBox(width: 2),
-                        Text(
-                          _formatCount(photo.likes),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
                 ),
-                GestureDetector(
+                const SizedBox(width: 6),
+                _OverlayPillButton(
+                  icon: Icons.bookmark_border,
                   onTap: onBookmarkTap,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                    child: const Icon(Icons.bookmark_border, size: 16, color: Colors.white),
-                  ),
+                  isIconOnly: true,
                 ),
               ],
             ),
@@ -198,5 +178,56 @@ class PhotoCard extends StatelessWidget {
       return '${(count / 1000).toStringAsFixed(1)}k';
     }
     return count.toString();
+  }
+}
+
+class _OverlayPillButton extends StatelessWidget {
+  const _OverlayPillButton({
+    required this.icon,
+    this.label,
+    this.onTap,
+    this.isIconOnly = false,
+  });
+
+  final IconData icon;
+  final String? label;
+  final VoidCallback? onTap;
+  final bool isIconOnly;
+
+  @override
+  Widget build(BuildContext context) {
+    final child = Container(
+      height: 28,
+      constraints: BoxConstraints(minWidth: isIconOnly ? 28 : 0),
+      padding: EdgeInsets.symmetric(horizontal: isIconOnly ? 0 : 8),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          if (!isIconOnly && label != null) ...[
+            const SizedBox(width: 2),
+            Text(
+              label!,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
+
+    return GestureDetector(
+      onTap: onTap,
+      child: child,
+    );
   }
 }

@@ -60,7 +60,8 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     final photosAsync = _selectedTopicSlug == null
         ? ref.watch(photosProvider(_currentPage))
         : ref.watch(topicPhotosProvider(
-            TopicPhotosParams(topicSlug: _selectedTopicSlug!, page: _currentPage),
+            TopicPhotosParams(
+                topicSlug: _selectedTopicSlug!, page: _currentPage),
           ));
 
     return Scaffold(
@@ -93,7 +94,8 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                   photos: photos,
                   isLoadingMore: false,
                   onPhotoTap: (photo) => context.push('/photo/${photo.id}'),
-                  onUserTap: (photo) => context.push('/profile/${photo.user.username}'),
+                  onUserTap: (photo) =>
+                      context.push('/profile/${photo.user.username}'),
                   onLikeTap: (photo) => _toggleLike(photo),
                   onBookmarkTap: (photo) => _handleDownload(context),
                 ),
@@ -116,16 +118,16 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
       child: Row(
         children: [
           Expanded(
             child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              height: 44,
+              padding: const EdgeInsets.symmetric(horizontal: 15),
+              height: 42,
               decoration: BoxDecoration(
-                color: AppColors.gray100,
-                borderRadius: BorderRadius.circular(24),
+                color: const Color(0xFFF7F7F7),
+                borderRadius: BorderRadius.circular(999),
               ),
               child: const Row(
                 children: [
@@ -133,7 +135,11 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                   SizedBox(width: 10),
                   Text(
                     'Search photos...',
-                    style: TextStyle(color: AppColors.gray400, fontSize: 14),
+                    style: TextStyle(
+                      color: AppColors.gray400,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w400,
+                    ),
                   ),
                 ],
               ),
@@ -143,13 +149,14 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
           GestureDetector(
             onTap: _handleRandom,
             child: Container(
-              width: 34,
-              height: 34,
+              width: 32,
+              height: 32,
               decoration: const BoxDecoration(
                 color: AppColors.primary,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.shuffle, color: AppColors.onPrimary, size: 20),
+              child: const Icon(Icons.shuffle_rounded,
+                  color: AppColors.onPrimary, size: 18),
             ),
           ),
         ],
@@ -159,7 +166,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
   Widget _buildFilterTabs(List<Topic> topics) {
     return SizedBox(
-      height: 38,
+      height: 42,
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -181,23 +188,25 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12),
-        margin: const EdgeInsets.only(right: 4),
+        padding: const EdgeInsets.only(right: 20),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               label,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w500,
-                color: isActive ? const Color(0xFF18181B) : const Color(0xFFA1A1AA),
+                color: isActive
+                    ? const Color(0xFF18181B)
+                    : const Color(0xFF71717A),
               ),
             ),
-            const SizedBox(height: 4),
+            const SizedBox(height: 8),
             Container(
               height: 2,
-              width: label.length * 8.5 + 4,
+              width: label.length * 8.0 + 2,
               decoration: BoxDecoration(
                 color: isActive ? const Color(0xFF18181B) : Colors.transparent,
                 borderRadius: BorderRadius.circular(1),
