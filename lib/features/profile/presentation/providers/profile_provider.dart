@@ -1,4 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/core/network/providers.dart';
@@ -7,7 +8,8 @@ import 'package:musea/features/profile/data/repositories/profile_repository_impl
 import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
 import 'package:musea/core/errors/failures.dart';
 
-final profileRemoteDataSourceProvider = Provider<ProfileRemoteDataSource>((ref) {
+final profileRemoteDataSourceProvider =
+    Provider<ProfileRemoteDataSource>((ref) {
   return ProfileRemoteDataSourceImpl(ref.watch(dioClientProvider));
 });
 
@@ -17,7 +19,8 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   );
 });
 
-final userProfileProvider = FutureProvider.family<User, String>((ref, username) async {
+final userProfileProvider =
+    FutureProvider.family<User, String>((ref, username) async {
   final repository = ref.watch(profileRepositoryProvider);
   final result = await repository.getUserProfile(username);
   return result.fold(
@@ -26,7 +29,8 @@ final userProfileProvider = FutureProvider.family<User, String>((ref, username) 
   );
 });
 
-final userPhotosProvider = FutureProvider.family<List<Photo>, String>((ref, username) async {
+final userPhotosProvider =
+    FutureProvider.family<List<Photo>, String>((ref, username) async {
   final repository = ref.watch(profileRepositoryProvider);
   final result = await repository.getUserPhotos(username);
   return result.fold(
@@ -35,10 +39,31 @@ final userPhotosProvider = FutureProvider.family<List<Photo>, String>((ref, user
   );
 });
 
+final userCollectionsProvider =
+    FutureProvider.family<List<Collection>, String>((ref, username) async {
+  final repository = ref.watch(profileRepositoryProvider);
+  final result = await repository.getUserCollections(username);
+  return result.fold(
+    (failure) => throw _mapFailureToException(failure),
+    (collections) => collections,
+  );
+});
+
+final userLikesProvider =
+    FutureProvider.family<List<Photo>, String>((ref, username) async {
+  final repository = ref.watch(profileRepositoryProvider);
+  final result = await repository.getUserLikes(username);
+  return result.fold(
+    (failure) => throw _mapFailureToException(failure),
+    (likes) => likes,
+  );
+});
+
 Exception _mapFailureToException(Failure failure) {
   return failure.when(
     network: (message) => Exception('Network error: $message'),
-    server: (statusCode, message) => Exception('Server error ($statusCode): $message'),
+    server: (statusCode, message) =>
+        Exception('Server error ($statusCode): $message'),
     cache: (message) => Exception('Cache error: $message'),
     notFound: (message) => Exception('Not found: $message'),
     unauthorized: (message) => Exception('Unauthorized: $message'),

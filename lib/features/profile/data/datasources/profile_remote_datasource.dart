@@ -1,11 +1,17 @@
 import 'package:musea/core/network/dio_client.dart';
 import 'package:musea/core/constants/api_constants.dart';
+import 'package:musea/features/collections/data/models/collection_model.dart';
 import 'package:musea/features/discover/data/models/photo_model.dart';
 import 'package:musea/features/discover/data/models/user_model.dart';
 
 abstract class ProfileRemoteDataSource {
   Future<UserModel> getUserProfile(String username);
-  Future<List<PhotoModel>> getUserPhotos(String username, {int page = 1, int perPage = 20});
+  Future<List<PhotoModel>> getUserPhotos(String username,
+      {int page = 1, int perPage = 20});
+  Future<List<CollectionModel>> getUserCollections(String username,
+      {int page = 1, int perPage = 20});
+  Future<List<PhotoModel>> getUserLikes(String username,
+      {int page = 1, int perPage = 20});
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -20,7 +26,8 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<List<PhotoModel>> getUserPhotos(String username, {int page = 1, int perPage = 20}) async {
+  Future<List<PhotoModel>> getUserPhotos(String username,
+      {int page = 1, int perPage = 20}) async {
     final response = await _dioClient.get(
       ApiConstants.userPhotos(username),
       queryParameters: {
@@ -28,8 +35,34 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         'per_page': perPage,
       },
     );
+    return (response as List).map((json) => PhotoModel.fromJson(json)).toList();
+  }
+
+  @override
+  Future<List<CollectionModel>> getUserCollections(String username,
+      {int page = 1, int perPage = 20}) async {
+    final response = await _dioClient.get(
+      ApiConstants.userCollections(username),
+      queryParameters: {
+        'page': page,
+        'per_page': perPage,
+      },
+    );
     return (response as List)
-        .map((json) => PhotoModel.fromJson(json))
+        .map((json) => CollectionModel.fromJson(json))
         .toList();
+  }
+
+  @override
+  Future<List<PhotoModel>> getUserLikes(String username,
+      {int page = 1, int perPage = 20}) async {
+    final response = await _dioClient.get(
+      ApiConstants.userLikes(username),
+      queryParameters: {
+        'page': page,
+        'per_page': perPage,
+      },
+    );
+    return (response as List).map((json) => PhotoModel.fromJson(json)).toList();
   }
 }
