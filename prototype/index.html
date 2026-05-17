@@ -5,13 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Musea - UI Prototype Gallery</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+    <link href="https://fonts.loli.net/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.loli.net/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <style>
         body {
-            font-family: 'Google Sans', sans-serif;
+            font-family: 'Inter', system-ui, sans-serif;
             background: linear-gradient(135deg, #F5F5F7 0%, #E8E8ED 100%);
         }
 
@@ -22,11 +21,16 @@
             background: #FAFAFA;
             border-radius: 48px;
             padding: 10px;
-            box-shadow: 
+            box-shadow:
                 0 0 0 2px #E5E5E5,
                 0 0 0 4px #FAFAFA,
-                0 20px 60px rgba(0, 0, 0, 0.1),
-                0 40px 100px rgba(0, 0, 0, 0.05);
+                0 20px 60px rgba(0, 0, 0, 0.12),
+                0 40px 100px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease;
+        }
+
+        .phone-frame:hover {
+            transform: translateY(-4px);
         }
 
         .phone-frame::before {
@@ -61,7 +65,7 @@
             bottom: -40px;
             left: 50%;
             transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.08);
             backdrop-filter: blur(10px);
             padding: 8px 20px;
             border-radius: 20px;
@@ -70,24 +74,28 @@
             font-weight: 500;
             white-space: nowrap;
         }
+
+        .material-symbols-rounded {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
     </style>
 </head>
 <body class="min-h-screen py-12 px-8">
     <div class="max-w-7xl mx-auto">
         <div class="text-center mb-12">
             <h1 class="text-5xl font-bold text-gray-900 mb-4">Musea UI Prototype</h1>
-            <p class="text-xl text-gray-600">Material Design 3 - High Fidelity Prototype</p>
+            <p class="text-xl text-gray-600">High Fidelity Prototype — Material Design 3</p>
             <div class="flex items-center justify-center gap-6 mt-6 text-gray-500">
                 <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-black"></div>
+                    <div class="w-3 h-3 rounded-full bg-zinc-900"></div>
                     <span class="text-sm">Pixel 7 Pro (412×915)</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-gray-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-zinc-500"></div>
                     <span class="text-sm">Material Design 3</span>
                 </div>
                 <div class="flex items-center gap-2">
-                    <div class="w-3 h-3 rounded-full bg-gray-400"></div>
+                    <div class="w-3 h-3 rounded-full bg-zinc-400"></div>
                     <span class="text-sm">Light Theme</span>
                 </div>
             </div>
@@ -96,14 +104,14 @@
         <div class="flex flex-wrap justify-center gap-16 mb-16">
             <div class="phone-frame">
                 <div class="phone-screen">
-                    <iframe src="prototype/home.html" title="Discover Page"></iframe>
+                    <iframe src="home.html" title="Discover Page"></iframe>
                 </div>
                 <div class="page-label">Discover</div>
             </div>
 
             <div class="phone-frame">
                 <div class="phone-screen">
-                    <iframe src="prototype/explore.html" title="Explore Page"></iframe>
+                    <iframe src="explore.html" title="Explore Page"></iframe>
                 </div>
                 <div class="page-label">Explore</div>
             </div>
@@ -112,14 +120,14 @@
         <div class="flex flex-wrap justify-center gap-16 mb-16">
             <div class="phone-frame">
                 <div class="phone-screen">
-                    <iframe src="prototype/collections.html" title="Collections Page"></iframe>
+                    <iframe src="collections.html" title="Collections Page"></iframe>
                 </div>
                 <div class="page-label">Collections</div>
             </div>
 
             <div class="phone-frame">
                 <div class="phone-screen">
-                    <iframe src="prototype/profile.html" title="Profile Page"></iframe>
+                    <iframe src="profile.html" title="Profile Page"></iframe>
                 </div>
                 <div class="page-label">Profile</div>
             </div>
@@ -128,35 +136,35 @@
         <div class="flex flex-wrap justify-center gap-16 mb-16">
             <div class="phone-frame">
                 <div class="phone-screen">
-                    <iframe src="prototype/photo-detail.html" title="Photo Detail Page"></iframe>
+                    <iframe src="photo-detail.html" title="Photo Detail Page"></iframe>
                 </div>
                 <div class="page-label">Photo Detail</div>
             </div>
         </div>
 
         <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/20">
                 <div class="flex items-center gap-3 mb-3">
-                    <span class="material-symbols-rounded text-3xl text-black">palette</span>
+                    <span class="material-symbols-rounded text-3xl text-zinc-800">palette</span>
                     <h3 class="text-lg font-bold text-gray-900">Design System</h3>
                 </div>
-                <p class="text-gray-600 text-sm">Material Design 3 light theme with black & white color scheme</p>
+                <p class="text-gray-600 text-sm leading-relaxed">Material Design 3 light theme with neutral zinc color scheme</p>
             </div>
 
-            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/20">
                 <div class="flex items-center gap-3 mb-3">
-                    <span class="material-symbols-rounded text-3xl text-black">grid_view</span>
+                    <span class="material-symbols-rounded text-3xl text-zinc-800">grid_view</span>
                     <h3 class="text-lg font-bold text-gray-900">Layout</h3>
                 </div>
-                <p class="text-gray-600 text-sm">Single column feed with full-width photos and overlay information</p>
+                <p class="text-gray-600 text-sm leading-relaxed">Full-bleed photo feed with edge-to-edge imagery</p>
             </div>
 
-            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm">
+            <div class="bg-white/80 backdrop-blur-sm rounded-2xl p-6 shadow-sm border border-white/20">
                 <div class="flex items-center gap-3 mb-3">
-                    <span class="material-symbols-rounded text-3xl text-black">touch_app</span>
+                    <span class="material-symbols-rounded text-3xl text-zinc-800">touch_app</span>
                     <h3 class="text-lg font-bold text-gray-900">Interaction</h3>
                 </div>
-                <p class="text-gray-600 text-sm">Ripple effects, hover states, and smooth transitions</p>
+                <p class="text-gray-600 text-sm leading-relaxed">Ripple effects, hover states, and smooth transitions</p>
             </div>
         </div>
     </div>
