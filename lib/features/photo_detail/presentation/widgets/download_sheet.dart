@@ -3,21 +3,21 @@ import 'package:musea/core/theme/text_styles.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 
 class DownloadOption {
-  final String label;
-  final String url;
-  final String sizeLabel;
-
   const DownloadOption({
     required this.label,
     required this.url,
     required this.sizeLabel,
   });
+
+  final String label;
+  final String url;
+  final String sizeLabel;
 }
 
 class DownloadSheet extends StatelessWidget {
-  final Photo photo;
-
   const DownloadSheet({super.key, required this.photo});
+
+  final Photo photo;
 
   static Future<DownloadOption?> show(BuildContext context, Photo photo) {
     return showModalBottomSheet<DownloadOption>(
