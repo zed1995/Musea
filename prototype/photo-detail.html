@@ -25,10 +25,24 @@
 
         .material-symbols-rounded { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .icon-sm { width: 16px; height: 16px; }
+        .icon-fill { fill: currentColor; stroke: none; }
+
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .status-bar { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); }
+        .status-bar { background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); }
 
         /* ── Photo section ── */
         .photo-hero {
@@ -38,42 +52,81 @@
         .photo-hero img {
             width: 100%;
             display: block;
+            min-height: 306px;
+            object-fit: cover;
         }
 
         .photo-topbar {
             position: absolute;
             top: 0; left: 0; right: 0;
             z-index: 10;
-            padding: 10px 12px;
-            background: linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, transparent 100%);
+            padding: 10px 12px 42px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.34) 0%, rgba(0,0,0,0.08) 72%, transparent 100%);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         .photo-topbar button {
-            width: 38px; height: 38px; border-radius: 50%;
+            width: 34px; height: 34px; border-radius: 50%;
             display: flex; align-items: center; justify-content: center;
             cursor: pointer; border: none;
-            background: rgba(255,255,255,0.15);
-            backdrop-filter: blur(6px);
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             color: #fff;
             transition: all 0.15s ease;
         }
-        .photo-topbar button:hover { background: rgba(255,255,255,0.25); }
+        .photo-topbar button:hover { background: rgba(255,255,255,0.24); }
 
-        /* ── Avatar initials ── */
         .user-avatar {
-            width: 40px; height: 40px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 14px; font-weight: 600; line-height: 1;
+            width: 34px; height: 34px; border-radius: 50%;
+            object-fit: cover;
             flex-shrink: 0; user-select: none;
-            border: 2px solid rgba(255,255,255,0.75);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            box-shadow: 0 1px 5px rgba(0,0,0,0.14);
+        }
+
+        .follow-btn {
+            height: 32px;
+            padding: 0 15px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 650;
+            color: #fff;
+            background: #111;
+            transition: all 0.15s ease;
+            cursor: pointer;
+            border: none;
+        }
+        .follow-btn:hover { background: #27272A; }
+
+        .stats-strip {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            border-top: 1px solid #F1F1F1;
+            border-bottom: 1px solid #F1F1F1;
+        }
+        .stat-item {
+            padding: 11px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            color: #52525B;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .stat-item + .stat-item { border-left: 1px solid #F1F1F1; }
+        .stat-item .icon { width: 15px; height: 15px; color: #71717A; }
+
+        .detail-section {
+            padding-top: 18px;
+            border-top: 1px solid #F4F4F5;
         }
 
         .tag {
-            padding: 5px 12px; background: #F5F5F5; border-radius: 100px;
-            font-size: 12px; font-weight: 500; color: #555; white-space: nowrap;
+            padding: 5px 10px; background: #F6F6F6; border-radius: 999px;
+            font-size: 11px; font-weight: 600; color: #555; white-space: nowrap;
             cursor: pointer; transition: all 0.15s ease;
         }
         .tag:hover { background: #E8E8E8; }
@@ -86,20 +139,64 @@
         .photo-thumbnail:hover { transform: scale(1.06); }
 
         .section-title {
-            font-size: 13px; font-weight: 600; color: #111;
-            letter-spacing: 0.01em;
+            font-size: 11px; font-weight: 700; color: #71717A;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
         }
 
-        .info-chip {
-            background: #F5F5F5; border-radius: 8px;
-            padding: 8px 12px; text-align: center;
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0 18px;
         }
-        .info-chip-label {
-            font-size: 10px; color: #999; text-transform: uppercase;
-            letter-spacing: 0.04em; margin-bottom: 2px;
+        .detail-row {
+            min-height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid #F4F4F5;
         }
-        .info-chip-value {
-            font-size: 12px; font-weight: 500; color: #333;
+        .detail-label {
+            font-size: 11px;
+            color: #A1A1AA;
+            font-weight: 600;
+        }
+        .detail-value {
+            font-size: 12px;
+            font-weight: 650;
+            color: #27272A;
+            text-align: right;
+        }
+
+        .palette-bar {
+            height: 34px;
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            overflow: hidden;
+            border-radius: 9px;
+            box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05);
+        }
+
+        .detail-actions {
+            display: flex;
+            gap: 8px;
+            padding-top: 2px;
+        }
+        .download-btn {
+            flex: 1;
+            height: 52px;
+            border-radius: 12px;
+            border: none;
+            background: #111;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
         }
     </style>
 </head>
@@ -111,9 +208,9 @@
     <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
         <span class="text-sm font-semibold text-zinc-900">12:30</span>
         <div class="flex items-center gap-2">
-            <span class="material-symbols-rounded text-lg text-zinc-800">signal_cellular_alt</span>
-            <span class="material-symbols-rounded text-lg text-zinc-800">wifi</span>
-            <span class="material-symbols-rounded text-lg text-zinc-800">battery_full</span>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v4"/><path d="M12 11v9"/><path d="M17 6v14"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path fill="currentColor" stroke="none" d="M8 10h7v4H8z"/></svg>
         </div>
     </div>
 
@@ -125,33 +222,33 @@
 
             <!-- Top bar overlaid on photo -->
             <div class="photo-topbar">
-                <button><span class="material-symbols-rounded text-xl">arrow_back</span></button>
+                <button aria-label="Back"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
                 <div class="flex items-center gap-2">
-                    <button><span class="material-symbols-rounded text-xl">bookmark</span></button>
-                    <button><span class="material-symbols-rounded text-xl">ios_share</span></button>
-                    <button><span class="material-symbols-rounded text-xl">more_vert</span></button>
+                    <button aria-label="Save"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg></button>
+                    <button aria-label="Share"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/><path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
+                    <button aria-label="More"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12h.01"/><path d="M19 12h.01"/><path d="M5 12h.01"/></svg></button>
                 </div>
             </div>
         </div>
 
         <!-- ── Content ── -->
-        <div class="px-3 pt-4 pb-4 space-y-5">
+        <div class="px-3 pt-4 pb-4 space-y-4">
 
             <!-- User + Follow -->
             <div class="flex items-center gap-3">
-                <div class="user-avatar" style="background:#4A90D9">JD</div>
+                <img class="user-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=96&h=96&fit=crop&crop=face" alt="John Doe">
                 <div class="flex-1 min-w-0">
                     <h3 class="text-sm font-semibold text-zinc-900">John Doe</h3>
                     <p class="text-xs text-zinc-400">@johndoe · 12.4k followers</p>
                 </div>
-                <button class="px-4 py-1.5 rounded-full text-xs font-semibold text-white bg-zinc-900 hover:bg-zinc-800 transition-colors cursor-pointer border-none">Follow</button>
+                <button class="follow-btn">Follow</button>
             </div>
 
             <!-- Stats row -->
-            <div class="flex items-center gap-5 text-sm text-zinc-500">
-                <div class="flex items-center gap-1.5"><span class="material-symbols-rounded text-base">favorite</span><span class="font-medium text-zinc-700">1,284</span></div>
-                <div class="flex items-center gap-1.5"><span class="material-symbols-rounded text-base">visibility</span><span class="font-medium text-zinc-700">52.3k</span></div>
-                <div class="flex items-center gap-1.5"><span class="material-symbols-rounded text-base">download</span><span class="font-medium text-zinc-700">12k</span></div>
+            <div class="stats-strip">
+                <div class="stat-item"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>1,284</div>
+                <div class="stat-item"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/><circle cx="12" cy="12" r="3"/></svg>52.3k</div>
+                <div class="stat-item"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>12k</div>
             </div>
 
             <!-- Description -->
@@ -176,65 +273,62 @@
             </div>
 
             <!-- Camera Info (compact grid) -->
-            <div>
-                <h4 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Camera Info</h4>
-                <div class="grid grid-cols-4 gap-2">
-                    <div class="info-chip">
-                        <div class="info-chip-label">Camera</div>
-                        <div class="info-chip-value">A7 III</div>
+            <div class="detail-section">
+                <h4 class="section-title mb-2">Camera Info</h4>
+                <div class="details-grid">
+                    <div class="detail-row">
+                        <div class="detail-label">Camera</div>
+                        <div class="detail-value">A7 III</div>
                     </div>
-                    <div class="info-chip">
-                        <div class="info-chip-label">Lens</div>
-                        <div class="info-chip-value">24-70mm</div>
+                    <div class="detail-row">
+                        <div class="detail-label">Lens</div>
+                        <div class="detail-value">24-70mm</div>
                     </div>
-                    <div class="info-chip">
-                        <div class="info-chip-label">Aperture</div>
-                        <div class="info-chip-value">f/2.8</div>
+                    <div class="detail-row">
+                        <div class="detail-label">Aperture</div>
+                        <div class="detail-value">f/2.8</div>
                     </div>
-                    <div class="info-chip">
-                        <div class="info-chip-label">Shutter</div>
-                        <div class="info-chip-value">1/250s</div>
+                    <div class="detail-row">
+                        <div class="detail-label">Shutter</div>
+                        <div class="detail-value">1/250s</div>
                     </div>
-                    <div class="info-chip">
-                        <div class="info-chip-label">ISO</div>
-                        <div class="info-chip-value">400</div>
+                    <div class="detail-row">
+                        <div class="detail-label">ISO</div>
+                        <div class="detail-value">400</div>
                     </div>
-                    <div class="info-chip">
-                        <div class="info-chip-label">Focal</div>
-                        <div class="info-chip-value">35mm</div>
+                    <div class="detail-row">
+                        <div class="detail-label">Focal</div>
+                        <div class="detail-value">35mm</div>
                     </div>
-                    <div class="info-chip">
-                        <div class="info-chip-label">Size</div>
-                        <div class="info-chip-value">24MP</div>
+                    <div class="detail-row">
+                        <div class="detail-label">Size</div>
+                        <div class="detail-value">24MP</div>
                     </div>
-                    <div class="info-chip">
-                        <div class="info-chip-label">Location</div>
-                        <div class="info-chip-value">Kyoto</div>
+                    <div class="detail-row">
+                        <div class="detail-label">Location</div>
+                        <div class="detail-value">Kyoto</div>
                     </div>
                 </div>
             </div>
 
             <!-- Colors -->
-            <div>
-                <h4 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-3">Color Palette</h4>
-                <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-lg shadow-sm" style="background:#5B7B9A" title="#5B7B9A"></div>
-                    <div class="w-8 h-8 rounded-lg shadow-sm" style="background:#8B9A7B" title="#8B9A7B"></div>
-                    <div class="w-8 h-8 rounded-lg shadow-sm" style="background:#9A7B8B" title="#9A7B8B"></div>
-                    <div class="w-8 h-8 rounded-lg shadow-sm" style="background:#7B9A8B" title="#7B9A8B"></div>
-                    <div class="w-8 h-8 rounded-lg shadow-sm" style="background:#9A8B7B" title="#9A8B7B"></div>
-                    <div class="w-8 h-8 rounded-lg shadow-sm" style="background:#7B8B9A" title="#7B8B9A"></div>
-                    <div class="w-8 h-8 rounded-lg shadow-sm" style="background:#8B7B9A" title="#8B7B9A"></div>
+            <div class="detail-section">
+                <h4 class="section-title mb-3">Color Palette</h4>
+                <div class="palette-bar">
+                    <div style="background:#5B7B9A" title="#5B7B9A"></div>
+                    <div style="background:#8B9A7B" title="#8B9A7B"></div>
+                    <div style="background:#9A7B8B" title="#9A7B8B"></div>
+                    <div style="background:#7B9A8B" title="#7B9A8B"></div>
+                    <div style="background:#9A8B7B" title="#9A8B7B"></div>
+                    <div style="background:#7B8B9A" title="#7B8B9A"></div>
+                    <div style="background:#8B7B9A" title="#8B7B9A"></div>
                 </div>
             </div>
 
             <!-- Download CTA -->
-            <div class="flex gap-2">
-                <button class="flex-1 py-3 rounded-xl text-sm font-semibold text-white bg-zinc-900 hover:bg-zinc-800 transition-colors cursor-pointer border-none flex items-center justify-center gap-2">
-                    <span class="material-symbols-rounded text-lg">download</span> Download Free
-                </button>
-                <button class="w-12 h-12 rounded-xl border border-zinc-200 flex items-center justify-center hover:bg-zinc-50 transition-colors cursor-pointer bg-white">
-                    <span class="material-symbols-rounded text-lg text-zinc-700">favorite</span>
+            <div class="detail-actions">
+                <button class="download-btn">
+                    <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg> Download Free
                 </button>
             </div>
 

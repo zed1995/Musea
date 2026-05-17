@@ -30,107 +30,144 @@
 
         .material-symbols-rounded { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+
+        .icon-sm { width: 16px; height: 16px; }
+        .icon-lg { width: 22px; height: 22px; }
+        .icon-fill { fill: currentColor; stroke: none; }
+
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .status-bar { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); }
+        .status-bar { background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); }
 
         /* Search */
         .search-bar {
-            background: #F5F5F5; border-radius: 24px; height: 44px;
-            padding: 0 16px; display: flex; align-items: center; gap: 10px;
+            background: #F7F7F7; border-radius: 999px; height: 42px;
+            padding: 0 10px 0 15px; display: flex; align-items: center; gap: 10px;
             cursor: pointer; transition: all 0.2s ease;
         }
-        .search-bar:hover { background: #EEEEEE; }
-        .search-bar:focus-within { background: #fff; box-shadow: 0 0 0 1px #D4D4D4; }
+        .search-bar:hover { background: #F0F0F0; }
+        .search-bar:focus-within { background: #fff; box-shadow: 0 0 0 1px #D8D8D8; }
 
         .shuffle-btn {
-            width: 34px; height: 34px; border-radius: 50%;
+            width: 32px; height: 32px; border-radius: 50%;
             background: #111; display: flex; align-items: center;
             justify-content: center; transition: all 0.15s ease; cursor: pointer; flex-shrink: 0;
         }
         .shuffle-btn:hover { opacity: 0.8; }
 
         /* Tabs */
+        .topic-tabs {
+            border-bottom: 1px solid #F0F0F0;
+        }
+
         .tab-btn {
-            padding: 6px 0; font-size: 14px; font-weight: 500;
+            padding: 8px 0 10px; font-size: 14px; font-weight: 500;
             cursor: pointer; transition: all 0.15s ease; user-select: none;
-            color: #999; border-bottom: 2px solid transparent;
+            color: #777; border-bottom: 2px solid transparent;
             white-space: nowrap;
         }
         .tab-btn.active { color: #111; border-bottom-color: #111; }
-        .tab-btn:not(.active):hover { color: #666; }
-
-        /* Topic pills */
-        .topic-pill {
-            padding: 5px 14px; border-radius: 100px; font-size: 12px;
-            font-weight: 500; white-space: nowrap; cursor: pointer;
-            transition: all 0.15s ease; user-select: none;
-            background: #F5F5F5; color: #555;
-        }
-        .topic-pill:hover { background: #E8E8E8; }
-        .topic-pill.active { background: #111; color: #fff; }
+        .tab-btn:not(.active):hover { color: #333; }
 
         /* Photo card */
         .photo-card {
             position: relative;
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 0 0 1px rgba(0,0,0,0.04), 0 4px 12px rgba(0,0,0,0.04);
-            transition: box-shadow 0.25s ease;
+            transition: filter 0.25s ease;
             cursor: zoom-in;
             background: #fff;
         }
-        .photo-card:hover { box-shadow: 0 0 0 1px rgba(0,0,0,0.08), 0 8px 24px rgba(0,0,0,0.08); }
-        .photo-card img { width: 100%; display: block; transition: filter 0.3s ease; }
-        .photo-card:hover img { filter: brightness(1.04); }
+        .photo-card:hover { filter: brightness(0.98); }
+        .photo-card > img { width: 100%; display: block; transition: filter 0.3s ease; }
 
         .photo-overlay {
             position: absolute;
             bottom: 0; left: 0; right: 0;
-            padding: 24px 14px 12px;
-            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.01) 10%, rgba(0,0,0,0.06) 30%, rgba(0,0,0,0.18) 50%, rgba(0,0,0,0.30) 68%, rgba(0,0,0,0.45) 85%, rgba(0,0,0,0.55) 100%);
+            padding: 46px 12px 12px;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.03) 22%, rgba(0,0,0,0.22) 68%, rgba(0,0,0,0.50) 100%);
             display: flex; align-items: flex-end; justify-content: space-between;
             line-height: 1.2;
         }
 
-        .user-info { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
-
-        .user-avatar {
-            width: 36px; height: 36px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: #fff; font-size: 13px; font-weight: 600; line-height: 1;
-            flex-shrink: 0; user-select: none;
-            border: 2px solid rgba(255,255,255,0.7);
-            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        .card-meta {
+            width: 100%;
+            min-height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
         }
 
-        .user-name { color: #fff; font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .user-info {
+            display: flex; align-items: center; gap: 7px; flex: 1; min-width: 0;
+            padding: 3px 0;
+        }
+
+        .user-avatar {
+            width: 26px; height: 26px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            object-fit: cover;
+            flex-shrink: 0; user-select: none;
+            box-shadow: 0 1px 5px rgba(0,0,0,0.22);
+        }
+
+        .user-name {
+            color: #fff; font-size: 13px; font-weight: 600;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.28);
+        }
 
         .action-btn {
             display: flex; align-items: center; gap: 2px;
-            padding: 4px 6px;
+            min-height: 28px;
+            padding: 0 8px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.14);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.12);
             color: #fff; cursor: pointer; transition: all 0.15s ease;
-            font-size: 12px; font-weight: 500; line-height: 1;
+            font-size: 11px; font-weight: 600; line-height: 1;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.25);
         }
-        .action-btn:hover { opacity: 0.7; }
+        .action-btn:hover { background: rgba(255,255,255,0.22); }
         .action-btn.active .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
-        .action-buttons { display: flex; align-items: center; gap: 2px; flex-shrink: 0; }
+        .action-btn.icon-only {
+            width: 28px;
+            padding: 0;
+            justify-content: center;
+        }
+        .action-btn .icon { width: 14px; height: 14px; }
+        .action-buttons { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 
         /* Bottom nav */
         .nav-item {
             display: flex; flex-direction: column; align-items: center; gap: 2px;
-            padding: 6px 16px; border-radius: 8px; cursor: pointer;
+            padding: 5px 8px; border-radius: 10px; cursor: pointer;
             transition: all 0.15s ease; min-width: 64px;
+            color: #A1A1AA;
         }
-        .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
-        .nav-item:not(.active):hover { background: #F5F5F5; }
+        .nav-item.active { color: #111; }
+        .nav-item:not(.active):hover { background: transparent; }
 
         .bottom-nav {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0,0,0,0.06);
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
     </style>
 </head>
@@ -141,9 +178,9 @@
     <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
         <span class="text-sm font-semibold text-zinc-900">12:30</span>
         <div class="flex items-center gap-2">
-            <span class="material-symbols-rounded text-lg text-zinc-800">signal_cellular_alt</span>
-            <span class="material-symbols-rounded text-lg text-zinc-800">wifi</span>
-            <span class="material-symbols-rounded text-lg text-zinc-800">battery_full</span>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v4"/><path d="M12 11v9"/><path d="M17 6v14"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path class="icon-fill" d="M8 10h7v4H8z"/></svg>
         </div>
     </div>
 
@@ -152,49 +189,40 @@
         <!-- Search -->
         <div class="sticky top-0 z-40 px-3 pt-3 pb-2 bg-white/95 backdrop-blur-md">
             <div class="search-bar">
-                <span class="material-symbols-rounded text-xl text-zinc-400">search</span>
+                <svg class="icon text-zinc-400" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
                 <span class="text-sm text-zinc-400 flex-1">Search photos...</span>
                 <div class="shuffle-btn">
-                    <span class="material-symbols-rounded text-xl text-white">shuffle</span>
+                    <svg class="icon text-white" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 14 3 3-3 3"/><path d="m18 4 3 3-3 3"/><path d="M3 7h3c4 0 5 10 9 10h6"/><path d="M3 17h3c1.6 0 2.7-1.5 3.7-3.4"/></svg>
                 </div>
             </div>
         </div>
 
-        <!-- Tab bar -->
-        <div class="px-3 pt-2 pb-2 flex items-center gap-5 overflow-x-auto scrollbar-hide">
-            <span class="tab-btn active">Discover</span>
-            <span class="tab-btn">Following</span>
-            <span class="tab-btn">Trending</span>
-            <span class="tab-btn">Editors' Choice</span>
-            <span class="tab-btn">New</span>
-        </div>
-
-        <!-- Topic pills -->
-        <div class="px-3 pb-3">
-            <div class="flex gap-2 overflow-x-auto scrollbar-hide">
-                <span class="topic-pill active">All</span>
-                <span class="topic-pill">Nature</span>
-                <span class="topic-pill">Architecture</span>
-                <span class="topic-pill">People</span>
-                <span class="topic-pill">Travel</span>
-                <span class="topic-pill">Food</span>
-                <span class="topic-pill">Animals</span>
-                <span class="topic-pill">Technology</span>
-            </div>
+        <!-- Topic tabs -->
+        <div class="topic-tabs px-3 pt-1 mb-3 flex items-center gap-5 overflow-x-auto scrollbar-hide">
+            <span class="tab-btn active">All</span>
+            <span class="tab-btn">Nature</span>
+            <span class="tab-btn">Architecture</span>
+            <span class="tab-btn">People</span>
+            <span class="tab-btn">Travel</span>
+            <span class="tab-btn">Food</span>
+            <span class="tab-btn">Animals</span>
+            <span class="tab-btn">Technology</span>
         </div>
 
         <!-- Feed -->
-        <div class="px-3 flex flex-col gap-3">
+        <div class="px-3 flex flex-col gap-3.5">
             <div class="photo-card">
                 <img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=1080&fit=crop" alt="Landscape" loading="lazy">
                 <div class="photo-overlay">
-                    <div class="user-info">
-                        <div class="user-avatar" style="background:#4A90D9">JD</div>
-                        <span class="user-name">John Doe</span>
-                    </div>
-                    <div class="action-buttons">
-                        <div class="action-btn"><span class="material-symbols-rounded text-lg">favorite</span>1.2k</div>
-                        <div class="action-btn"><span class="material-symbols-rounded text-lg">bookmark</span></div>
+                    <div class="card-meta">
+                        <div class="user-info">
+                            <img class="user-avatar" src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face" alt="John Doe">
+                            <span class="user-name">John Doe</span>
+                        </div>
+                        <div class="action-buttons">
+                            <div class="action-btn"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>1.2k</div>
+                            <div class="action-btn icon-only"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -202,13 +230,15 @@
             <div class="photo-card">
                 <img src="https://images.unsplash.com/photo-1682687221038-404cb8830901?w=1080&fit=crop" alt="Landscape" loading="lazy">
                 <div class="photo-overlay">
-                    <div class="user-info">
-                        <div class="user-avatar" style="background:#E8836B">JS</div>
-                        <span class="user-name">Jane Smith</span>
-                    </div>
-                    <div class="action-buttons">
-                        <div class="action-btn active"><span class="material-symbols-rounded text-lg">favorite</span>2.1k</div>
-                        <div class="action-btn"><span class="material-symbols-rounded text-lg">bookmark</span></div>
+                    <div class="card-meta">
+                        <div class="user-info">
+                            <img class="user-avatar" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face" alt="Jane Smith">
+                            <span class="user-name">Jane Smith</span>
+                        </div>
+                        <div class="action-buttons">
+                            <div class="action-btn active"><svg class="icon icon-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>2.1k</div>
+                            <div class="action-btn icon-only"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -216,13 +246,15 @@
             <div class="photo-card">
                 <img src="https://images.unsplash.com/photo-1682695794947-17061dc284dd?w=1080&fit=crop" alt="Nature" loading="lazy">
                 <div class="photo-overlay">
-                    <div class="user-info">
-                        <div class="user-avatar" style="background:#6BBF59">AW</div>
-                        <span class="user-name">Alex Wang</span>
-                    </div>
-                    <div class="action-buttons">
-                        <div class="action-btn"><span class="material-symbols-rounded text-lg">favorite</span>512</div>
-                        <div class="action-btn active"><span class="material-symbols-rounded text-lg">bookmark</span></div>
+                    <div class="card-meta">
+                        <div class="user-info">
+                            <img class="user-avatar" src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face" alt="Alex Wang">
+                            <span class="user-name">Alex Wang</span>
+                        </div>
+                        <div class="action-buttons">
+                            <div class="action-btn"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>512</div>
+                            <div class="action-btn icon-only active"><svg class="icon icon-fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -230,13 +262,15 @@
             <div class="photo-card">
                 <img src="https://images.unsplash.com/photo-1682695796954-bad0d0f59ff1?w=1080&fit=crop" alt="Portrait" loading="lazy">
                 <div class="photo-overlay">
-                    <div class="user-info">
-                        <div class="user-avatar" style="background:#D96BBF">SL</div>
-                        <span class="user-name">Sarah Lee</span>
-                    </div>
-                    <div class="action-buttons">
-                        <div class="action-btn"><span class="material-symbols-rounded text-lg">favorite</span>3.4k</div>
-                        <div class="action-btn"><span class="material-symbols-rounded text-lg">bookmark</span></div>
+                    <div class="card-meta">
+                        <div class="user-info">
+                            <img class="user-avatar" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=80&h=80&fit=crop&crop=face" alt="Sarah Lee">
+                            <span class="user-name">Sarah Lee</span>
+                        </div>
+                        <div class="action-buttons">
+                            <div class="action-btn"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>3.4k</div>
+                            <div class="action-btn icon-only"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -244,13 +278,15 @@
             <div class="photo-card">
                 <img src="https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3?w=1080&fit=crop" alt="Architecture" loading="lazy">
                 <div class="photo-overlay">
-                    <div class="user-info">
-                        <div class="user-avatar" style="background:#6BBFD9">EC</div>
-                        <span class="user-name">Emily Chen</span>
-                    </div>
-                    <div class="action-buttons">
-                        <div class="action-btn"><span class="material-symbols-rounded text-lg">favorite</span>892</div>
-                        <div class="action-btn"><span class="material-symbols-rounded text-lg">bookmark</span></div>
+                    <div class="card-meta">
+                        <div class="user-info">
+                            <img class="user-avatar" src="https://images.unsplash.com/photo-1517841905240-472988babdf9?w=80&h=80&fit=crop&crop=face" alt="Emily Chen">
+                            <span class="user-name">Emily Chen</span>
+                        </div>
+                        <div class="action-buttons">
+                            <div class="action-btn"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg>892</div>
+                            <div class="action-btn icon-only"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg></div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -260,19 +296,19 @@
 
     <div class="bottom-nav fixed bottom-0 left-0 right-0 px-4 py-1.5 flex items-center justify-around z-40" style="width:412px;margin:0 auto;">
         <div class="nav-item active">
-            <span class="material-symbols-rounded text-2xl text-zinc-900">explore</span>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m14.8 9.2-1.7 4-4 1.7 1.7-4z"/></svg>
             <span class="text-[10px] text-zinc-900 font-semibold tracking-wide">Discover</span>
         </div>
         <div class="nav-item">
-            <span class="material-symbols-rounded text-2xl text-zinc-400">search</span>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
             <span class="text-[10px] text-zinc-400 tracking-wide">Explore</span>
         </div>
         <div class="nav-item">
-            <span class="material-symbols-rounded text-2xl text-zinc-400">collections_bookmark</span>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 4v8l3-2 3 2V4"/></svg>
             <span class="text-[10px] text-zinc-400 tracking-wide">Collections</span>
         </div>
         <div class="nav-item">
-            <span class="material-symbols-rounded text-2xl text-zinc-400">person</span>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
             <span class="text-[10px] text-zinc-400 tracking-wide">Profile</span>
         </div>
     </div>

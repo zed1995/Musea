@@ -25,55 +25,167 @@
 
         .material-symbols-rounded { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .icon-sm { width: 16px; height: 16px; }
+        .icon-lg { width: 22px; height: 22px; }
+
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
 
-        .status-bar { background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); }
+        .status-bar { background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); }
 
         .collection-card {
             position: relative;
-            border-radius: 16px; overflow: hidden;
+            border-radius: 12px; overflow: hidden;
             cursor: pointer;
-            aspect-ratio: 5/2;
+            min-height: 198px;
+            background: #F5F5F5;
+            transition: filter 0.25s ease;
         }
+        .collection-card:hover { filter: brightness(0.98); }
 
         .collection-cover {
-            width: 100%; height: 100%;
-            position: absolute; inset: 0;
-            object-fit: cover;
-            transition: transform 0.4s ease;
+            position: relative;
+            height: 152px;
+            overflow: hidden;
         }
-        .collection-card:hover .collection-cover { transform: scale(1.06); }
+        .collection-cover img {
+            width: 100%; height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
         .collection-overlay {
             position: absolute;
-            bottom: 0; left: 0; right: 0;
-            padding: 20px 16px 14px;
-            background: linear-gradient(to top, rgba(0,0,0,0.65) 0%, rgba(0,0,0,0.2) 50%, transparent 100%);
+            inset: 0;
+            padding: 42px 14px 12px;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.08) 24%, rgba(0,0,0,0.36) 72%, rgba(0,0,0,0.58) 100%);
             display: flex; align-items: flex-end; justify-content: space-between;
+            gap: 12px;
+        }
+        .collection-title {
+            font-size: 15px;
+            line-height: 1.2;
+            font-weight: 650;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.28);
+        }
+        .collection-meta {
+            font-size: 12px;
+            color: rgba(255,255,255,0.78);
+            margin-top: 3px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.22);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 230px;
+        }
+        .featured-badge {
+            display: inline-flex;
+            align-items: center;
+            height: 22px;
+            padding: 0 8px;
+            border-radius: 999px;
+            color: #fff;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-size: 10px;
+            font-weight: 750;
+            letter-spacing: 0.02em;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.24);
+        }
+        .collection-count {
+            min-width: 34px;
+            height: 28px;
+            padding: 0 9px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #fff;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .collection-preview {
+            height: 46px;
+            display: grid;
+            gap: 2px;
+            padding-top: 2px;
+            background: #fff;
+        }
+        .collection-preview.count-4 { grid-template-columns: repeat(4, 1fr); }
+        .collection-preview.count-3 { grid-template-columns: repeat(3, 1fr); }
+        .collection-preview.count-2 { grid-template-columns: repeat(2, 1fr); }
+        .collection-preview.count-1 { grid-template-columns: 1fr; }
+        .collection-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .collection-card.no-preview {
+            min-height: 152px;
         }
 
         .nav-item {
             display: flex; flex-direction: column; align-items: center; gap: 2px;
-            padding: 6px 16px; border-radius: 8px; cursor: pointer;
+            padding: 5px 8px; border-radius: 10px; cursor: pointer;
             transition: all 0.15s ease; min-width: 64px;
+            color: #A1A1AA;
         }
-        .nav-item.active .material-symbols-rounded { font-variation-settings: 'FILL' 1, 'wght' 500, 'GRAD' 0, 'opsz' 24; }
-        .nav-item:not(.active):hover { background: #F5F5F5; }
+        .nav-item.active { color: #111; }
+        .nav-item:not(.active):hover { background: transparent; }
 
         .bottom-nav {
             background: rgba(255,255,255,0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(0,0,0,0.06);
+            border-top: 1px solid rgba(0,0,0,0.05);
         }
 
         .add-btn {
-            width: 36px; height: 36px; border-radius: 50%;
-            background: #111; display: flex; align-items: center;
+            width: 34px; height: 34px; border-radius: 50%;
+            background: #fff; display: flex; align-items: center;
             justify-content: center; transition: all 0.15s ease; cursor: pointer;
+            border: 1px solid #E5E5E5;
+            color: #111;
         }
-        .add-btn:hover { opacity: 0.8; }
+        .add-btn:hover { background: #111; color: #fff; border-color: #111; }
+
+        .load-more {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 18px 0 22px;
+            color: #71717A;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .loader-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #A1A1AA;
+            box-shadow: 10px 0 0 #D4D4D8, 20px 0 0 #E4E4E7;
+        }
     </style>
 </head>
 <body>
@@ -83,9 +195,9 @@
     <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
         <span class="text-sm font-semibold text-zinc-900">12:30</span>
         <div class="flex items-center gap-2">
-            <span class="material-symbols-rounded text-lg text-zinc-800">signal_cellular_alt</span>
-            <span class="material-symbols-rounded text-lg text-zinc-800">wifi</span>
-            <span class="material-symbols-rounded text-lg text-zinc-800">battery_full</span>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h16"/><path d="M7 16v4"/><path d="M12 11v9"/><path d="M17 6v14"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path fill="currentColor" stroke="none" d="M8 10h7v4H8z"/></svg>
         </div>
     </div>
 
@@ -96,78 +208,121 @@
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-zinc-900">Collections</h1>
-                    <p class="text-xs text-zinc-400 mt-0.5">6 collections · 109 photos</p>
                 </div>
-                <button class="add-btn"><span class="material-symbols-rounded text-xl text-white">add</span></button>
+                <button class="add-btn" aria-label="Create collection"><svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14"/><path d="M5 12h14"/></svg></button>
             </div>
         </div>
 
         <!-- List -->
         <div class="px-3 mt-3 flex flex-col gap-3">
             <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=830&h=332&fit=crop" class="collection-cover" loading="lazy">
-                <div class="collection-overlay">
-                    <div>
-                        <h3 class="text-base font-semibold text-white">Travel Inspiration</h3>
-                        <p class="text-xs text-white/70 mt-0.5">24 photos · Updated 2 days ago</p>
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=830&h=332&fit=crop" loading="lazy" alt="Travel Inspiration cover">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Travel Inspiration</h3>
+                            <p class="collection-meta">by Unsplash+ Collections</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="featured-badge">Featured</span>
+                            <div class="collection-count">24<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
+                        </div>
                     </div>
-                    <span class="material-symbols-rounded text-xl text-white/80">chevron_right</span>
+                </div>
+                <div class="collection-preview count-4" aria-label="Collection preview photos">
+                    <img src="https://images.unsplash.com/photo-1682687221038-404cb8830901?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695794947-17061dc284dd?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695796954-bad0d0f59ff1?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3?w=260&h=92&fit=crop" loading="lazy" alt="">
                 </div>
             </div>
 
             <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1682687221038-404cb8830901?w=830&h=332&fit=crop" class="collection-cover" loading="lazy">
-                <div class="collection-overlay">
-                    <div>
-                        <h3 class="text-base font-semibold text-white">Wallpaper</h3>
-                        <p class="text-xs text-white/70 mt-0.5">8 photos · Updated 5 days ago</p>
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682687221038-404cb8830901?w=830&h=332&fit=crop" loading="lazy" alt="Wallpaper cover">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Wallpaper</h3>
+                            <p class="collection-meta">by A Chosen Soul</p>
+                        </div>
+                        <div class="collection-count">8<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
                     </div>
-                    <span class="material-symbols-rounded text-xl text-white/80">chevron_right</span>
+                </div>
+                <div class="collection-preview count-3" aria-label="Collection preview photos">
+                    <img src="https://images.unsplash.com/photo-1682695796954-bad0d0f59ff1?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=260&h=92&fit=crop" loading="lazy" alt="">
                 </div>
             </div>
 
             <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1682695794947-17061dc284dd?w=830&h=332&fit=crop" class="collection-cover" loading="lazy">
-                <div class="collection-overlay">
-                    <div>
-                        <h3 class="text-base font-semibold text-white">Design Reference</h3>
-                        <p class="text-xs text-white/70 mt-0.5">15 photos · Updated 1 week ago</p>
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682695794947-17061dc284dd?w=830&h=332&fit=crop" loading="lazy" alt="Design Reference cover">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Design Reference</h3>
+                            <p class="collection-meta">by Musea Editorial</p>
+                        </div>
+                        <div class="collection-count">15<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
                     </div>
-                    <span class="material-symbols-rounded text-xl text-white/80">chevron_right</span>
+                </div>
+                <div class="collection-preview count-2" aria-label="Collection preview photos">
+                    <img src="https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695797221-8164ff1fafc9?w=260&h=92&fit=crop" loading="lazy" alt="">
                 </div>
             </div>
 
             <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1682695796954-bad0d0f59ff1?w=830&h=332&fit=crop" class="collection-cover" loading="lazy">
-                <div class="collection-overlay">
-                    <div>
-                        <h3 class="text-base font-semibold text-white">Nature</h3>
-                        <p class="text-xs text-white/70 mt-0.5">32 photos · Updated 3 days ago</p>
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682695796954-bad0d0f59ff1?w=830&h=332&fit=crop" loading="lazy" alt="Nature cover">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Nature</h3>
+                            <p class="collection-meta">by Forest Archive</p>
+                        </div>
+                        <div class="collection-count">32<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
                     </div>
-                    <span class="material-symbols-rounded text-xl text-white/80">chevron_right</span>
+                </div>
+                <div class="collection-preview count-1" aria-label="Collection preview photos">
+                    <img src="https://images.unsplash.com/photo-1682695798522-6e208131916d?w=260&h=92&fit=crop" loading="lazy" alt="">
+                </div>
+            </div>
+
+            <div class="collection-card no-preview">
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3?w=830&h=332&fit=crop" loading="lazy" alt="Architecture cover">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Architecture</h3>
+                            <p class="collection-meta">by Lines & Light</p>
+                        </div>
+                        <div class="collection-count">18<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
+                    </div>
                 </div>
             </div>
 
             <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3?w=830&h=332&fit=crop" class="collection-cover" loading="lazy">
-                <div class="collection-overlay">
-                    <div>
-                        <h3 class="text-base font-semibold text-white">Architecture</h3>
-                        <p class="text-xs text-white/70 mt-0.5">18 photos · Updated 2 weeks ago</p>
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=830&h=332&fit=crop" loading="lazy" alt="Food cover">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Food</h3>
+                            <p class="collection-meta">by Table Stories</p>
+                        </div>
+                        <div class="collection-count">12<svg class="icon icon-sm" viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6"/></svg></div>
                     </div>
-                    <span class="material-symbols-rounded text-xl text-white/80">chevron_right</span>
+                </div>
+                <div class="collection-preview count-4" aria-label="Collection preview photos">
+                    <img src="https://images.unsplash.com/photo-1682695797221-8164ff1fafc9?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695798522-6e208131916d?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=260&h=92&fit=crop" loading="lazy" alt="">
+                    <img src="https://images.unsplash.com/photo-1682687221038-404cb8830901?w=260&h=92&fit=crop" loading="lazy" alt="">
                 </div>
             </div>
 
-            <div class="collection-card">
-                <img src="https://images.unsplash.com/photo-1682687220063-4742bd7fd538?w=830&h=332&fit=crop" class="collection-cover" loading="lazy">
-                <div class="collection-overlay">
-                    <div>
-                        <h3 class="text-base font-semibold text-white">Food</h3>
-                        <p class="text-xs text-white/70 mt-0.5">12 photos · Updated 1 month ago</p>
-                    </div>
-                    <span class="material-symbols-rounded text-xl text-white/80">chevron_right</span>
-                </div>
+            <div class="load-more">
+                <span class="loader-dot" aria-hidden="true"></span>
+                <span>Loading more collections</span>
             </div>
         </div>
 
@@ -175,19 +330,19 @@
 
     <div class="bottom-nav fixed bottom-0 left-0 right-0 px-4 py-1.5 flex items-center justify-around z-40" style="width:412px;margin:0 auto;">
         <div class="nav-item">
-            <span class="material-symbols-rounded text-2xl text-zinc-400">explore</span>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m14.8 9.2-1.7 4-4 1.7 1.7-4z"/></svg>
             <span class="text-[10px] text-zinc-400 tracking-wide">Discover</span>
         </div>
         <div class="nav-item">
-            <span class="material-symbols-rounded text-2xl text-zinc-400">search</span>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
             <span class="text-[10px] text-zinc-400 tracking-wide">Explore</span>
         </div>
         <div class="nav-item active">
-            <span class="material-symbols-rounded text-2xl text-zinc-900">collections_bookmark</span>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4" width="14" height="16" rx="2"/><path d="M9 4v8l3-2 3 2V4"/></svg>
             <span class="text-[10px] text-zinc-900 font-semibold tracking-wide">Collections</span>
         </div>
         <div class="nav-item">
-            <span class="material-symbols-rounded text-2xl text-zinc-400">person</span>
+            <svg class="icon icon-lg" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
             <span class="text-[10px] text-zinc-400 tracking-wide">Profile</span>
         </div>
     </div>
