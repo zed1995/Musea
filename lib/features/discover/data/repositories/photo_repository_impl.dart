@@ -6,14 +6,17 @@ import 'package:musea/features/discover/domain/entities/topic.dart';
 import 'package:musea/features/discover/domain/repositories/photo_repository.dart';
 import 'package:musea/features/discover/data/datasources/photo_remote_datasource.dart';
 import 'package:musea/features/discover/data/datasources/photo_local_datasource.dart';
+import 'package:musea/features/discover/data/datasources/topic_local_datasource.dart';
 
 class PhotoRepositoryImpl implements PhotoRepository {
   final PhotoRemoteDataSource remoteDataSource;
   final PhotoLocalDataSource localDataSource;
+  final TopicLocalDataSource topicLocalDataSource;
 
   PhotoRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
+    required this.topicLocalDataSource,
   });
 
   @override
@@ -77,10 +80,19 @@ class PhotoRepositoryImpl implements PhotoRepository {
   Future<Either<Failure, List<Topic>>> getTopics({int page = 1, int perPage = 10}) async {
     try {
       final topics = await remoteDataSource.getTopics(page: page, perPage: perPage);
+      await topicLocalDataSource.cacheTopics(topics);
       return Right(topics.map((t) => t.toEntity()).toList());
     } on ServerException catch (e) {
+      final cached = await topicLocalDataSource.getCachedTopics();
+      if (cached.isNotEmpty) {
+        return Right(cached.map((t) => t.toEntity()).toList());
+      }
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
+      final cached = await topicLocalDataSource.getCachedTopics();
+      if (cached.isNotEmpty) {
+        return Right(cached.map((t) => t.toEntity()).toList());
+      }
       return Left(Failure.network(message: e.message));
     } catch (e) {
       return Left(Failure.unknown(message: e.toString()));

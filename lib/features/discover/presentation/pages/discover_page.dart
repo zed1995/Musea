@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/discover/presentation/providers/topics_provider.dart';
+import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/empty_state.dart';
@@ -241,7 +242,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     );
   }
 
-  Widget _buildPhotoCard(dynamic photo) {
+  Widget _buildPhotoCard(Photo photo) {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       child: ClipRRect(

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/core/network/dio_client.dart';
 import 'package:musea/features/discover/data/datasources/photo_local_datasource.dart';
 import 'package:musea/features/discover/data/datasources/photo_remote_datasource.dart';
+import 'package:musea/features/discover/data/datasources/topic_local_datasource.dart';
 import 'package:musea/features/discover/data/repositories/photo_repository_impl.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/repositories/photo_repository.dart';
@@ -19,10 +20,15 @@ final photoLocalDataSourceProvider = Provider<PhotoLocalDataSource>((ref) {
   return PhotoLocalDataSourceImpl();
 });
 
+final topicLocalDataSourceProvider = Provider<TopicLocalDataSource>((ref) {
+  return TopicLocalDataSourceImpl();
+});
+
 final photoRepositoryProvider = Provider<PhotoRepository>((ref) {
   return PhotoRepositoryImpl(
     remoteDataSource: ref.watch(photoRemoteDataSourceProvider),
     localDataSource: ref.watch(photoLocalDataSourceProvider),
+    topicLocalDataSource: ref.watch(topicLocalDataSourceProvider),
   );
 });
 
