@@ -38,6 +38,8 @@ class CollectionModel with _$CollectionModel {
 
 @freezed
 class PreviewPhotoModel with _$PreviewPhotoModel {
+  const PreviewPhotoModel._();
+
   const factory PreviewPhotoModel({
     required String id,
     String? slug,
