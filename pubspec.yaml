@@ -43,7 +43,7 @@ dependencies:
   url_launcher: ^6.2.2
   dartz: ^0.10.1
   flutter_dotenv: ^5.1.0
-  image_gallery_saver: ^2.0.3  # Save downloaded images to device gallery
+  gal: ^2.3.0                    # Save images to device gallery
 
 dev_dependencies:
   flutter_test:

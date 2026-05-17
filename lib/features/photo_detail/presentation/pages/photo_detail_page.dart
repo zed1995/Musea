@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
 import 'package:go_router/go_router.dart';
-import 'package:image_gallery_saver/image_gallery_saver.dart';
+import 'package:gal/gal.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/core/theme/text_styles.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
@@ -56,7 +56,7 @@ class PhotoDetailPage extends ConsumerWidget {
         options: Options(responseType: ResponseType.bytes),
       );
       if (response.data != null && context.mounted) {
-        await ImageGallerySaver.saveImage(
+        await Gal.putImageBytes(
           Uint8List.fromList(response.data!),
           name: 'musea_${photo.id}',
         );
