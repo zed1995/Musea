@@ -1,5 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:musea/features/collections/presentation/pages/collection_detail_page.dart';
+import 'package:musea/features/collections/presentation/pages/collections_page.dart';
 import 'package:musea/features/discover/presentation/pages/discover_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
@@ -37,7 +39,7 @@ final appRouter = GoRouter(
           path: '/collections',
           name: 'collections',
           pageBuilder: (context, state) => const NoTransitionPage(
-            child: CollectionsPlaceholderPage(),
+            child: CollectionsPage(),
           ),
         ),
       ],
@@ -56,6 +58,14 @@ final appRouter = GoRouter(
       builder: (context, state) {
         final username = state.pathParameters['username']!;
         return ProfilePage(username: username);
+      },
+    ),
+    GoRoute(
+      path: '/collection/:id',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return CollectionDetailPage(collectionId: id);
       },
     ),
   ],
@@ -89,13 +99,3 @@ class ExplorePlaceholderPage extends StatelessWidget {
   }
 }
 
-class CollectionsPlaceholderPage extends StatelessWidget {
-  const CollectionsPlaceholderPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Collections - Coming in Phase 2')),
-    );
-  }
-}
