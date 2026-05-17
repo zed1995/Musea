@@ -15,9 +15,9 @@
 |------|---------|------|
 | Phase 1 | 用户浏览图片 → 查看详情 → 下载 | 无需外部依赖 |
 | Phase 2 | 浏览 Unsplash 官方收藏集 | Phase 1 的可复用组件 (PhotoCard) |
-| Phase 3 | 搜索图片 + 个人设置 | Phase 1 的可复用组件 (PhotoCard) |
+| Phase 3 | 搜索图片 | Phase 1 的可复用组件 (PhotoCard) |
 
-后续阶段（本 spec 范围外）：OAuth 登录 + 收藏集写操作 + 点赞同步 + 跨设备数据同步。
+后续阶段（本 spec 范围外）：OAuth 登录 + 「我的」Tab（设置/统计/关于）+ 收藏集写操作 + 点赞同步。
 
 ---
 
@@ -56,12 +56,12 @@
 - 下载流程：点击下载 → 尺寸选择 Sheet → `GET /photos/:id/download` → `dio.download()` 到本地
 - 点击图片切换全屏模式
 
-#### 摄影师页 (`photographer/presentation/pages/photographer_page.dart`)
+#### 摄影师主页 (`profile/presentation/pages/profile_page.dart`)
 
-- 路由: `/photographer/:username`
+- 路由: `/profile/:username`
 - 内容：
   - 头像 + 姓名 + Bio
-  - 作品网格
+  - 作品网格（复用 PhotoCard）
 - 数据源: `GET /users/:username` + `GET /users/:username/photos`
 
 ### 发现页修改
@@ -69,7 +69,7 @@
 - 使用提取的 `PhotoCard`、`PhotoFeed`、`TopicBar` 替代内联代码
 - 添加 BlurHash 占位
 - 点击图片 → `context.go('/photo/${photo.id}')`
-- 点击头像 → `context.go('/photographer/${photo.user.username}')`
+- 点击头像 → `context.go('/profile/${photo.user.username}')`
 - 随机骰子 → `randomPhotoProvider` → `context.go('/photo/${photo.id}')`
 - 移除收藏按钮（Phase 3 或更晚再做）
 
@@ -141,11 +141,11 @@ collections/
 
 ---
 
-## Phase 3：探索 + 我的
+## Phase 3：搜索
 
 ### 目标
 
-用户可以在发现页搜索图片，管理员设置深色模式等偏好。
+用户可以在搜索页通过关键词和过滤条件查找图片。
 
 ### 探索页模块
 
@@ -179,23 +179,6 @@ GET /search/photos?query={keyword}&color={color}&orientation={orientation}&order
 - 首次进入（未搜索）：展示搜索历史（本地存储最近 10 条）+ 热门预设词
 - 搜索结果 Header：「搜索结果 (N) 排序: 相关度 ▼」
 
-### 我的页模块
-
-```
-profile/
-├── presentation/pages/profile_page.dart
-└── providers/settings_provider.dart
-```
-
-### 我的页功能
-
-| 功能 | 实现 |
-|------|------|
-| 数据统计 | 从 Hive 读取本地统计数据（浏览图片数、下载数） |
-| 深色模式 | 开关切换 `ThemeMode`，持久化 Hive |
-| 清除缓存 | `DefaultCacheManager().emptyCache()` + 显示当前缓存大小 |
-| 关于 | 版本号 + 技术栈 + 数据来源: Unsplash API |
-
 ---
 
 ## 架构原则
@@ -222,9 +205,26 @@ profile/
 
 ---
 
+### MVP Tab 导航
+
+导航栏移除 Tab 4「我的」，仅保留 3 个 Tab：
+
+| # | Tab | 路由 | 阶段 |
+|---|-----|------|------|
+| 1 | 发现 | `/discover` | Phase 1 |
+| 2 | 探索 | `/explore` | Phase 3 |
+| 3 | 收藏 | `/collections` | Phase 2 |
+
+Tab 4「我的」在 OAuth 阶段恢复。
+
+> Phase 1 中 Explore 和 Collections Tab 保持现有占位状态，分别在 Phase 3 和 Phase 2 替换为真实页面。
+
+---
+
 ## 不包含在 MVP 中的功能
 
 - OAuth 用户登录/注册
+- 「我的」Tab（Tab 4：统计数据、深色模式切换、清除缓存、关于）
 - 收藏集 CRUD（创建、编辑、删除收藏集）
 - 图片收藏到自定义收藏集
 - 点赞状态同步到服务器
@@ -254,9 +254,12 @@ profile/
 | 新增 | `lib/shared/widgets/topic_bar.dart` |
 | 新增 | `lib/features/photo_detail/presentation/pages/photo_detail_page.dart` |
 | 新增 | `lib/features/photo_detail/presentation/widgets/download_sheet.dart` |
-| 新增 | `lib/features/photographer/presentation/pages/photographer_page.dart` |
+| 新增 | `lib/features/profile/data/datasources/profile_remote_datasource.dart` |
+| 新增 | `lib/features/profile/presentation/pages/profile_page.dart` |
+| 新增 | `lib/features/profile/presentation/providers/profile_provider.dart` |
 | 修改 | `lib/features/discover/presentation/pages/discover_page.dart` |
 | 修改 | `lib/router/app_router.dart` |
+| 修改 | `lib/shared/widgets/bottom_nav_bar.dart` |
 | 修改 | `pubspec.yaml` |
 
 ### Phase 2
@@ -284,6 +287,5 @@ profile/
 | 新增 | `lib/features/explore/presentation/widgets/orientation_filter.dart` |
 | 新增 | `lib/features/explore/presentation/widgets/search_history.dart` |
 | 新增 | `lib/features/explore/presentation/providers/search_provider.dart` |
-| 新增 | `lib/features/profile/presentation/pages/profile_page.dart` |
-| 新增 | `lib/features/profile/presentation/providers/settings_provider.dart` |
 | 修改 | `lib/router/app_router.dart` |
+| 修改 | `lib/shared/widgets/bottom_nav_bar.dart` |
