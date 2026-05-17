@@ -63,10 +63,13 @@ final randomPhotoProvider = FutureProvider<Photo>((ref) async {
 });
 
 Exception _mapFailureToException(Failure failure) {
-  return failure.maybeWhen(
-    network: (message) => Exception(message),
-    server: (statusCode, message) => Exception('$statusCode: $message'),
-    rateLimit: (message) => Exception(message),
-    orElse: () => Exception('Unknown error'),
+  return failure.when(
+    network: (message) => Exception('Network error: $message'),
+    server: (statusCode, message) => Exception('Server error ($statusCode): $message'),
+    cache: (message) => Exception('Cache error: $message'),
+    notFound: (message) => Exception('Not found: $message'),
+    unauthorized: (message) => Exception('Unauthorized: $message'),
+    rateLimit: (message) => Exception('Rate limit: $message'),
+    unknown: (message) => Exception('Error: $message'),
   );
 }
