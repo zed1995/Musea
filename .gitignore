@@ -48,3 +48,5 @@ app.*.map.json
 # Generated files
 *.g.dart
 *.freezed.dart
+docs/superpowers
+android/build
