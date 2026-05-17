@@ -2,7 +2,10 @@ import 'package:musea/features/discover/domain/entities/user.dart';
 
 class Photo {
   final String id;
+  final String? slug;
   final DateTime createdAt;
+  final DateTime? updatedAt;
+  final DateTime? promotedAt;
   final int width;
   final int height;
   final String color;
@@ -14,9 +17,14 @@ class Photo {
   final String urlRegular;
   final String urlSmall;
   final String urlThumb;
+  final String? downloadLink;
+  final String? downloadLocation;
   final int likes;
   final int downloads;
   final int? views;
+  final bool likedByUser;
+  final bool bookmarked;
+  final String? assetType;
   final User user;
   final ExifData? exif;
   final LocationData? location;
@@ -24,7 +32,10 @@ class Photo {
 
   const Photo({
     required this.id,
+    this.slug,
     required this.createdAt,
+    this.updatedAt,
+    this.promotedAt,
     required this.width,
     required this.height,
     required this.color,
@@ -36,9 +47,14 @@ class Photo {
     required this.urlRegular,
     required this.urlSmall,
     required this.urlThumb,
+    this.downloadLink,
+    this.downloadLocation,
     required this.likes,
     required this.downloads,
     this.views,
+    this.likedByUser = false,
+    this.bookmarked = false,
+    this.assetType,
     required this.user,
     this.exif,
     this.location,
@@ -46,9 +62,9 @@ class Photo {
   });
 
   double get aspectRatio => width / height;
-  
+
   bool get isPortrait => height > width;
-  
+
   bool get isLandscape => width > height;
 }
 
@@ -82,7 +98,7 @@ class LocationData {
     this.latitude,
     this.longitude,
   });
-  
+
   String get displayName {
     final parts = [city, country].where((p) => p != null && p.isNotEmpty);
     return parts.isEmpty ? 'Unknown location' : parts.join(', ');

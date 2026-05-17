@@ -8,10 +8,13 @@ part 'photo_model.g.dart';
 @freezed
 class PhotoModel with _$PhotoModel {
   const PhotoModel._();
-  
+
   const factory PhotoModel({
     required String id,
+    String? slug,
     @JsonKey(name: 'created_at') required DateTime createdAt,
+    @JsonKey(name: 'updated_at') DateTime? updatedAt,
+    @JsonKey(name: 'promoted_at') DateTime? promotedAt,
     required int width,
     required int height,
     required String color,
@@ -19,9 +22,13 @@ class PhotoModel with _$PhotoModel {
     String? description,
     @JsonKey(name: 'alt_description') String? altDescription,
     required UrlsModel urls,
+    PhotoLinksModel? links,
     required int likes,
     @Default(0) int downloads,
     @Default(0) int views,
+    @JsonKey(name: 'liked_by_user') @Default(false) bool likedByUser,
+    @Default(false) bool bookmarked,
+    @JsonKey(name: 'asset_type') String? assetType,
     required UserModel user,
     ExifModel? exif,
     LocationModel? location,
@@ -30,29 +37,37 @@ class PhotoModel with _$PhotoModel {
 
   factory PhotoModel.fromJson(Map<String, dynamic> json) =>
       _$PhotoModelFromJson(json);
-  
+
   Photo toEntity() => Photo(
-    id: id,
-    createdAt: createdAt,
-    width: width,
-    height: height,
-    color: color,
-    blurHash: blurHash,
-    description: description,
-    altDescription: altDescription,
-    urlRaw: urls.raw,
-    urlFull: urls.full,
-    urlRegular: urls.regular,
-    urlSmall: urls.small,
-    urlThumb: urls.thumb,
-    likes: likes,
-    downloads: downloads,
-    views: views,
-    user: user.toEntity(),
-    exif: exif?.toEntity(),
-    location: location?.toEntity(),
-    tags: tags.map((t) => t.toEntity()).toList(),
-  );
+        id: id,
+        slug: slug,
+        createdAt: createdAt,
+        updatedAt: updatedAt,
+        promotedAt: promotedAt,
+        width: width,
+        height: height,
+        color: color,
+        blurHash: blurHash,
+        description: description,
+        altDescription: altDescription,
+        urlRaw: urls.raw,
+        urlFull: urls.full,
+        urlRegular: urls.regular,
+        urlSmall: urls.small,
+        urlThumb: urls.thumb,
+        downloadLink: links?.download,
+        downloadLocation: links?.downloadLocation,
+        likes: likes,
+        downloads: downloads,
+        views: views,
+        likedByUser: likedByUser,
+        bookmarked: bookmarked,
+        assetType: assetType,
+        user: user.toEntity(),
+        exif: exif?.toEntity(),
+        location: location?.toEntity(),
+        tags: tags.map((t) => t.toEntity()).toList(),
+      );
 }
 
 @freezed
@@ -70,9 +85,22 @@ class UrlsModel with _$UrlsModel {
 }
 
 @freezed
+class PhotoLinksModel with _$PhotoLinksModel {
+  const factory PhotoLinksModel({
+    String? self,
+    String? html,
+    String? download,
+    @JsonKey(name: 'download_location') String? downloadLocation,
+  }) = _PhotoLinksModel;
+
+  factory PhotoLinksModel.fromJson(Map<String, dynamic> json) =>
+      _$PhotoLinksModelFromJson(json);
+}
+
+@freezed
 class ExifModel with _$ExifModel {
   const ExifModel._();
-  
+
   const factory ExifModel({
     String? make,
     String? model,
@@ -84,21 +112,21 @@ class ExifModel with _$ExifModel {
 
   factory ExifModel.fromJson(Map<String, dynamic> json) =>
       _$ExifModelFromJson(json);
-  
+
   ExifData toEntity() => ExifData(
-    make: make,
-    model: model,
-    exposureTime: exposureTime,
-    aperture: aperture,
-    focalLength: focalLength,
-    iso: iso,
-  );
+        make: make,
+        model: model,
+        exposureTime: exposureTime,
+        aperture: aperture,
+        focalLength: focalLength,
+        iso: iso,
+      );
 }
 
 @freezed
 class LocationModel with _$LocationModel {
   const LocationModel._();
-  
+
   const factory LocationModel({
     String? city,
     String? country,
@@ -107,13 +135,13 @@ class LocationModel with _$LocationModel {
 
   factory LocationModel.fromJson(Map<String, dynamic> json) =>
       _$LocationModelFromJson(json);
-  
+
   LocationData toEntity() => LocationData(
-    city: city,
-    country: country,
-    latitude: position?.latitude,
-    longitude: position?.longitude,
-  );
+        city: city,
+        country: country,
+        latitude: position?.latitude,
+        longitude: position?.longitude,
+      );
 }
 
 @freezed
@@ -130,7 +158,7 @@ class PositionModel with _$PositionModel {
 @freezed
 class TagModel with _$TagModel {
   const TagModel._();
-  
+
   const factory TagModel({
     required String title,
     String? type,
@@ -138,6 +166,6 @@ class TagModel with _$TagModel {
 
   factory TagModel.fromJson(Map<String, dynamic> json) =>
       _$TagModelFromJson(json);
-  
+
   Tag toEntity() => Tag(title: title, type: type);
 }
