@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Musea — Search Photos</title>
+    <title>Musea — Search Photos Filter</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
     <link href="https://fonts.loli.net/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -23,8 +23,6 @@
         }
         .icon-sm { width: 16px; height: 16px; }
         .status-bar { background: rgba(255,255,255,0.98); }
-        .scrollbar-hide::-webkit-scrollbar { display: none; }
-        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .search-shell {
             background: rgba(255,255,255,0.98);
             border-bottom: 1px solid #F1F1F2;
@@ -56,24 +54,71 @@
             width: 36px;
             height: 36px;
             border-radius: 12px;
-            border: 1px solid #ECECF0;
-            background: #fff;
+            border: 1px solid #18181B;
+            background: #18181B;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #27272A;
-            position: relative;
+            color: #fff;
             flex-shrink: 0;
         }
-        .filter-dot {
+        .overlay-layer {
             position: absolute;
-            top: 7px;
-            right: 7px;
-            width: 7px;
-            height: 7px;
+            left: 0;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            z-index: 35;
+            pointer-events: none;
+        }
+        .overlay-hit {
+            position: absolute;
+            left: 0;
+            right: 0;
+            top: 286px;
+            bottom: 0;
+            background: rgba(24,24,27,0.10);
+            box-shadow: inset 0 14px 22px rgba(24,24,27,0.12);
+            pointer-events: auto;
+        }
+        .tabs-row {
+            position: relative;
+            z-index: 46;
+        }
+        .panel-wrap {
+            position: absolute;
+            left: -12px;
+            right: -12px;
+            top: calc(100% + 8px);
+            pointer-events: auto;
+        }
+        .sheet {
+            background: #fff;
+            border-top: 1px solid #ECECF0;
+            border-bottom: 1px solid #ECECF0;
+            padding: 12px 16px 14px;
+        }
+        .option-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .choice {
+            min-height: 34px;
+            padding: 0 14px;
             border-radius: 999px;
+            border: 1px solid #ECECF0;
+            background: #fff;
+            color: #52525B;
+            font-size: 12px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+        }
+        .choice.active {
             background: #18181B;
-            border: 2px solid #fff;
+            color: #fff;
+            border-color: #18181B;
         }
         .photo-grid {
             display: grid;
@@ -148,7 +193,7 @@
             <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path fill="currentColor" stroke="none" d="M8 10h7v4H8z"/></svg>
         </div>
     </div>
-    <div class="pt-[52px] h-full overflow-y-auto scrollbar-hide pb-5">
+    <div class="pt-[52px] h-full overflow-y-auto bg-white relative">
         <div class="search-shell sticky top-0 z-40 px-3 pt-3 pb-3">
             <div class="flex items-center gap-2">
                 <button class="w-10 h-10 rounded-[12px] border border-zinc-200 bg-white flex items-center justify-center">
@@ -160,8 +205,8 @@
                     <button class="w-7 h-7 rounded-full bg-zinc-200/80 flex items-center justify-center text-zinc-500 text-xs font-bold">x</button>
                 </div>
             </div>
-            <div class="mt-3 flex items-center gap-2">
-                <div class="flex-1 overflow-x-auto scrollbar-hide">
+            <div class="tabs-row mt-3 flex items-center gap-2">
+                <div class="flex-1 overflow-x-auto">
                     <div class="flex gap-2 min-w-max pr-2">
                         <button class="segment active">Photos</button>
                         <button class="segment">Collections</button>
@@ -169,12 +214,50 @@
                     </div>
                 </div>
                 <button class="filter-trigger" aria-label="Open filters">
-                    <svg class="icon text-zinc-700" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
-                    <span class="filter-dot"></span>
+                    <svg class="icon text-white" viewBox="0 0 24 24"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/></svg>
                 </button>
+                <div class="panel-wrap">
+                    <div class="sheet">
+                        <section class="mb-4">
+                            <div class="text-sm font-semibold text-zinc-900 mb-2">Sort by</div>
+                            <div class="option-row">
+                                <button class="choice active">Relevant</button>
+                                <button class="choice">Latest</button>
+                            </div>
+                        </section>
+                        <section class="mb-4">
+                            <div class="text-sm font-semibold text-zinc-900 mb-2">Color</div>
+                            <div class="option-row">
+                                <button class="choice">Any</button>
+                                <button class="choice active">Green</button>
+                                <button class="choice">Blue</button>
+                                <button class="choice">Black & White</button>
+                            </div>
+                        </section>
+                        <section class="mb-4">
+                            <div class="text-sm font-semibold text-zinc-900 mb-2">Orientation</div>
+                            <div class="option-row">
+                                <button class="choice">Any</button>
+                                <button class="choice active">Landscape</button>
+                                <button class="choice">Portrait</button>
+                                <button class="choice">Squarish</button>
+                            </div>
+                        </section>
+                        <section>
+                            <div class="text-sm font-semibold text-zinc-900 mb-2">Content safety</div>
+                            <div class="option-row">
+                                <button class="choice">Low</button>
+                                <button class="choice active">High</button>
+                            </div>
+                        </section>
+                    </div>
+                </div>
             </div>
         </div>
-        <div class="px-3 pt-4">
+        <div class="overlay-layer">
+            <div class="overlay-hit"></div>
+        </div>
+        <div class="px-3 pt-4 pb-5">
             <div class="photo-grid">
                 <article class="photo-tile tall">
                     <img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=900&h=1200&fit=crop" alt="">

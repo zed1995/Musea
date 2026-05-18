@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musea — Search Collections</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+    <link href="https://fonts.loli.net/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #fff; color: #111; overflow-x: hidden; }
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .icon-sm { width: 16px; height: 16px; }
+        .status-bar { background: rgba(255,255,255,0.98); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .search-shell {
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #F1F1F2;
+        }
+        .search-input {
+            min-height: 44px;
+            border-radius: 999px;
+            background: #F6F6F7;
+            border: 1px solid #ECECF0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 12px;
+        }
+        .segment {
+            min-height: 34px;
+            padding: 0 16px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #71717A;
+            white-space: nowrap;
+        }
+        .segment.active { background: #18181B; color: #fff; }
+        .collection-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            min-height: 198px;
+            background: #F5F5F5;
+            transition: filter 0.25s ease;
+        }
+        .collection-card:hover { filter: brightness(0.98); }
+        .collection-cover {
+            position: relative;
+            height: 152px;
+            overflow: hidden;
+        }
+        .collection-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .collection-overlay {
+            position: absolute;
+            inset: 0;
+            padding: 42px 14px 12px;
+            background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.08) 24%, rgba(0,0,0,0.36) 72%, rgba(0,0,0,0.58) 100%);
+            display: flex; align-items: flex-end; justify-content: space-between;
+            gap: 12px;
+        }
+        .collection-title {
+            font-size: 15px;
+            line-height: 1.2;
+            font-weight: 650;
+            color: #fff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.28);
+        }
+        .collection-meta {
+            font-size: 12px;
+            color: rgba(255,255,255,0.78);
+            margin-top: 3px;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.22);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 230px;
+        }
+        .collection-count {
+            min-width: 34px;
+            height: 28px;
+            padding: 0 9px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            color: #fff;
+            background: rgba(255,255,255,0.14);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .collection-preview {
+            height: 46px;
+            display: grid;
+            gap: 2px;
+            padding-top: 2px;
+            background: #fff;
+        }
+        .collection-preview.count-4 { grid-template-columns: repeat(4, 1fr); }
+        .collection-preview.count-3 { grid-template-columns: repeat(3, 1fr); }
+        .collection-preview.count-2 { grid-template-columns: repeat(2, 1fr); }
+        .collection-preview.count-1 { grid-template-columns: 1fr; }
+        .collection-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+<div class="w-[412px] h-[915px] mx-auto relative overflow-hidden bg-white">
+    <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
+        <span class="text-sm font-semibold text-zinc-900">12:30</span>
+        <div class="flex items-center gap-2">
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v4"/><path d="M12 11v9"/><path d="M17 6v14"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path fill="currentColor" stroke="none" d="M8 10h7v4H8z"/></svg>
+        </div>
+    </div>
+    <div class="pt-[52px] h-full overflow-y-auto scrollbar-hide pb-5">
+        <div class="search-shell sticky top-0 z-40 px-3 pt-3 pb-3">
+            <div class="flex items-center gap-2">
+                <button class="w-10 h-10 rounded-[12px] border border-zinc-200 bg-white flex items-center justify-center">
+                    <svg class="icon text-zinc-700" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <div class="search-input flex-1">
+                    <svg class="icon text-zinc-400" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+                    <span class="text-sm text-zinc-900 font-medium flex-1">nature</span>
+                    <button class="w-7 h-7 rounded-full bg-zinc-200/80 flex items-center justify-center text-zinc-500 text-xs font-bold">x</button>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="flex gap-2 min-w-max">
+                    <button class="segment">Photos</button>
+                    <button class="segment active">Collections</button>
+                    <button class="segment">Users</button>
+                </div>
+            </div>
+        </div>
+        <div class="px-3 pt-4 flex flex-col gap-3">
+            <article class="collection-card">
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3?w=830&h=332&fit=crop" alt="">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Nature Archive</h3>
+                            <p class="collection-meta">by Forest Archive</p>
+                        </div>
+                        <div class="collection-count">48<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+                    </div>
+                </div>
+                <div class="collection-preview count-4">
+                    <img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682687221038-404cb8830901?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695794947-17061dc284dd?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695796954-bad0d0f59ff1?w=260&h=92&fit=crop" alt="">
+                </div>
+            </article>
+            <article class="collection-card">
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682695798522-6e208131916d?w=830&h=332&fit=crop" alt="">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Green Silence</h3>
+                            <p class="collection-meta">by Musea Editorial</p>
+                        </div>
+                        <div class="collection-count">22<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+                    </div>
+                </div>
+                <div class="collection-preview count-4">
+                    <img src="https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695794947-17061dc284dd?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682687221038-404cb8830901?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695796954-bad0d0f59ff1?w=260&h=92&fit=crop" alt="">
+                </div>
+            </article>
+            <article class="collection-card">
+                <div class="collection-cover">
+                    <img src="https://images.unsplash.com/photo-1682695799561-033511b7b6c5?w=830&h=332&fit=crop" alt="">
+                    <div class="collection-overlay">
+                        <div>
+                            <h3 class="collection-title">Botanical Study</h3>
+                            <p class="collection-meta">by Paula Poeira</p>
+                        </div>
+                        <div class="collection-count">63<svg class="icon icon-sm" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></div>
+                    </div>
+                </div>
+                <div class="collection-preview count-4">
+                    <img src="https://images.unsplash.com/photo-1682695798522-6e208131916d?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682686581030-7fa4ea2b96c3?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682695794947-17061dc284dd?w=260&h=92&fit=crop" alt="">
+                    <img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=260&h=92&fit=crop" alt="">
+                </div>
+            </article>
+        </div>
+    </div>
+</div>
+</body>
+</html>

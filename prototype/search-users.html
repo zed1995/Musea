@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musea — Search Users</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+    <link href="https://fonts.loli.net/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #fff; color: #111; overflow-x: hidden; }
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .icon-sm { width: 16px; height: 16px; }
+        .status-bar { background: rgba(255,255,255,0.98); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .search-shell {
+            background: rgba(255,255,255,0.98);
+            border-bottom: 1px solid #F1F1F2;
+        }
+        .search-input {
+            min-height: 44px;
+            border-radius: 999px;
+            background: #F6F6F7;
+            border: 1px solid #ECECF0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 12px;
+        }
+        .segment {
+            min-height: 34px;
+            padding: 0 16px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            color: #71717A;
+            white-space: nowrap;
+        }
+        .segment.active { background: #18181B; color: #fff; }
+        .user-list {
+            background: #fff;
+            border: 1px solid #F4F4F5;
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .user-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            min-height: 82px;
+        }
+        .user-row + .user-row { border-top: 1px solid #F4F4F5; }
+        .user-row img {
+            width: 52px;
+            height: 52px;
+            border-radius: 999px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        .follow-btn {
+            min-width: 82px;
+            height: 34px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="w-[412px] h-[915px] mx-auto relative overflow-hidden bg-white">
+    <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
+        <span class="text-sm font-semibold text-zinc-900">12:30</span>
+        <div class="flex items-center gap-2">
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v4"/><path d="M12 11v9"/><path d="M17 6v14"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path fill="currentColor" stroke="none" d="M8 10h7v4H8z"/></svg>
+        </div>
+    </div>
+    <div class="pt-[52px] h-full overflow-y-auto scrollbar-hide pb-5">
+        <div class="search-shell sticky top-0 z-40 px-3 pt-3 pb-3">
+            <div class="flex items-center gap-2">
+                <button class="w-10 h-10 rounded-[12px] border border-zinc-200 bg-white flex items-center justify-center">
+                    <svg class="icon text-zinc-700" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                </button>
+                <div class="search-input flex-1">
+                    <svg class="icon text-zinc-400" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m16 16 4 4"/></svg>
+                    <span class="text-sm text-zinc-900 font-medium flex-1">nature</span>
+                    <button class="w-7 h-7 rounded-full bg-zinc-200/80 flex items-center justify-center text-zinc-500 text-xs font-bold">x</button>
+                </div>
+            </div>
+            <div class="mt-3">
+                <div class="flex gap-2 min-w-max">
+                    <button class="segment">Photos</button>
+                    <button class="segment">Collections</button>
+                    <button class="segment active">Users</button>
+                </div>
+            </div>
+        </div>
+        <div class="px-3 pt-4">
+            <div class="user-list">
+                <div class="user-row">
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=96&h=96&fit=crop&crop=face" alt="">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-zinc-900">John Doe</div>
+                        <div class="text-xs text-zinc-500 mt-1">@johndoe · 124 photos · 16 collections</div>
+                        <div class="text-[11px] text-zinc-400 mt-1 truncate">Landscape photographer based in Portland.</div>
+                    </div>
+                    <button class="follow-btn bg-zinc-900 text-white">Follow</button>
+                </div>
+                <div class="user-row">
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=96&h=96&fit=crop&crop=face" alt="">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-zinc-900">Jane Smith</div>
+                        <div class="text-xs text-zinc-500 mt-1">@janesmith · 89 photos · 9 collections</div>
+                        <div class="text-[11px] text-zinc-400 mt-1 truncate">Botanical still life and green interiors.</div>
+                    </div>
+                    <button class="follow-btn border border-zinc-200 text-zinc-500 bg-zinc-50">Following</button>
+                </div>
+                <div class="user-row">
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=96&h=96&fit=crop&crop=face" alt="">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-zinc-900">Alex Wang</div>
+                        <div class="text-xs text-zinc-500 mt-1">@alexwang · 214 photos · 28 collections</div>
+                        <div class="text-[11px] text-zinc-400 mt-1 truncate">Forests, fog, and quiet travel frames.</div>
+                    </div>
+                    <button class="follow-btn bg-zinc-900 text-white">Follow</button>
+                </div>
+                <div class="user-row">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=96&h=96&fit=crop&crop=face" alt="">
+                    <div class="flex-1 min-w-0">
+                        <div class="text-sm font-semibold text-zinc-900">Sarah Lee</div>
+                        <div class="text-xs text-zinc-500 mt-1">@sarahlee · 63 photos · 11 collections</div>
+                        <div class="text-[11px] text-zinc-400 mt-1 truncate">Creative director collecting natural textures.</div>
+                    </div>
+                    <button class="follow-btn border border-zinc-200 text-zinc-500 bg-zinc-50">Following</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
