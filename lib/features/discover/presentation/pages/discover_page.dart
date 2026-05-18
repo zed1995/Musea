@@ -77,7 +77,15 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
               SliverToBoxAdapter(
                 child: Column(
                   children: [
-                    _buildHeader(),
+                    Container(
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        border: Border(
+                          bottom: BorderSide(color: Color(0xFFF1F1F2)),
+                        ),
+                      ),
+                      child: _buildHeader(),
+                    ),
                     topicsAsync.when(
                       data: (topics) => _buildFilterTabs(topics),
                       loading: () => const SizedBox(
@@ -118,30 +126,34 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
   Widget _buildHeader() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 15),
-              height: 42,
-              decoration: BoxDecoration(
-                color: const Color(0xFFF7F7F7),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: const Row(
-                children: [
-                  Icon(Icons.search, color: AppColors.gray400, size: 20),
-                  SizedBox(width: 10),
-                  Text(
-                    'Search photos...',
-                    style: TextStyle(
-                      color: AppColors.gray400,
-                      fontSize: 14,
-                      fontWeight: FontWeight.w400,
+            child: GestureDetector(
+              onTap: () => context.push('/search'),
+              behavior: HitTestBehavior.opaque,
+              child: Container(
+                padding: const EdgeInsets.only(left: 15, right: 10),
+                height: 42,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF7F7F7),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.search, color: AppColors.gray400, size: 20),
+                    SizedBox(width: 10),
+                    Text(
+                      'Search photos, collections, users...',
+                      style: TextStyle(
+                        color: AppColors.gray400,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w400,
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
           ),
@@ -151,9 +163,9 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
             child: Container(
               width: 32,
               height: 32,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 color: AppColors.primary,
-                shape: BoxShape.circle,
+                borderRadius: BorderRadius.circular(10),
               ),
               child: const Icon(Icons.shuffle_rounded,
                   color: AppColors.onPrimary, size: 18),
@@ -165,11 +177,18 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   }
 
   Widget _buildFilterTabs(List<Topic> topics) {
-    return SizedBox(
-      height: 42,
+    return Container(
+      height: 45,
+      alignment: Alignment.bottomLeft,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFF0F0F0)),
+        ),
+      ),
       child: ListView(
         scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(horizontal: 12),
+        padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
         children: [
           _tabItem('All', _selectedTopicSlug == null, () {
             _onTopicTap(null);
@@ -203,7 +222,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                     : const Color(0xFF71717A),
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 9),
             Container(
               height: 2,
               width: label.length * 8.0 + 2,

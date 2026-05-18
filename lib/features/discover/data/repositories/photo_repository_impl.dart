@@ -7,6 +7,7 @@ import 'package:musea/features/discover/domain/repositories/photo_repository.dar
 import 'package:musea/features/discover/data/datasources/photo_remote_datasource.dart';
 import 'package:musea/features/discover/data/datasources/photo_local_datasource.dart';
 import 'package:musea/features/discover/data/datasources/topic_local_datasource.dart';
+import 'package:musea/features/search/domain/entities/search_result.dart';
 
 class PhotoRepositoryImpl implements PhotoRepository {
   final PhotoRemoteDataSource remoteDataSource;
@@ -61,6 +62,44 @@ class PhotoRepositoryImpl implements PhotoRepository {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
       return Left(Failure.network(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, SearchPhotosResult>> searchPhotos(
+    String query, {
+    int page = 1,
+    int perPage = 20,
+    String orderBy = 'relevant',
+    String? color,
+    String? orientation,
+    String contentFilter = 'high',
+  }) async {
+    try {
+      final response = await remoteDataSource.searchPhotos(
+        query,
+        page: page,
+        perPage: perPage,
+        orderBy: orderBy,
+        color: color,
+        orientation: orientation,
+        contentFilter: contentFilter,
+      );
+      return Right(
+        SearchPhotosResult(
+          total: response.total,
+          totalPages: response.totalPages,
+          results: response.results.map((photo) => photo.toEntity()).toList(),
+        ),
+      );
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
     } catch (e) {
       return Left(Failure.unknown(message: e.toString()));
     }

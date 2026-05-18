@@ -7,6 +7,8 @@ class ApiConstants {
 
   static const String photos = '/photos';
   static const String searchPhotos = '/search/photos';
+  static const String searchCollections = '/search/collections';
+  static const String searchUsers = '/search/users';
   static const String topics = '/topics';
   static const String users = '/users';
   static const String collections = '/collections';

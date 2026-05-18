@@ -6,6 +6,7 @@ import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
 import 'package:musea/features/profile/data/datasources/profile_remote_datasource.dart';
+import 'package:musea/features/search/domain/entities/search_result.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDataSource remoteDataSource;
@@ -81,6 +82,36 @@ class ProfileRepositoryImpl implements ProfileRepository {
         perPage: perPage,
       );
       return Right(likes.map((photo) => photo.toEntity()).toList());
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, SearchUsersResult>> searchUsers(
+    String query, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    try {
+      final response = await remoteDataSource.searchUsers(
+        query,
+        page: page,
+        perPage: perPage,
+      );
+      return Right(
+        SearchUsersResult(
+          total: response.total,
+          totalPages: response.totalPages,
+          results: response.results.map((user) => user.toEntity()).toList(),
+        ),
+      );
     } on ServerException catch (e) {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {

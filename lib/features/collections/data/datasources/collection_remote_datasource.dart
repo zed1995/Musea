@@ -7,6 +7,12 @@ abstract class CollectionRemoteDataSource {
   Future<List<CollectionModel>> getCollections({int page = 1, int perPage = 20});
   Future<CollectionModel> getCollection(String id);
   Future<List<PhotoModel>> getCollectionPhotos(String id, {int page = 1, int perPage = 20});
+  Future<({int total, int totalPages, List<CollectionModel> results})>
+      searchCollections(
+    String query, {
+    int page = 1,
+    int perPage = 20,
+  });
 }
 
 class CollectionRemoteDataSourceImpl implements CollectionRemoteDataSource {
@@ -46,5 +52,32 @@ class CollectionRemoteDataSourceImpl implements CollectionRemoteDataSource {
     return (response as List)
         .map((json) => PhotoModel.fromJson(json))
         .toList();
+  }
+
+  @override
+  Future<({int total, int totalPages, List<CollectionModel> results})>
+      searchCollections(
+    String query, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    final response = await _dioClient.get(
+      ApiConstants.searchCollections,
+      queryParameters: {
+        'query': query,
+        'page': page,
+        'per_page': perPage,
+      },
+    );
+
+    final results = (response['results'] as List)
+        .map((json) => CollectionModel.fromJson(json))
+        .toList();
+
+    return (
+      total: response['total'] as int? ?? 0,
+      totalPages: response['total_pages'] as int? ?? 0,
+      results: results,
+    );
   }
 }

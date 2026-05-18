@@ -12,6 +12,11 @@ abstract class ProfileRemoteDataSource {
       {int page = 1, int perPage = 20});
   Future<List<PhotoModel>> getUserLikes(String username,
       {int page = 1, int perPage = 20});
+  Future<({int total, int totalPages, List<UserModel> results})> searchUsers(
+    String query, {
+    int page = 1,
+    int perPage = 20,
+  });
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
@@ -64,5 +69,31 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       },
     );
     return (response as List).map((json) => PhotoModel.fromJson(json)).toList();
+  }
+
+  @override
+  Future<({int total, int totalPages, List<UserModel> results})> searchUsers(
+    String query, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    final response = await _dioClient.get(
+      ApiConstants.searchUsers,
+      queryParameters: {
+        'query': query,
+        'page': page,
+        'per_page': perPage,
+      },
+    );
+
+    final results = (response['results'] as List)
+        .map((json) => UserModel.fromJson(json))
+        .toList();
+
+    return (
+      total: response['total'] as int? ?? 0,
+      totalPages: response['total_pages'] as int? ?? 0,
+      results: results,
+    );
   }
 }

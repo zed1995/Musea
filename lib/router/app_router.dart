@@ -5,6 +5,7 @@ import 'package:musea/features/collections/presentation/pages/collections_page.d
 import 'package:musea/features/discover/presentation/pages/discover_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
+import 'package:musea/features/search/presentation/pages/search_page.dart';
 import 'package:musea/shared/widgets/bottom_nav_bar.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
@@ -29,13 +30,6 @@ final appRouter = GoRouter(
           ),
         ),
         GoRoute(
-          path: '/explore',
-          name: 'explore',
-          pageBuilder: (context, state) => const NoTransitionPage(
-            child: ExplorePlaceholderPage(),
-          ),
-        ),
-        GoRoute(
           path: '/collections',
           name: 'collections',
           pageBuilder: (context, state) => const NoTransitionPage(
@@ -50,6 +44,14 @@ final appRouter = GoRouter(
           ),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/search',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        final initialQuery = state.uri.queryParameters['q'] ?? '';
+        return SearchPage(initialQuery: initialQuery);
+      },
     ),
     GoRoute(
       path: '/photo/:id',
@@ -91,17 +93,6 @@ class ScaffoldWithNavBar extends StatelessWidget {
     return Scaffold(
       body: child,
       bottomNavigationBar: const BottomNavBar(),
-    );
-  }
-}
-
-class ExplorePlaceholderPage extends StatelessWidget {
-  const ExplorePlaceholderPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return const Scaffold(
-      body: Center(child: Text('Explore - Coming in Phase 3')),
     );
   }
 }

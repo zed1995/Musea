@@ -68,7 +68,7 @@ class BottomNavBar extends StatelessWidget {
   int _calculateSelectedIndex(String location) {
     if (location.startsWith('/discover')) return 0;
     if (location.startsWith('/collections')) return 1;
-    if (location.startsWith('/profile')) return 2;
+    if (location == '/profile') return 2;
     return 0;
   }
 
@@ -76,10 +76,13 @@ class BottomNavBar extends StatelessWidget {
     switch (index) {
       case 0:
         context.go('/discover');
+        return;
       case 1:
         context.go('/collections');
+        return;
       case 2:
         context.go('/profile');
+        return;
     }
   }
 }
@@ -104,13 +107,13 @@ class _NavItem extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: Container(
         constraints: const BoxConstraints(minWidth: 64),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(
               icon,
-              size: 24,
+              size: 22,
               color:
                   isActive ? const Color(0xFF18181B) : const Color(0xFFA1A1AA),
             ),
@@ -120,6 +123,7 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+                letterSpacing: 0.2,
                 color: isActive
                     ? const Color(0xFF18181B)
                     : const Color(0xFFA1A1AA),
