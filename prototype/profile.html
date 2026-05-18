@@ -32,7 +32,35 @@
             fill: none;
         }
         .icon-sm { width: 16px; height: 16px; }
-        .status-bar { background: rgba(255,255,255,0.96); backdrop-filter: blur(12px); }
+        .status-bar { background: rgba(255,255,255,0.98); }
+        .topbar-kicker {
+            font-size: 11px;
+            line-height: 1;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #A1A1AA;
+        }
+        .topbar-title {
+            margin-top: 6px;
+            font-size: 30px;
+            line-height: 1;
+            letter-spacing: -0.04em;
+            font-weight: 700;
+            color: #18181B;
+        }
+        .topbar-icon-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            background: #fff;
+            border: 1px solid #ECECF0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #27272A;
+        }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .hero-shell {
@@ -153,8 +181,11 @@
     <div class="pt-[52px] pb-[56px] h-full overflow-y-auto scrollbar-hide">
         <div class="hero-shell px-3 pt-3 pb-4">
             <div class="flex items-center justify-between">
-                <h1 class="text-2xl font-bold tracking-[-0.04em] text-zinc-900">Mine</h1>
-                <button class="w-10 h-10 rounded-full border border-zinc-200 bg-white flex items-center justify-center">
+                <div>
+                    <div class="topbar-kicker">Workspace</div>
+                    <h1 class="topbar-title">Mine</h1>
+                </div>
+                <button class="topbar-icon-btn">
                     <svg class="icon text-zinc-700" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0 3 3 3 3 0 0 0 3 3 3 3 0 0 0-3 3 3 3 0 0 0-3 3 3 3 0 0 0-3-3 3 3 0 0 0-3-3 3 3 0 0 0 3-3 3 3 0 0 0 3-3Z"/><path d="M19 21H5"/></svg>
                 </button>
             </div>
@@ -250,9 +281,6 @@
     <div class="bottom-nav fixed bottom-0 left-0 right-0 px-4 py-1.5 flex items-center justify-around z-40" style="width:412px;margin:0 auto;">
         <div class="nav-item">
             <span class="text-[10px] tracking-wide">Discover</span>
-        </div>
-        <div class="nav-item">
-            <span class="text-[10px] tracking-wide">Explore</span>
         </div>
         <div class="nav-item">
             <span class="text-[10px] tracking-wide">Collections</span>

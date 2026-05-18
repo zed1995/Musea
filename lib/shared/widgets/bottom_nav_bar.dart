@@ -24,30 +24,25 @@ class BottomNavBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _NavItem(
-                icon: selectedIndex == 0 ? Icons.explore : Icons.explore_outlined,
+                icon:
+                    selectedIndex == 0 ? Icons.explore : Icons.explore_outlined,
                 label: 'Discover',
                 isActive: selectedIndex == 0,
                 onTap: () => _onItemTapped(0, context),
               ),
               _NavItem(
-                icon: Icons.search,
-                label: 'Explore',
+                icon: selectedIndex == 1
+                    ? Icons.collections_bookmark
+                    : Icons.collections_bookmark_outlined,
+                label: 'Collections',
                 isActive: selectedIndex == 1,
                 onTap: () => _onItemTapped(1, context),
               ),
               _NavItem(
-                icon: selectedIndex == 2
-                    ? Icons.collections_bookmark
-                    : Icons.collections_bookmark_outlined,
-                label: 'Collections',
+                icon: selectedIndex == 2 ? Icons.person : Icons.person_outline,
+                label: 'Mine',
                 isActive: selectedIndex == 2,
                 onTap: () => _onItemTapped(2, context),
-              ),
-              _NavItem(
-                icon: selectedIndex == 3 ? Icons.person : Icons.person_outline,
-                label: 'Profile',
-                isActive: selectedIndex == 3,
-                onTap: () => _onItemTapped(3, context),
               ),
             ],
           ),
@@ -72,9 +67,8 @@ class BottomNavBar extends StatelessWidget {
 
   int _calculateSelectedIndex(String location) {
     if (location.startsWith('/discover')) return 0;
-    if (location.startsWith('/explore')) return 1;
-    if (location.startsWith('/collections')) return 2;
-    if (location.startsWith('/profile')) return 3;
+    if (location.startsWith('/collections')) return 1;
+    if (location.startsWith('/profile')) return 2;
     return 0;
   }
 
@@ -83,10 +77,8 @@ class BottomNavBar extends StatelessWidget {
       case 0:
         context.go('/discover');
       case 1:
-        context.go('/explore');
-      case 2:
         context.go('/collections');
-      case 3:
+      case 2:
         context.go('/profile');
     }
   }
@@ -119,7 +111,8 @@ class _NavItem extends StatelessWidget {
             Icon(
               icon,
               size: 24,
-              color: isActive ? const Color(0xFF18181B) : const Color(0xFFA1A1AA),
+              color:
+                  isActive ? const Color(0xFF18181B) : const Color(0xFFA1A1AA),
             ),
             const SizedBox(height: 2),
             Text(
@@ -127,7 +120,9 @@ class _NavItem extends StatelessWidget {
               style: TextStyle(
                 fontSize: 10,
                 fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
-                color: isActive ? const Color(0xFF18181B) : const Color(0xFFA1A1AA),
+                color: isActive
+                    ? const Color(0xFF18181B)
+                    : const Color(0xFFA1A1AA),
               ),
             ),
           ],
