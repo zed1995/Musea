@@ -135,48 +135,7 @@
             text-align: center;
             padding: 10px;
         }
-        .masonry {
-            column-count: 2;
-            column-gap: 8px;
-        }
-        .masonry-card {
-            break-inside: avoid;
-            margin-bottom: 8px;
-            border-radius: 16px;
-            overflow: hidden;
-            background: #F5F5F5;
-        }
-        .masonry-card img {
-            width: 100%;
-            display: block;
-            object-fit: cover;
-        }
         .fact-row + .fact-row { border-top: 1px solid #F4F4F5; }
-        .featured-photo {
-            position: relative;
-            border-radius: 20px;
-            overflow: hidden;
-            min-height: 228px;
-            background: #F5F5F5;
-        }
-        .featured-photo img {
-            width: 100%;
-            height: 228px;
-            object-fit: cover;
-            display: block;
-        }
-        .featured-photo::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(12,12,12,0.02) 0%, rgba(12,12,12,0.22) 100%);
-        }
-        .featured-photo-content {
-            position: absolute;
-            inset: auto 0 0 0;
-            z-index: 1;
-            padding: 12px;
-        }
         .feed-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -361,10 +320,11 @@
                     </div>
                     <button class="text-xs font-bold text-zinc-500">Newest first</button>
                 </div>
-                <article class="featured-photo">
-                    <img src="https://images.unsplash.com/photo-1533788989278-6f9cce0452f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=900" alt="">
-                    <div class="featured-photo-content">
-                        <div class="flex items-center justify-between gap-3">
+                <div class="feed-grid">
+                    <article class="photo-tile tall">
+                        <img src="https://images.unsplash.com/photo-1533788989278-6f9cce0452f3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700" alt="">
+                        <div class="tile-gradient"></div>
+                        <div class="tile-credit">
                             <div class="tile-credit-pill">
                                 <img src="https://images.unsplash.com/profile-1597858049356-d5b79777243eimage?crop=faces&fit=crop&w=44&h=44" alt="">
                                 <span class="text-[11px] font-semibold truncate drop-shadow-[0_1px_3px_rgba(0,0,0,0.35)]">Alex Lamb</span>
@@ -374,9 +334,7 @@
                                 <span>40</span>
                             </span>
                         </div>
-                    </div>
-                </article>
-                <div class="feed-grid mt-2">
+                    </article>
                     <article class="photo-tile tall">
                         <img src="https://images.unsplash.com/photo-1534438068881-642334abf1a6?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&q=80&w=700" alt="">
                         <div class="tile-gradient"></div>
