@@ -16,7 +16,8 @@ class CollectionModel with _$CollectionModel {
     String? description,
     @JsonKey(name: 'published_at') DateTime? publishedAt,
     @JsonKey(name: 'last_collected_at') DateTime? lastCollectedAt,
-    @JsonKey(name: 'total_photos') required int totalPhotos,
+    @JsonKey(name: 'total_photos', fromJson: _intFromJson)
+    required int totalPhotos,
     @JsonKey(name: 'total_plus') int? totalPlus,
     @Default(false) bool featured,
     @JsonKey(name: 'private') @Default(false) bool isPrivate,
@@ -139,3 +140,5 @@ class CollectionMetaModel with _$CollectionMetaModel {
         index: index,
       );
 }
+
+int _intFromJson(Object? value) => (value as num?)?.toInt() ?? 0;

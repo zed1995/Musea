@@ -121,6 +121,79 @@ void main() {
     expect(find.text('Visibility'), findsOneWidget);
   });
 
+  testWidgets(
+      'CollectionDetailPage tolerates null numeric fields from detail payload',
+      (tester) async {
+    final collection = CollectionModel.fromJson({
+      'id': 'collection-5',
+      'title': 'Sparse Detail',
+      'total_photos': null,
+      'user': {
+        'id': 'user-5',
+        'username': 'sparse',
+        'name': 'Sparse User',
+        'profile_image': {
+          'small': 'https://example.com/small.jpg',
+          'medium': 'https://example.com/medium.jpg',
+          'large': 'https://example.com/large.jpg',
+        },
+        'total_photos': null,
+        'total_likes': null,
+        'total_collections': null,
+      },
+      'cover_photo': {
+        'id': 'photo-5',
+        'created_at': '2024-01-01T00:00:00Z',
+        'width': null,
+        'height': null,
+        'color': '#FFFFFF',
+        'urls': {
+          'raw': 'https://example.com/raw.jpg',
+          'full': 'https://example.com/full.jpg',
+          'regular': 'https://example.com/regular.jpg',
+          'small': 'https://example.com/small.jpg',
+          'thumb': 'https://example.com/thumb.jpg',
+        },
+        'likes': null,
+        'user': {
+          'id': 'user-6',
+          'username': 'nested',
+          'name': 'Nested User',
+          'profile_image': {
+            'small': 'https://example.com/small.jpg',
+            'medium': 'https://example.com/medium.jpg',
+            'large': 'https://example.com/large.jpg',
+          },
+          'total_photos': null,
+          'total_likes': null,
+          'total_collections': null,
+        },
+      },
+    }).toEntity();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-5').overrideWith(
+            (ref) => collection,
+          ),
+          collectionPhotosProvider('collection-5').overrideWith(
+            (ref) => <Photo>[],
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(collectionId: 'collection-5'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.text('Sparse Detail'), findsOneWidget);
+    expect(find.text('0 photos'), findsAtLeastNWidgets(1));
+    expect(find.text('Sparse User'), findsOneWidget);
+  });
+
   testWidgets('CollectionDetailPage curator area navigates to profile',
       (tester) async {
     const collection = Collection(

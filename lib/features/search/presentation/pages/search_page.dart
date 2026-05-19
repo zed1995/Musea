@@ -6,12 +6,21 @@ import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
-import 'package:musea/features/search/domain/entities/search_result.dart';
 import 'package:musea/features/search/presentation/providers/search_provider.dart';
+import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
+import 'package:musea/shared/widgets/photo_grid.dart';
 
 enum SearchSegment { photos, collections, users }
+
+enum PhotoSortOption { relevant, latest }
+
+enum PhotoColorOption { any, green, blue, blackAndWhite }
+
+enum PhotoOrientationOption { any, landscape, portrait, squarish }
+
+enum PhotoContentSafetyOption { low, high }
 
 class SearchPage extends ConsumerStatefulWidget {
   const SearchPage({super.key, this.initialQuery = ''});
@@ -23,17 +32,14 @@ class SearchPage extends ConsumerStatefulWidget {
 }
 
 class _SearchPageState extends ConsumerState<SearchPage> {
+  static const double _photoFilterPanelHeight = 210;
   late final TextEditingController _controller;
   SearchSegment _segment = SearchSegment.photos;
-  String _selectedFilter = 'Relevant';
-
-  static const _filters = [
-    'Relevant',
-    'Latest',
-    'Green',
-    'Landscape',
-    'Safe',
-  ];
+  bool _isFilterPanelVisible = false;
+  PhotoSortOption _sortOption = PhotoSortOption.relevant;
+  PhotoColorOption _colorOption = PhotoColorOption.any;
+  PhotoOrientationOption _orientationOption = PhotoOrientationOption.any;
+  PhotoContentSafetyOption _contentSafetyOption = PhotoContentSafetyOption.high;
 
   @override
   void initState() {
@@ -52,8 +58,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   Widget build(BuildContext context) {
     final query = _controller.text.trim();
     final photoParams = _photoParams(query);
-    final collectionParams = _collectionParams(query);
-    final userParams = _userParams(query);
+    final collectionParams = CollectionSearchParams(query: query);
+    final userParams = UserSearchParams(query: query);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -63,94 +69,125 @@ class _SearchPageState extends ConsumerState<SearchPage> {
             _SearchHeader(
               controller: _controller,
               selectedSegment: _segment,
-              selectedFilter: _selectedFilter,
-              filters: _filters,
+              showPhotoFilterTrigger: _segment == SearchSegment.photos,
+              isFilterButtonActive:
+                  _isFilterPanelVisible || _hasNonDefaultPhotoFilters,
               onBack: context.pop,
+              onClear: _controller.clear,
               onSegmentChanged: (segment) {
-                setState(() => _segment = segment);
+                setState(() {
+                  _segment = segment;
+                  if (segment != SearchSegment.photos) {
+                    _isFilterPanelVisible = false;
+                  }
+                });
               },
-              onClear: () {
-                _controller.clear();
-              },
-              onFilterSelected: (filter) {
-                setState(() => _selectedFilter = filter);
+              onFilterTap: () {
+                setState(() {
+                  _isFilterPanelVisible = !_isFilterPanelVisible;
+                });
               },
             ),
             Expanded(
               child: query.isEmpty
                   ? const _SearchIdleState()
-                  : switch (_segment) {
-                      SearchSegment.photos =>
-                        ref.watch(photoSearchProvider(photoParams)).when(
-                              data: (result) => SingleChildScrollView(
-                                padding: const EdgeInsets.fromLTRB(
-                                  12,
-                                  12,
-                                  12,
-                                  24,
+                  : Stack(
+                      children: [
+                        Positioned.fill(
+                          child: switch (_segment) {
+                            SearchSegment.photos =>
+                              ref.watch(photoSearchProvider(photoParams)).when(
+                                    data: (result) => _PhotoResultsSection(
+                                      photos: result.results,
+                                    ),
+                                    loading: () =>
+                                        const Center(child: LoadingIndicator()),
+                                    error: (error, stack) => ErrorState(
+                                      message: error.toString(),
+                                      onRetry: () => ref.invalidate(
+                                        photoSearchProvider(photoParams),
+                                      ),
+                                    ),
+                                  ),
+                            SearchSegment.collections => ref
+                                .watch(
+                                    collectionSearchProvider(collectionParams))
+                                .when(
+                                  data: (result) => _CollectionResultsSection(
+                                    collections: result.results,
+                                  ),
+                                  loading: () =>
+                                      const Center(child: LoadingIndicator()),
+                                  error: (error, stack) => ErrorState(
+                                    message: error.toString(),
+                                    onRetry: () => ref.invalidate(
+                                      collectionSearchProvider(
+                                          collectionParams),
+                                    ),
+                                  ),
                                 ),
-                                child: _PhotoResultsSection(
-                                  photos: result.results,
-                                  total: result.total,
+                            SearchSegment.users =>
+                              ref.watch(userSearchProvider(userParams)).when(
+                                    data: (result) => _UserResultsSection(
+                                        users: result.results),
+                                    loading: () =>
+                                        const Center(child: LoadingIndicator()),
+                                    error: (error, stack) => ErrorState(
+                                      message: error.toString(),
+                                      onRetry: () => ref.invalidate(
+                                        userSearchProvider(userParams),
+                                      ),
+                                    ),
+                                  ),
+                          },
+                        ),
+                        if (_segment == SearchSegment.photos &&
+                            _isFilterPanelVisible) ...[
+                          Positioned.fill(
+                            child: Padding(
+                              padding: const EdgeInsets.only(
+                                top: _photoFilterPanelHeight,
+                              ),
+                              child: GestureDetector(
+                                key: const Key('photo-filter-overlay'),
+                                behavior: HitTestBehavior.opaque,
+                                onTap: () {
+                                  setState(() {
+                                    _isFilterPanelVisible = false;
+                                  });
+                                },
+                                child: Container(
+                                  color: const Color(0x1A18181B),
                                 ),
-                              ),
-                              loading: () =>
-                                  const Center(child: LoadingIndicator()),
-                              error: (error, stack) => ErrorState(
-                                message: error.toString(),
-                                onRetry: () => ref.invalidate(
-                                  photoSearchProvider(photoParams),
-                                ),
-                              ),
-                            ),
-                      SearchSegment.collections => ref
-                          .watch(collectionSearchProvider(collectionParams))
-                          .when(
-                            data: (result) => SingleChildScrollView(
-                              padding: const EdgeInsets.fromLTRB(
-                                12,
-                                12,
-                                12,
-                                24,
-                              ),
-                              child: _CollectionResultsSection(
-                                collections: result.results,
-                                total: result.total,
-                              ),
-                            ),
-                            loading: () =>
-                                const Center(child: LoadingIndicator()),
-                            error: (error, stack) => ErrorState(
-                              message: error.toString(),
-                              onRetry: () => ref.invalidate(
-                                collectionSearchProvider(collectionParams),
                               ),
                             ),
                           ),
-                      SearchSegment.users =>
-                        ref.watch(userSearchProvider(userParams)).when(
-                              data: (result) => SingleChildScrollView(
-                                padding: const EdgeInsets.fromLTRB(
-                                  12,
-                                  12,
-                                  12,
-                                  24,
-                                ),
-                                child: _UserResultsSection(
-                                  users: result.results,
-                                  total: result.total,
-                                ),
-                              ),
-                              loading: () =>
-                                  const Center(child: LoadingIndicator()),
-                              error: (error, stack) => ErrorState(
-                                message: error.toString(),
-                                onRetry: () => ref.invalidate(
-                                  userSearchProvider(userParams),
-                                ),
-                              ),
+                          Positioned(
+                            top: 0,
+                            left: 0,
+                            right: 0,
+                            child: _PhotoFilterPanel(
+                              sortOption: _sortOption,
+                              colorOption: _colorOption,
+                              orientationOption: _orientationOption,
+                              contentSafetyOption: _contentSafetyOption,
+                              onSortChanged: (value) {
+                                setState(() => _sortOption = value);
+                              },
+                              onColorChanged: (value) {
+                                setState(() => _colorOption = value);
+                              },
+                              onOrientationChanged: (value) {
+                                setState(() => _orientationOption = value);
+                              },
+                              onContentSafetyChanged: (value) {
+                                setState(() => _contentSafetyOption = value);
+                              },
                             ),
-                    },
+                          ),
+                        ],
+                      ],
+                    ),
             ),
           ],
         ),
@@ -158,160 +195,35 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     );
   }
 
+  bool get _hasNonDefaultPhotoFilters {
+    return _colorOption != PhotoColorOption.any ||
+        _orientationOption != PhotoOrientationOption.any ||
+        _contentSafetyOption != PhotoContentSafetyOption.high;
+  }
+
   PhotoSearchParams _photoParams(String query) {
-    return switch (_selectedFilter) {
-      'Latest' => PhotoSearchParams(
-          query: query,
-          orderBy: 'latest',
-        ),
-      'Green' => PhotoSearchParams(
-          query: query,
-          color: 'green',
-        ),
-      'Landscape' => PhotoSearchParams(
-          query: query,
-          orientation: 'landscape',
-        ),
-      'Safe' => PhotoSearchParams(
-          query: query,
-          contentFilter: 'high',
-        ),
-      _ => PhotoSearchParams(
-          query: query,
-          orderBy: 'relevant',
-        ),
-    };
-  }
-
-  CollectionSearchParams _collectionParams(String query) {
-    return CollectionSearchParams(query: query);
-  }
-
-  UserSearchParams _userParams(String query) {
-    return UserSearchParams(query: query);
-  }
-}
-
-class _SearchIdleState extends StatelessWidget {
-  const _SearchIdleState();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 48),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.search_rounded,
-            size: 36,
-            color: Color(0xFFA1A1AA),
-          ),
-          SizedBox(height: 12),
-          Text(
-            'Start typing to search',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF18181B),
-            ),
-          ),
-          SizedBox(height: 6),
-          Text(
-            'We will query photos, collections, and creators using the live search endpoints.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 13,
-              color: Color(0xFF71717A),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PhotoResultsSection extends StatelessWidget {
-  const _PhotoResultsSection({
-    required this.photos,
-    required this.total,
-  });
-
-  final List<Photo> photos;
-  final int total;
-
-  @override
-  Widget build(BuildContext context) {
-    if (photos.isEmpty) {
-      return const _SearchEmptyState(
-        title: 'No matching photos',
-        subtitle: 'Try a different keyword or broaden the query.',
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SearchSectionHeader(
-          eyebrow: 'Photos',
-          title: '${_formatCount(total)} results',
-          actionLabel: 'View all',
-        ),
-        const SizedBox(height: 12),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: photos.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 8,
-            mainAxisSpacing: 8,
-            childAspectRatio: 1,
-          ),
-          itemBuilder: (context, index) {
-            final photo = photos[index];
-            return GestureDetector(
-              onTap: () => context.push('/photo/${photo.id}'),
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: CachedNetworkImage(
-                      imageUrl: photo.urlSmall,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColors.gray100,
-                      ),
-                    ),
-                  ),
-                  Positioned(
-                    left: 10,
-                    right: 10,
-                    bottom: 10,
-                    child: Text(
-                      photo.user.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w700,
-                        shadows: [
-                          Shadow(
-                            color: Colors.black54,
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ],
+    return PhotoSearchParams(
+      query: query,
+      orderBy: switch (_sortOption) {
+        PhotoSortOption.relevant => 'relevant',
+        PhotoSortOption.latest => 'latest',
+      },
+      color: switch (_colorOption) {
+        PhotoColorOption.any => null,
+        PhotoColorOption.green => 'green',
+        PhotoColorOption.blue => 'blue',
+        PhotoColorOption.blackAndWhite => 'black_and_white',
+      },
+      orientation: switch (_orientationOption) {
+        PhotoOrientationOption.any => null,
+        PhotoOrientationOption.landscape => 'landscape',
+        PhotoOrientationOption.portrait => 'portrait',
+        PhotoOrientationOption.squarish => 'squarish',
+      },
+      contentFilter: switch (_contentSafetyOption) {
+        PhotoContentSafetyOption.low => 'low',
+        PhotoContentSafetyOption.high => 'high',
+      },
     );
   }
 }
@@ -320,22 +232,22 @@ class _SearchHeader extends StatelessWidget {
   const _SearchHeader({
     required this.controller,
     required this.selectedSegment,
-    required this.selectedFilter,
-    required this.filters,
+    required this.showPhotoFilterTrigger,
+    required this.isFilterButtonActive,
     required this.onBack,
-    required this.onSegmentChanged,
     required this.onClear,
-    required this.onFilterSelected,
+    required this.onSegmentChanged,
+    required this.onFilterTap,
   });
 
   final TextEditingController controller;
   final SearchSegment selectedSegment;
-  final String selectedFilter;
-  final List<String> filters;
+  final bool showPhotoFilterTrigger;
+  final bool isFilterButtonActive;
   final VoidCallback onBack;
-  final ValueChanged<SearchSegment> onSegmentChanged;
   final VoidCallback onClear;
-  final ValueChanged<String> onFilterSelected;
+  final ValueChanged<SearchSegment> onSegmentChanged;
+  final VoidCallback onFilterTap;
 
   @override
   Widget build(BuildContext context) {
@@ -433,64 +345,40 @@ class _SearchHeader extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _SegmentButton(
-                  label: 'Photos',
-                  isActive: selectedSegment == SearchSegment.photos,
-                  onTap: () => onSegmentChanged(SearchSegment.photos),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _SegmentButton(
-                  label: 'Collections',
-                  isActive: selectedSegment == SearchSegment.collections,
-                  onTap: () => onSegmentChanged(SearchSegment.collections),
-                ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: _SegmentButton(
-                  label: 'Users',
-                  isActive: selectedSegment == SearchSegment.users,
-                  onTap: () => onSegmentChanged(SearchSegment.users),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          SizedBox(
-            height: 34,
-            child: ListView.separated(
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                final filter = filters[index];
-                final isActive = filter == selectedFilter;
-                return GestureDetector(
-                  onTap: () => onFilterSelected(filter),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? const Color(0xFF18181B)
-                          : const Color(0xFFF6F6F7),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    alignment: Alignment.center,
-                    child: Text(
-                      filter,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color:
-                            isActive ? Colors.white : const Color(0xFF52525B),
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      _SegmentButton(
+                        label: 'Photos',
+                        isActive: selectedSegment == SearchSegment.photos,
+                        onTap: () => onSegmentChanged(SearchSegment.photos),
                       ),
-                    ),
+                      const SizedBox(width: 8),
+                      _SegmentButton(
+                        label: 'Collections',
+                        isActive: selectedSegment == SearchSegment.collections,
+                        onTap: () =>
+                            onSegmentChanged(SearchSegment.collections),
+                      ),
+                      const SizedBox(width: 8),
+                      _SegmentButton(
+                        label: 'Users',
+                        isActive: selectedSegment == SearchSegment.users,
+                        onTap: () => onSegmentChanged(SearchSegment.users),
+                      ),
+                    ],
                   ),
-                );
-              },
-              separatorBuilder: (context, index) => const SizedBox(width: 8),
-              itemCount: filters.length,
-            ),
+                ),
+              ),
+              if (showPhotoFilterTrigger) ...[
+                const SizedBox(width: 8),
+                _PhotoFilterTrigger(
+                  isActive: isFilterButtonActive,
+                  onTap: onFilterTap,
+                ),
+              ],
+            ],
           ),
         ],
       ),
@@ -514,7 +402,8 @@ class _SegmentButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 38,
+        height: 34,
+        padding: const EdgeInsets.symmetric(horizontal: 16),
         decoration: BoxDecoration(
           color: isActive ? const Color(0xFF18181B) : Colors.transparent,
           borderRadius: BorderRadius.circular(999),
@@ -533,14 +422,256 @@ class _SegmentButton extends StatelessWidget {
   }
 }
 
-class _CollectionResultsSection extends StatelessWidget {
-  const _CollectionResultsSection({
-    required this.collections,
-    required this.total,
+class _PhotoFilterTrigger extends StatelessWidget {
+  const _PhotoFilterTrigger({
+    required this.isActive,
+    required this.onTap,
   });
 
+  final bool isActive;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      key: const Key('photo-filter-trigger'),
+      onTap: onTap,
+      child: Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isActive ? const Color(0xFF18181B) : Colors.white,
+          border: Border.all(
+            color: isActive ? const Color(0xFF18181B) : const Color(0xFFECECF0),
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          Icons.tune_rounded,
+          size: 18,
+          color: isActive ? Colors.white : const Color(0xFF27272A),
+        ),
+      ),
+    );
+  }
+}
+
+class _PhotoFilterPanel extends StatelessWidget {
+  const _PhotoFilterPanel({
+    required this.sortOption,
+    required this.colorOption,
+    required this.orientationOption,
+    required this.contentSafetyOption,
+    required this.onSortChanged,
+    required this.onColorChanged,
+    required this.onOrientationChanged,
+    required this.onContentSafetyChanged,
+  });
+
+  final PhotoSortOption sortOption;
+  final PhotoColorOption colorOption;
+  final PhotoOrientationOption orientationOption;
+  final PhotoContentSafetyOption contentSafetyOption;
+  final ValueChanged<PhotoSortOption> onSortChanged;
+  final ValueChanged<PhotoColorOption> onColorChanged;
+  final ValueChanged<PhotoOrientationOption> onOrientationChanged;
+  final ValueChanged<PhotoContentSafetyOption> onContentSafetyChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      key: const Key('photo-filter-panel'),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: const Border(
+          top: BorderSide(color: Color(0xFFECECF0)),
+          bottom: BorderSide(color: Color(0xFFECECF0)),
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 22,
+            offset: const Offset(0, 14),
+          ),
+        ],
+      ),
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 14),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _FilterSection<PhotoSortOption>(
+            title: 'Sort by',
+            options: const [
+              _FilterOption(
+                label: 'Relevant',
+                value: PhotoSortOption.relevant,
+              ),
+              _FilterOption(
+                label: 'Latest',
+                value: PhotoSortOption.latest,
+              ),
+            ],
+            selectedValue: sortOption,
+            onSelected: onSortChanged,
+          ),
+          const SizedBox(height: 16),
+          _FilterSection<PhotoColorOption>(
+            title: 'Color',
+            options: const [
+              _FilterOption(label: 'Any', value: PhotoColorOption.any),
+              _FilterOption(label: 'Green', value: PhotoColorOption.green),
+              _FilterOption(label: 'Blue', value: PhotoColorOption.blue),
+              _FilterOption(
+                label: 'Black & White',
+                value: PhotoColorOption.blackAndWhite,
+              ),
+            ],
+            selectedValue: colorOption,
+            onSelected: onColorChanged,
+          ),
+          const SizedBox(height: 16),
+          _FilterSection<PhotoOrientationOption>(
+            title: 'Orientation',
+            options: const [
+              _FilterOption(label: 'Any', value: PhotoOrientationOption.any),
+              _FilterOption(
+                label: 'Landscape',
+                value: PhotoOrientationOption.landscape,
+              ),
+              _FilterOption(
+                label: 'Portrait',
+                value: PhotoOrientationOption.portrait,
+              ),
+              _FilterOption(
+                label: 'Squarish',
+                value: PhotoOrientationOption.squarish,
+              ),
+            ],
+            selectedValue: orientationOption,
+            onSelected: onOrientationChanged,
+          ),
+          const SizedBox(height: 16),
+          _FilterSection<PhotoContentSafetyOption>(
+            title: 'Content safety',
+            options: const [
+              _FilterOption(label: 'Low', value: PhotoContentSafetyOption.low),
+              _FilterOption(
+                label: 'High',
+                value: PhotoContentSafetyOption.high,
+              ),
+            ],
+            selectedValue: contentSafetyOption,
+            onSelected: onContentSafetyChanged,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterSection<T> extends StatelessWidget {
+  const _FilterSection({
+    required this.title,
+    required this.options,
+    required this.selectedValue,
+    required this.onSelected,
+  });
+
+  final String title;
+  final List<_FilterOption<T>> options;
+  final T selectedValue;
+  final ValueChanged<T> onSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF18181B),
+          ),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: options.map((option) {
+            final isActive = selectedValue == option.value;
+            return GestureDetector(
+              onTap: () => onSelected(option.value),
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: isActive ? const Color(0xFF18181B) : Colors.white,
+                  border: Border.all(
+                    color: isActive
+                        ? const Color(0xFF18181B)
+                        : const Color(0xFFECECF0),
+                  ),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                  child: Text(
+                    option.label,
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                      color: isActive ? Colors.white : const Color(0xFF52525B),
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+class _FilterOption<T> {
+  const _FilterOption({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final T value;
+}
+
+class _PhotoResultsSection extends StatelessWidget {
+  const _PhotoResultsSection({required this.photos});
+
+  final List<Photo> photos;
+
+  @override
+  Widget build(BuildContext context) {
+    if (photos.isEmpty) {
+      return const _SearchEmptyState(
+        title: 'No matching photos',
+        subtitle: 'Try a different keyword or broaden the query.',
+      );
+    }
+
+    return SingleChildScrollView(
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
+      child: PhotoGrid(
+        photos: photos,
+        showLikes: true,
+      ),
+    );
+  }
+}
+
+class _CollectionResultsSection extends StatelessWidget {
+  const _CollectionResultsSection({required this.collections});
+
   final List<Collection> collections;
-  final int total;
 
   @override
   Widget build(BuildContext context) {
@@ -551,98 +682,23 @@ class _CollectionResultsSection extends StatelessWidget {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SearchSectionHeader(
-          eyebrow: 'Collections',
-          title: '${_formatCount(total)} results',
-          actionLabel: 'View all',
-        ),
-        const SizedBox(height: 12),
-        ...collections.map(
-          (collection) => Padding(
-            padding: const EdgeInsets.only(bottom: 10),
-            child: GestureDetector(
-              onTap: () => context.push('/collection/${collection.id}'),
-              child: Container(
-                height: 164,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(18),
-                  color: AppColors.gray100,
-                ),
-                clipBehavior: Clip.antiAlias,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    if (collection.coverPhoto != null)
-                      CachedNetworkImage(
-                        imageUrl: collection.coverPhoto!.urlRegular,
-                        fit: BoxFit.cover,
-                        errorWidget: (context, url, error) => Container(
-                          color: AppColors.gray100,
-                        ),
-                      ),
-                    DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                          colors: [
-                            Colors.black.withValues(alpha: 0.02),
-                            Colors.black.withValues(alpha: 0.56),
-                          ],
-                        ),
-                      ),
-                    ),
-                    Positioned(
-                      left: 12,
-                      right: 12,
-                      bottom: 12,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            collection.title,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            collection.description ??
-                                '${collection.totalPhotos} photos · by ${collection.user?.name ?? 'Musea'}',
-                            maxLines: 2,
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.8),
-                              fontSize: 11,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ],
+    return ListView.builder(
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
+      itemCount: collections.length,
+      itemBuilder: (context, index) {
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: CollectionCard(collection: collections[index]),
+        );
+      },
     );
   }
 }
 
 class _UserResultsSection extends StatelessWidget {
-  const _UserResultsSection({
-    required this.users,
-    required this.total,
-  });
+  const _UserResultsSection({required this.users});
 
   final List<User> users;
-  final int total;
 
   @override
   Widget build(BuildContext context) {
@@ -653,32 +709,27 @@ class _UserResultsSection extends StatelessWidget {
       );
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
       children: [
-        _SearchSectionHeader(
-          eyebrow: 'Users',
-          title: '${_formatCount(total)} results',
-          actionLabel: 'View all',
-        ),
-        const SizedBox(height: 12),
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(20),
             border: Border.all(color: const Color(0xFFF4F4F5)),
           ),
-          padding: const EdgeInsets.symmetric(horizontal: 12),
           child: Column(
-            children: users.map((user) {
+            children: List.generate(users.length, (index) {
+              final user = users[index];
+              final isFollowing = user.followedByUser == true;
               return GestureDetector(
                 onTap: () => context.push('/profile/${user.username}'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(vertical: 10),
+                  padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
                     border: Border(
                       top: BorderSide(
-                        color: users.first == user
+                        color: index == 0
                             ? Colors.transparent
                             : const Color(0xFFF4F4F5),
                       ),
@@ -689,12 +740,12 @@ class _UserResultsSection extends StatelessWidget {
                       ClipOval(
                         child: CachedNetworkImage(
                           imageUrl: user.profileImageMedium,
-                          width: 48,
-                          height: 48,
+                          width: 52,
+                          height: 52,
                           fit: BoxFit.cover,
                           errorWidget: (context, url, error) => Container(
-                            width: 48,
-                            height: 48,
+                            width: 52,
+                            height: 52,
                             color: AppColors.gray100,
                             alignment: Alignment.center,
                             child: Text(
@@ -720,9 +771,11 @@ class _UserResultsSection extends StatelessWidget {
                                 color: Color(0xFF18181B),
                               ),
                             ),
-                            const SizedBox(height: 2),
+                            const SizedBox(height: 4),
                             Text(
-                              '@${user.username}',
+                              '@${user.username} · ${user.totalPhotos} photos · ${user.totalCollections} collections',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 12,
                                 color: Color(0xFF71717A),
@@ -735,28 +788,39 @@ class _UserResultsSection extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Color(0xFF71717A),
+                                  fontSize: 11,
+                                  color: Color(0xFFA1A1AA),
                                 ),
                               ),
                             ],
                           ],
                         ),
                       ),
+                      const SizedBox(width: 12),
                       Container(
-                        height: 36,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        constraints: const BoxConstraints(minWidth: 82),
+                        height: 34,
+                        padding: const EdgeInsets.symmetric(horizontal: 14),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF18181B),
+                          color: isFollowing
+                              ? const Color(0xFFFAFAFA)
+                              : const Color(0xFF18181B),
                           borderRadius: BorderRadius.circular(999),
+                          border: Border.all(
+                            color: isFollowing
+                                ? const Color(0xFFE4E4E7)
+                                : const Color(0xFF18181B),
+                          ),
                         ),
                         alignment: Alignment.center,
-                        child: const Text(
-                          'Follow',
+                        child: Text(
+                          isFollowing ? 'Following' : 'Follow',
                           style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
+                            fontSize: 11,
                             fontWeight: FontWeight.w700,
+                            color: isFollowing
+                                ? const Color(0xFF71717A)
+                                : Colors.white,
                           ),
                         ),
                       ),
@@ -764,63 +828,50 @@ class _UserResultsSection extends StatelessWidget {
                   ),
                 ),
               );
-            }).toList(),
+            }),
           ),
         ),
       ],
     );
   }
+
 }
 
-class _SearchSectionHeader extends StatelessWidget {
-  const _SearchSectionHeader({
-    required this.eyebrow,
-    required this.title,
-    required this.actionLabel,
-  });
-
-  final String eyebrow;
-  final String title;
-  final String actionLabel;
+class _SearchIdleState extends StatelessWidget {
+  const _SearchIdleState();
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              eyebrow.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFFA1A1AA),
-                letterSpacing: 1.2,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF18181B),
-              ),
-            ),
-          ],
-        ),
-        Text(
-          actionLabel,
-          style: const TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.w700,
-            color: Color(0xFF71717A),
+    return const Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 48),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(
+            Icons.search_rounded,
+            size: 36,
+            color: Color(0xFFA1A1AA),
           ),
-        ),
-      ],
+          SizedBox(height: 12),
+          Text(
+            'Start typing to search',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF18181B),
+            ),
+          ),
+          SizedBox(height: 6),
+          Text(
+            'We will query photos, collections, and creators using the live search endpoints.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 13,
+              color: Color(0xFF71717A),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -868,19 +919,4 @@ class _SearchEmptyState extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatCount(int count) {
-  final value = count.toString();
-  final buffer = StringBuffer();
-
-  for (var i = 0; i < value.length; i++) {
-    final fromEnd = value.length - i;
-    buffer.write(value[i]);
-    if (fromEnd > 1 && fromEnd % 3 == 1) {
-      buffer.write(',');
-    }
-  }
-
-  return buffer.toString();
 }

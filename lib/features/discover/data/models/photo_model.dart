@@ -15,15 +15,15 @@ class PhotoModel with _$PhotoModel {
     @JsonKey(name: 'created_at') required DateTime createdAt,
     @JsonKey(name: 'updated_at') DateTime? updatedAt,
     @JsonKey(name: 'promoted_at') DateTime? promotedAt,
-    required int width,
-    required int height,
+    @JsonKey(fromJson: _intFromJson) required int width,
+    @JsonKey(fromJson: _intFromJson) required int height,
     required String color,
     @JsonKey(name: 'blur_hash') String? blurHash,
     String? description,
     @JsonKey(name: 'alt_description') String? altDescription,
     required UrlsModel urls,
     PhotoLinksModel? links,
-    required int likes,
+    @JsonKey(fromJson: _intFromJson) required int likes,
     @Default(0) int downloads,
     @Default(0) int views,
     @JsonKey(name: 'liked_by_user') @Default(false) bool likedByUser,
@@ -147,8 +147,8 @@ class LocationModel with _$LocationModel {
 @freezed
 class PositionModel with _$PositionModel {
   const factory PositionModel({
-    required double latitude,
-    required double longitude,
+    @JsonKey(fromJson: _doubleFromJson) required double latitude,
+    @JsonKey(fromJson: _doubleFromJson) required double longitude,
   }) = _PositionModel;
 
   factory PositionModel.fromJson(Map<String, dynamic> json) =>
@@ -169,3 +169,7 @@ class TagModel with _$TagModel {
 
   Tag toEntity() => Tag(title: title, type: type);
 }
+
+int _intFromJson(Object? value) => (value as num?)?.toInt() ?? 0;
+
+double _doubleFromJson(Object? value) => (value as num?)?.toDouble() ?? 0;

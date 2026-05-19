@@ -21,6 +21,7 @@ void main() {
     totalPhotos: 12,
     totalLikes: 44,
     totalCollections: 3,
+    followedByUser: true,
   );
 
   const cityUser = User(
@@ -35,6 +36,7 @@ void main() {
     totalPhotos: 8,
     totalLikes: 20,
     totalCollections: 2,
+    followedByUser: false,
   );
 
   final photos = [
@@ -164,9 +166,28 @@ void main() {
     expect(find.text('Photos'), findsWidgets);
     expect(find.text('Collections'), findsWidgets);
     expect(find.text('Users'), findsWidgets);
-    expect(find.text('2,431 results'), findsOneWidget);
+    expect(find.byKey(const Key('photo-filter-trigger')), findsOneWidget);
     expect(find.text('Forest Archive'), findsOneWidget);
     expect(find.text('No matching photos'), findsNothing);
+  });
+
+  testWidgets('SearchPage opens and closes the photo filter panel',
+      (tester) async {
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('photo-filter-trigger')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('photo-filter-panel')), findsOneWidget);
+    expect(find.byKey(const Key('photo-filter-overlay')), findsOneWidget);
+    expect(find.text('Sort by'), findsOneWidget);
+    expect(find.text('Orientation'), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('photo-filter-trigger')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('photo-filter-panel')), findsNothing);
   });
 
   testWidgets('SearchPage switches to collections and users segments',
@@ -177,15 +198,17 @@ void main() {
     await tester.tap(find.text('Collections').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('324 results'), findsOneWidget);
-    expect(find.text('Moody green landscapes'), findsOneWidget);
+    expect(find.byKey(const Key('photo-filter-trigger')), findsNothing);
+    expect(find.text('Forest Archive'), findsOneWidget);
+    expect(find.text('by Forest Archive'), findsOneWidget);
 
     await tester.tap(find.text('Users').last);
     await tester.pumpAndSettle();
 
-    expect(find.text('88 results'), findsOneWidget);
-    expect(find.text('@forest'), findsOneWidget);
+    expect(find.byKey(const Key('photo-filter-trigger')), findsNothing);
+    expect(find.text('@forest · 12 photos · 3 collections'), findsOneWidget);
     expect(find.text('Shoots outdoors'), findsOneWidget);
+    expect(find.text('Following'), findsOneWidget);
   });
 
   testWidgets('SearchPage shows empty state when query does not match',

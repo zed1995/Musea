@@ -22,9 +22,12 @@ class UserModel with _$UserModel {
     @JsonKey(name: 'twitter_username') String? twitterUsername,
     UserLinksModel? links,
     @JsonKey(name: 'profile_image') required ProfileImageModel profileImage,
-    @JsonKey(name: 'total_photos') required int totalPhotos,
-    @JsonKey(name: 'total_likes') required int totalLikes,
-    @JsonKey(name: 'total_collections') required int totalCollections,
+    @JsonKey(name: 'total_photos', fromJson: _intFromJson)
+    required int totalPhotos,
+    @JsonKey(name: 'total_likes', fromJson: _intFromJson)
+    required int totalLikes,
+    @JsonKey(name: 'total_collections', fromJson: _intFromJson)
+    required int totalCollections,
     @JsonKey(name: 'total_free_photos') int? totalFreePhotos,
     @JsonKey(name: 'total_promoted_photos') int? totalPromotedPhotos,
     @JsonKey(name: 'total_illustrations') int? totalIllustrations,
@@ -37,6 +40,7 @@ class UserModel with _$UserModel {
     @JsonKey(name: 'photos') @Default([]) List<UserPhotoPreviewModel> photos,
     UserTagsModel? tags,
     @JsonKey(name: 'allow_messages') bool? allowMessages,
+    @JsonKey(name: 'followed_by_user') bool? followedByUser,
     @JsonKey(name: 'numeric_id') int? numericId,
     int? downloads,
     UserMetaModel? meta,
@@ -75,6 +79,7 @@ class UserModel with _$UserModel {
         photosPreview: photos.map((photo) => photo.toEntity()).toList(),
         tags: tags?.toEntity(),
         allowMessages: allowMessages,
+        followedByUser: followedByUser,
         numericId: numericId,
         downloads: downloads,
         meta: meta?.toEntity(),
@@ -230,3 +235,5 @@ class UserMetaModel with _$UserMetaModel {
         index: index,
       );
 }
+
+int _intFromJson(Object? value) => (value as num?)?.toInt() ?? 0;

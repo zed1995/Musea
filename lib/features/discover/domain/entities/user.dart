@@ -28,6 +28,7 @@ class User {
   final List<UserPhotoPreview> photosPreview;
   final UserTags? tags;
   final bool? allowMessages;
+  final bool? followedByUser;
   final int? numericId;
   final int? downloads;
   final UserMeta? meta;
@@ -62,6 +63,7 @@ class User {
     this.photosPreview = const [],
     this.tags,
     this.allowMessages,
+    this.followedByUser,
     this.numericId,
     this.downloads,
     this.meta,
