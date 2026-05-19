@@ -125,6 +125,10 @@ class _CollectionDetailContent extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 12),
+                  _SectionCard(
+                    child: _ContinueExploringSection(collection: collection),
+                  ),
+                  const SizedBox(height: 12),
                   _FeedSection(
                     photosAsync: photosAsync,
                   ),
@@ -342,22 +346,57 @@ class _FeedSection extends StatelessWidget {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Padding(
-              padding: EdgeInsets.only(left: 4, bottom: 10),
-              child: Text(
-                'Photo feed',
-                style: AppTextStyles.heading3,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(4, 0, 4, 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _sectionEyebrow('Photos'),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Inside the collection',
+                    style: AppTextStyles.heading3,
+                  ),
+                ],
               ),
             ),
             PhotoGrid(
               photos: photos,
-              showLikes: false,
+              showLikes: true,
             ),
           ],
         );
       },
       loading: () => const SectionLoadingCard(),
       error: (error, stack) => SectionErrorCard(message: error.toString()),
+    );
+  }
+}
+
+class _ContinueExploringSection extends StatelessWidget {
+  const _ContinueExploringSection({required this.collection});
+
+  final Collection collection;
+
+  @override
+  Widget build(BuildContext context) {
+    final themes = _buildExploreThemes(collection);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _DetailSectionHeader(
+          eyebrow: 'Continue Exploring',
+          title: 'Explore nearby themes first',
+          actionLabel: 'See all',
+        ),
+        const SizedBox(height: 12),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
+          children: themes.map((theme) => _MetaPill(label: theme)).toList(),
+        ),
+      ],
     );
   }
 }
@@ -866,6 +905,42 @@ List<Widget> _buildMetaPills(Collection collection) {
   return pills;
 }
 
+List<String> _buildExploreThemes(Collection collection) {
+  final rawThemes = <String>[
+    ...collection.title
+        .split(RegExp(r'[\s,/&-]+'))
+        .where((part) => part.trim().length >= 4),
+    ...?collection.description
+        ?.split(RegExp(r'[\s,/&-]+'))
+        .where((part) => part.trim().length >= 5),
+    ...collection.mediaTypes,
+    if ((collection.user?.totalCollections ?? 0) > 0) 'Curated sets',
+  ];
+
+  final deduped = <String>[];
+  for (final rawTheme in rawThemes) {
+    final theme = _capitalizeWords(rawTheme.trim());
+    if (theme.isEmpty) continue;
+    if (deduped.any((item) => item.toLowerCase() == theme.toLowerCase())) {
+      continue;
+    }
+    deduped.add(theme);
+    if (deduped.length == 5) break;
+  }
+
+  if (deduped.isNotEmpty) {
+    return deduped;
+  }
+
+  return const [
+    'Road trips',
+    'National parks',
+    'Landscape',
+    'Open sky',
+    'Travel notes',
+  ];
+}
+
 class _MetaPill extends StatelessWidget {
   const _MetaPill({required this.label});
 
@@ -917,6 +992,18 @@ String _summaryText(Collection collection) {
     return description;
   }
   return 'No curator description has been added for this collection yet. The layout stays intact and shifts emphasis to the curator and photo stream.';
+}
+
+String _capitalizeWords(String value) {
+  if (value.isEmpty) return value;
+
+  return value
+      .split(' ')
+      .where((part) => part.isNotEmpty)
+      .map(
+        (part) => '${part[0].toUpperCase()}${part.substring(1).toLowerCase()}',
+      )
+      .join(' ');
 }
 
 String? _coverUrl(Collection collection) {

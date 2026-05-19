@@ -9,6 +9,7 @@ import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
+import 'package:musea/features/photo_detail/presentation/widgets/color_palette_bar.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/download_sheet.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/shared/widgets/error_state.dart';
@@ -127,7 +128,7 @@ class _PhotoDetailContent extends ConsumerWidget {
                   if (_exifItems.isNotEmpty) ...[
                     const SizedBox(height: 18),
                     const _SectionDivider(),
-                    const SizedBox(height: 18),
+                    const SizedBox(height: 6),
                     const Text(
                       'CAMERA INFO',
                       style: TextStyle(
@@ -137,8 +138,14 @@ class _PhotoDetailContent extends ConsumerWidget {
                         letterSpacing: 1.0,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 0),
                     _ExifGrid(items: _exifItems),
+                  ],
+                  if (photo.color.isNotEmpty) ...[
+                    const SizedBox(height: 18),
+                    const _SectionDivider(),
+                    const SizedBox(height: 18),
+                    ColorPaletteSection(hexColor: photo.color),
                   ],
                   const SizedBox(height: 18),
                   _DownloadButton(
@@ -183,6 +190,14 @@ class _PhotoDetailContent extends ConsumerWidget {
     }
     if (exif.focalLength != null) {
       items.add(_ExifItem('Focal', exif.focalLength!));
+    }
+    if (photo.location != null &&
+        (photo.location!.city?.isNotEmpty == true ||
+            photo.location!.country?.isNotEmpty == true)) {
+      items.add(_ExifItem('Location', photo.location!.displayName));
+    }
+    if (photo.width > 0 && photo.height > 0) {
+      items.add(_ExifItem('Size', '${photo.width}×${photo.height}'));
     }
     return items;
   }
@@ -492,48 +507,177 @@ class _ExifGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      itemCount: items.length,
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisExtent: 42,
-        crossAxisSpacing: 18,
-      ),
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return Container(
-          decoration: const BoxDecoration(
-            border: Border(bottom: BorderSide(color: Color(0xFFF4F4F5))),
-          ),
-          child: Row(
+    final rows = <List<_ExifItem>>[];
+    for (var index = 0; index < items.length; index += 2) {
+      rows.add(items.skip(index).take(2).toList());
+    }
+
+    return Column(
+      children: [
+        for (final row in rows)
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              Expanded(child: _ExifCell(item: row.first)),
+              const SizedBox(width: 18),
               Expanded(
-                child: Text(
-                  item.label,
+                child: row.length > 1
+                    ? _ExifCell(item: row[1])
+                    : const SizedBox.shrink(),
+              ),
+            ],
+          ),
+      ],
+    );
+  }
+}
+
+class _ExifCell extends StatelessWidget {
+  const _ExifCell({required this.item});
+
+  final _ExifItem item;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        border: Border(bottom: BorderSide(color: Color(0xFFF4F4F5))),
+      ),
+      padding: const EdgeInsets.symmetric(vertical: 5),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          SizedBox(
+            width: 50,
+            child: Text(
+              item.label,
+              style: const TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Color(0xFFA1A1AA),
+              ),
+            ),
+          ),
+          const SizedBox(width: 6),
+          Expanded(
+            child: _ExifValueText(
+              label: item.label,
+              value: item.value,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ExifValueText extends StatelessWidget {
+  const _ExifValueText({
+    required this.label,
+    required this.value,
+  });
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    const style = TextStyle(
+      fontSize: 12,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFF27272A),
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final painter = TextPainter(
+          text: TextSpan(
+            text: value,
+            style: style,
+          ),
+          maxLines: 1,
+          textDirection: Directionality.of(context),
+        )..layout(maxWidth: constraints.maxWidth);
+
+        final isOverflowing = painter.didExceedMaxLines;
+
+        return GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: isOverflowing
+              ? (details) => _showValuePopup(
+                    context,
+                    details.globalPosition,
+                  )
+              : null,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 5),
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              softWrap: false,
+              style: style,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> _showValuePopup(
+    BuildContext context,
+    Offset globalPosition,
+  ) {
+    final overlay = Overlay.of(context).context.findRenderObject() as RenderBox;
+
+    return showMenu<void>(
+      context: context,
+      elevation: 8,
+      color: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
+      position: RelativeRect.fromLTRB(
+        globalPosition.dx - 160,
+        globalPosition.dy - 8,
+        overlay.size.width - globalPosition.dx,
+        overlay.size.height - globalPosition.dy,
+      ),
+      items: [
+        PopupMenuItem<void>(
+          enabled: false,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  label,
                   style: const TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFFA1A1AA),
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF71717A),
+                    letterSpacing: 0.4,
                   ),
                 ),
-              ),
-              Expanded(
-                child: Text(
-                  item.value,
-                  textAlign: TextAlign.right,
+                const SizedBox(height: 6),
+                Text(
+                  value,
                   style: const TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF27272A),
+                    height: 1.4,
                   ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
-        );
-      },
+        ),
+      ],
     );
   }
 }
