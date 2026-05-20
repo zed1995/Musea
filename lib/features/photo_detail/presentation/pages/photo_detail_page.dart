@@ -1,10 +1,6 @@
-import 'dart:typed_data';
-
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gal/gal.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
@@ -27,7 +23,6 @@ class PhotoDetailPage extends ConsumerWidget {
     return photoAsync.when(
       data: (photo) => _PhotoDetailContent(
         photo: photo,
-        onDownload: (url) => _triggerDownload(photo, url, ref, context),
       ),
       loading: () => const Scaffold(
         body: Center(child: LoadingIndicator()),
@@ -42,52 +37,14 @@ class PhotoDetailPage extends ConsumerWidget {
     );
   }
 
-  Future<void> _triggerDownload(
-    Photo photo,
-    String url,
-    WidgetRef ref,
-    BuildContext context,
-  ) async {
-    try {
-      final repository = ref.read(photoRepositoryProvider);
-      await repository.trackDownload(photo.id);
-    } catch (_) {}
-
-    try {
-      final dio = Dio(BaseOptions());
-      final response = await dio.get<List<int>>(
-        url,
-        options: Options(responseType: ResponseType.bytes),
-      );
-      if (response.data != null && context.mounted) {
-        await Gal.putImageBytes(
-          Uint8List.fromList(response.data!),
-          name: 'musea_${photo.id}',
-        );
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Image saved to gallery')),
-          );
-        }
-      }
-    } catch (e) {
-      if (context.mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Download failed: $e')),
-        );
-      }
-    }
-  }
 }
 
 class _PhotoDetailContent extends ConsumerWidget {
   const _PhotoDetailContent({
     required this.photo,
-    required this.onDownload,
   });
 
   final Photo photo;
-  final void Function(String url) onDownload;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -150,10 +107,7 @@ class _PhotoDetailContent extends ConsumerWidget {
                   const SizedBox(height: 18),
                   _DownloadButton(
                     onTap: () async {
-                      final option = await DownloadSheet.show(context, photo);
-                      if (option != null && context.mounted) {
-                        onDownload(option.url);
-                      }
+                      await DownloadSheet.show(context, photo);
                     },
                   ),
                   const SizedBox(height: 24),
