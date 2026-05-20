@@ -9,15 +9,17 @@ This project uses environment variables to manage sensitive configuration like A
    cp .env.example .env
    ```
 
-2. Get your Unsplash API Client ID:
+2. Get your Unsplash OAuth app credentials:
    - Visit https://unsplash.com/developers
    - Register/Login to your account
    - Create a new application
-   - Copy the Client ID
+   - Copy the Client ID and Secret
 
 3. Update `.env` file:
    ```
    UNSPLASH_CLIENT_ID=your_actual_client_id_here
+   UNSPLASH_CLIENT_SECRET=your_actual_client_secret_here
+   UNSPLASH_REDIRECT_URI=musea://auth/callback
    ```
 
 4. The `.env` file is already added to `.gitignore`, so your API key won't be committed to the repository.

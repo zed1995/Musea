@@ -4,6 +4,8 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:musea/app.dart';
+import 'package:musea/features/auth/data/datasources/auth_local_datasource.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 
 final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
     FlutterLocalNotificationsPlugin();
@@ -26,8 +28,8 @@ Future<bool> requestNotificationPermissions() async {
   var granted = false;
 
   try {
-    final android = flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
+    final android =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
             AndroidFlutterLocalNotificationsPlugin>();
     if (android != null) {
       granted = await android.requestNotificationsPermission() ?? false;
@@ -35,8 +37,8 @@ Future<bool> requestNotificationPermissions() async {
   } catch (_) {}
 
   try {
-    final darwin = flutterLocalNotificationsPlugin
-        .resolvePlatformSpecificImplementation<
+    final darwin =
+        flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
             IOSFlutterLocalNotificationsPlugin>();
     if (darwin != null) {
       granted = await darwin.requestPermissions(
@@ -59,6 +61,7 @@ void main() async {
 
   // Initialize Hive for local storage
   await Hive.initFlutter();
+  final authBootstrapSession = await AuthLocalDataSourceImpl().readSession();
 
   // Initialize local notifications
   try {
@@ -68,8 +71,11 @@ void main() async {
   }
 
   runApp(
-    const ProviderScope(
-      child: MuseaApp(),
+    ProviderScope(
+      overrides: [
+        authBootstrapSessionProvider.overrideWithValue(authBootstrapSession),
+      ],
+      child: const MuseaApp(),
     ),
   );
 }

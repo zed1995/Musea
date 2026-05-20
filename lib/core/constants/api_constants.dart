@@ -4,6 +4,7 @@ class ApiConstants {
   ApiConstants._();
 
   static const String baseUrl = 'https://api.unsplash.com';
+  static const String unsplashOAuthBaseUrl = 'https://unsplash.com';
 
   static const String photos = '/photos';
   static const String searchPhotos = '/search/photos';
@@ -12,6 +13,10 @@ class ApiConstants {
   static const String topics = '/topics';
   static const String users = '/users';
   static const String collections = '/collections';
+  static const String me = '/me';
+  static const String oauthAuthorizePath = '/oauth/authorize';
+  static const String oauthTokenPath = '/oauth/token';
+  static const List<String> authScopes = ['public', 'read_user'];
 
   static String get clientId {
     final id = dotenv.env['UNSPLASH_CLIENT_ID'];
@@ -24,10 +29,32 @@ class ApiConstants {
     return id;
   }
 
+  static String get clientSecret {
+    final secret = dotenv.env['UNSPLASH_CLIENT_SECRET'];
+    if (secret == null || secret == 'YOUR_UNSPLASH_CLIENT_SECRET_HERE') {
+      throw Exception(
+        'UNSPLASH_CLIENT_SECRET not configured. Please check your .env file.\n'
+        'See docs/ENV_SETUP.md for instructions.',
+      );
+    }
+    return secret;
+  }
+
+  static String get redirectUri {
+    final redirectUri = dotenv.env['UNSPLASH_REDIRECT_URI'];
+    if (redirectUri == null || redirectUri.isEmpty) {
+      throw Exception(
+        'UNSPLASH_REDIRECT_URI not configured. Please check your .env file.\n'
+        'See docs/ENV_SETUP.md for instructions.',
+      );
+    }
+    return redirectUri;
+  }
+
   static const int defaultPerPage = 20;
   static const int searchPerPage = 30;
 
-  static Map<String, String> get headers => {
+  static Map<String, String> get publicHeaders => {
         'Authorization': 'Client-ID $clientId',
         'Accept-Version': 'v1',
       };

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/core/theme/app_theme.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/router/app_router.dart';
 
 class MuseaApp extends ConsumerWidget {
@@ -8,6 +9,8 @@ class MuseaApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(authLinkListenerProvider);
+
     return MaterialApp.router(
       title: 'Musea',
       debugShowCheckedModeBanner: false,

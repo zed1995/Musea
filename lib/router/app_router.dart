@@ -5,6 +5,7 @@ import 'package:musea/features/collections/presentation/pages/collections_page.d
 import 'package:musea/features/discover/presentation/pages/discover_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
+import 'package:musea/features/profile/presentation/pages/mine_page.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/features/search/presentation/pages/search_page.dart';
@@ -143,108 +144,6 @@ class ProfileTabPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Header
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Profile',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF18181B),
-                    ),
-                  ),
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: const BoxDecoration(
-                      shape: BoxShape.circle,
-                      color: Color(0xFFF5F5F5),
-                    ),
-                    child: const Icon(
-                      Icons.settings,
-                      size: 20,
-                      color: Color(0xFF3F3F46),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Container(
-                      width: 72,
-                      height: 72,
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.blue.shade400,
-                            Colors.purple.shade400,
-                          ],
-                        ),
-                        border: Border.all(color: Colors.white, width: 3),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.1),
-                            blurRadius: 8,
-                            offset: const Offset(0, 2),
-                          ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'M',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 26,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Musea',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF18181B),
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      'Photo discovery reimagined',
-                      style: TextStyle(
-                        fontSize: 14,
-                        color: Color(0xFFA1A1AA),
-                      ),
-                    ),
-                    const SizedBox(height: 32),
-                    Text(
-                      'v1.0.0',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey[300],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
+    return const MinePage();
   }
 }
