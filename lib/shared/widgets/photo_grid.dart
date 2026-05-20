@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/core/theme/text_styles.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
+import 'package:musea/router/detail_route_extras.dart';
 
 class PhotoGrid extends StatelessWidget {
   const PhotoGrid({
@@ -55,7 +56,10 @@ class PhotoGridTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.push('/photo/${photo.id}'),
+      onTap: () => context.push(
+        '/photo/${photo.id}',
+        extra: PhotoDetailExtra(photo: photo),
+      ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(18),
         child: Stack(

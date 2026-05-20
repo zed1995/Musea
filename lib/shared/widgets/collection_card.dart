@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
+import 'package:musea/router/detail_route_extras.dart';
 
 class CollectionCard extends StatelessWidget {
   const CollectionCard({super.key, required this.collection});
@@ -18,7 +19,10 @@ class CollectionCard extends StatelessWidget {
     final previewCount = collection.previewPhotos.length.clamp(0, 4);
 
     return GestureDetector(
-      onTap: () => context.push('/collection/${collection.id}'),
+      onTap: () => context.push(
+        '/collection/${collection.id}',
+        extra: CollectionDetailExtra(collection: collection),
+      ),
       child: Container(
         decoration: BoxDecoration(
           color: const Color(0xFFF5F5F5),
@@ -94,56 +98,26 @@ class CollectionCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (_isFeatured) ...[
-                              Container(
-                                height: 22,
-                                padding:
-                                    const EdgeInsets.symmetric(horizontal: 8),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.14),
-                                  borderRadius: BorderRadius.circular(999),
-                                  border: Border.all(
-                                    color: Colors.white.withValues(alpha: 0.12),
-                                  ),
-                                ),
-                                child: const Center(
-                                  child: Text(
-                                    'Featured',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
+                              const _MetaPill(
+                                child: Text(
+                                  'Featured',
+                                  style: _pillTextStyle,
                                 ),
                               ),
                               const SizedBox(width: 8),
                             ],
-                            Container(
-                              height: 28,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 9),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.14),
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.12),
-                                ),
-                              ),
+                            _MetaPill(
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Text(
                                     '${collection.totalPhotos}',
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: _pillTextStyle,
                                   ),
                                   const SizedBox(width: 4),
                                   Icon(
                                     Icons.chevron_right,
-                                    size: 16,
+                                    size: 14,
                                     color: Colors.white.withValues(alpha: 0.9),
                                   ),
                                 ],
@@ -203,6 +177,35 @@ class CollectionCard extends StatelessWidget {
           color: AppColors.gray400,
         ),
       ),
+    );
+  }
+}
+
+const _pillTextStyle = TextStyle(
+  color: Colors.white,
+  fontSize: 10,
+  fontWeight: FontWeight.w700,
+  height: 1.0,
+);
+
+class _MetaPill extends StatelessWidget {
+  const _MetaPill({required this.child});
+
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 24,
+      padding: const EdgeInsets.symmetric(horizontal: 9),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.12),
+        ),
+      ),
+      child: Center(child: child),
     );
   }
 }

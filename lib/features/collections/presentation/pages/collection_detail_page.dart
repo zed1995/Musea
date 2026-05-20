@@ -13,19 +13,63 @@ import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
 
 class CollectionDetailPage extends ConsumerWidget {
-  const CollectionDetailPage({super.key, required this.collectionId});
+  const CollectionDetailPage({
+    super.key,
+    required this.collectionId,
+    this.initialCollection,
+  });
 
   final String collectionId;
+  final Collection? initialCollection;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final collectionAsync = ref.watch(collectionDetailProvider(collectionId));
     final photosAsync = ref.watch(collectionPhotosProvider(collectionId));
+    final hydratedCollection = collectionAsync.valueOrNull;
+    final resolvedCollection = hydratedCollection ?? initialCollection;
+    final isUsingInitialCollection =
+        initialCollection != null && hydratedCollection == null;
+    final showDeferredPreview =
+        isUsingInitialCollection && _hasDeferredPreviewGap(initialCollection!);
+    final showDeferredFacts =
+        isUsingInitialCollection && _hasDeferredFactGaps(initialCollection!);
+
+    debugPrint(
+      '[CollectionDetailPage] build id=$collectionId '
+      'hasInitial=${initialCollection != null} '
+      'detailLoading=${collectionAsync.isLoading} '
+      'detailHasError=${collectionAsync.hasError} '
+      'photosLoading=${photosAsync.isLoading} '
+      'photosHasError=${photosAsync.hasError} '
+      'photosCount=${photosAsync.valueOrNull?.length}',
+    );
+
+    if (resolvedCollection != null) {
+      return _CollectionDetailContent(
+        collection: resolvedCollection,
+        photosAsync: photosAsync,
+        allowPhotoFeedPreviewFallback: !isUsingInitialCollection,
+        onRetryFeed: () =>
+            ref.invalidate(collectionPhotosProvider(collectionId)),
+        showDeferredPreviewSkeleton:
+            collectionAsync.isLoading && showDeferredPreview,
+        showDeferredPreviewRetry:
+            collectionAsync.hasError && showDeferredPreview,
+        showDeferredFactSkeleton:
+            collectionAsync.isLoading && showDeferredFacts,
+        showDeferredFactRetry: collectionAsync.hasError && showDeferredFacts,
+        onRetryDeferred: () =>
+            ref.invalidate(collectionDetailProvider(collectionId)),
+      );
+    }
 
     return collectionAsync.when(
       data: (collection) => _CollectionDetailContent(
         collection: collection,
         photosAsync: photosAsync,
+        onRetryFeed: () =>
+            ref.invalidate(collectionPhotosProvider(collectionId)),
       ),
       loading: () => const Scaffold(
         body: Center(child: LoadingIndicator()),
@@ -39,19 +83,50 @@ class CollectionDetailPage extends ConsumerWidget {
       ),
     );
   }
+
+  bool _hasDeferredFactGaps(Collection collection) {
+    return collection.publishedAt == null ||
+        collection.updatedAt == null ||
+        collection.lastCollectedAt == null;
+  }
+
+  bool _hasDeferredPreviewGap(Collection collection) {
+    return collection.previewPhotos.isEmpty;
+  }
 }
 
 class _CollectionDetailContent extends StatelessWidget {
   const _CollectionDetailContent({
     required this.collection,
     required this.photosAsync,
+    this.allowPhotoFeedPreviewFallback = true,
+    required this.onRetryFeed,
+    this.showDeferredPreviewSkeleton = false,
+    this.showDeferredPreviewRetry = false,
+    this.showDeferredFactSkeleton = false,
+    this.showDeferredFactRetry = false,
+    this.onRetryDeferred,
   });
 
   final Collection collection;
   final AsyncValue<List<Photo>> photosAsync;
+  final bool allowPhotoFeedPreviewFallback;
+  final VoidCallback onRetryFeed;
+  final bool showDeferredPreviewSkeleton;
+  final bool showDeferredPreviewRetry;
+  final bool showDeferredFactSkeleton;
+  final bool showDeferredFactRetry;
+  final VoidCallback? onRetryDeferred;
 
   @override
   Widget build(BuildContext context) {
+    final factRows = _buildFactRows(collection);
+    final previewUrls = _previewUrls(
+      collection.previewPhotos,
+      photosAsync,
+      allowPhotosFallback: allowPhotoFeedPreviewFallback,
+    );
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
@@ -102,14 +177,33 @@ class _CollectionDetailContent extends StatelessWidget {
                           actionLabel: 'Open grid',
                         ),
                         const SizedBox(height: 12),
-                        _PreviewGrid(
-                          previewUrls: _previewUrls(
-                            collection.previewPhotos,
-                            photosAsync,
+                        if (previewUrls.isNotEmpty)
+                          _PreviewGrid(
+                            previewUrls: previewUrls,
+                            remainingCount:
+                                (collection.totalPhotos - 4).clamp(0, 999999),
+                          )
+                        else if (showDeferredPreviewSkeleton)
+                          const _PreviewSectionSkeleton(
+                            key: ValueKey('collection-detail-preview-skeleton'),
+                          )
+                        else if (showDeferredPreviewRetry)
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _DeferredRetryBanner(onRetry: onRetryDeferred),
+                              const SizedBox(height: 12),
+                              const _DeferredSectionPlaceholder(
+                                message:
+                                    'Preview unavailable until details finish loading.',
+                              ),
+                            ],
+                          )
+                        else
+                          const _EmptyFeedCard(
+                            message:
+                                'Preview will appear when photos are added',
                           ),
-                          remainingCount:
-                              (collection.totalPhotos - 4).clamp(0, 999999),
-                        ),
                       ],
                     ),
                   ),
@@ -120,7 +214,22 @@ class _CollectionDetailContent extends StatelessWidget {
                       children: [
                         _sectionEyebrow('Collection Facts'),
                         const SizedBox(height: 10),
-                        ..._buildFactRows(collection),
+                        ...factRows,
+                        if (showDeferredFactSkeleton) ...[
+                          const SizedBox(height: 8),
+                          const _DeferredSectionSkeleton(
+                            key: ValueKey('collection-detail-facts-skeleton'),
+                            lines: 2,
+                          ),
+                        ] else if (showDeferredFactRetry) ...[
+                          const SizedBox(height: 8),
+                          _DeferredRetryBanner(onRetry: onRetryDeferred),
+                          const SizedBox(height: 12),
+                          const _DeferredSectionPlaceholder(
+                            message:
+                                'Additional collection facts will appear after details finish loading.',
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -131,6 +240,7 @@ class _CollectionDetailContent extends StatelessWidget {
                   const SizedBox(height: 12),
                   _FeedSection(
                     photosAsync: photosAsync,
+                    onRetry: onRetryFeed,
                   ),
                 ],
               ),
@@ -199,7 +309,7 @@ class _CollectionHero extends StatelessWidget {
                     children: [
                       _GlassActionButton(
                         icon: Icons.arrow_back_ios_new_rounded,
-                        onPressed: () => context.pop(),
+                        onPressed: () => Navigator.maybePop(context),
                       ),
                       Row(
                         children: [
@@ -329,15 +439,25 @@ class _CollectionHero extends StatelessWidget {
 }
 
 class _FeedSection extends StatelessWidget {
-  const _FeedSection({required this.photosAsync});
+  const _FeedSection({
+    required this.photosAsync,
+    required this.onRetry,
+  });
 
   final AsyncValue<List<Photo>> photosAsync;
+  final VoidCallback onRetry;
 
   @override
   Widget build(BuildContext context) {
     return photosAsync.when(
       data: (photos) {
+        debugPrint(
+          '[CollectionDetailPage] feed data count=${photos.length}',
+        );
         if (photos.isEmpty) {
+          debugPrint(
+            '[CollectionDetailPage] feed empty state rendered',
+          );
           return const _SectionCard(
             child: _EmptyFeedCard(message: 'No photos in this collection yet'),
           );
@@ -367,8 +487,20 @@ class _FeedSection extends StatelessWidget {
           ],
         );
       },
-      loading: () => const SectionLoadingCard(),
-      error: (error, stack) => SectionErrorCard(message: error.toString()),
+      loading: () {
+        debugPrint('[CollectionDetailPage] feed loading state rendered');
+        return const SectionLoadingCard();
+      },
+      error: (error, stack) {
+        debugPrint(
+          '[CollectionDetailPage] feed error state rendered error=$error',
+        );
+        return SectionErrorCard(
+          key: const ValueKey('collection-detail-feed-error'),
+          message: error.toString(),
+          onRetry: onRetry,
+        );
+      },
     );
   }
 }
@@ -771,16 +903,179 @@ class SectionErrorCard extends StatelessWidget {
   const SectionErrorCard({
     super.key,
     required this.message,
+    this.onRetry,
   });
 
   final String message;
+  final VoidCallback? onRetry;
 
   @override
   Widget build(BuildContext context) {
     return _SectionCard(
       child: ErrorState(
         message: message,
-        onRetry: () {},
+        onRetry: onRetry,
+      ),
+    );
+  }
+}
+
+class _DeferredRetryBanner extends StatelessWidget {
+  const _DeferredRetryBanner({this.onRetry});
+
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'Some collection details are still unavailable.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF475569),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text('Retry loading details'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeferredSectionSkeleton extends StatelessWidget {
+  const _DeferredSectionSkeleton({
+    super.key,
+    required this.lines,
+  });
+
+  final int lines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: List.generate(
+        lines,
+        (index) => Padding(
+          padding: EdgeInsets.only(bottom: index == lines - 1 ? 0 : 10),
+          child: Row(
+            children: [
+              Expanded(
+                child: Container(
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: AppColors.gray100,
+                    borderRadius: BorderRadius.circular(999),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Container(
+                width: 84,
+                height: 14,
+                decoration: BoxDecoration(
+                  color: AppColors.gray100,
+                  borderRadius: BorderRadius.circular(999),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DeferredSectionPlaceholder extends StatelessWidget {
+  const _DeferredSectionPlaceholder({
+    required this.message,
+  });
+
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Text(
+        message,
+        style: AppTextStyles.caption.copyWith(
+          color: AppColors.gray600,
+          fontWeight: FontWeight.w600,
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewSectionSkeleton extends StatelessWidget {
+  const _PreviewSectionSkeleton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    Widget box({double? width, double? height}) {
+      return Container(
+        width: width,
+        height: height,
+        decoration: BoxDecoration(
+          color: AppColors.gray100,
+          borderRadius: BorderRadius.circular(12),
+        ),
+      );
+    }
+
+    return SizedBox(
+      height: 150,
+      child: Row(
+        children: [
+          Expanded(flex: 13, child: box(height: double.infinity)),
+          const SizedBox(width: 6),
+          Expanded(
+            flex: 10,
+            child: Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(child: box(height: double.infinity)),
+                      const SizedBox(width: 6),
+                      Expanded(child: box(height: double.infinity)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Expanded(child: box(height: double.infinity)),
+                      const SizedBox(width: 6),
+                      Expanded(child: box(height: double.infinity)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -967,13 +1262,18 @@ class _MetaPill extends StatelessWidget {
 
 List<String> _previewUrls(
   List<PreviewPhoto> previews,
-  AsyncValue<List<Photo>> photosAsync,
-) {
+  AsyncValue<List<Photo>> photosAsync, {
+  bool allowPhotosFallback = true,
+}) {
   if (previews.isNotEmpty) {
     return previews
         .map((photo) => photo.smallUrl)
         .where((url) => url.isNotEmpty)
         .toList();
+  }
+
+  if (!allowPhotosFallback) {
+    return const [];
   }
 
   return photosAsync.maybeWhen(

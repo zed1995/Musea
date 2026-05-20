@@ -9,6 +9,7 @@ import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/photo_feed.dart';
 import 'package:musea/core/theme/colors.dart';
+import 'package:musea/router/detail_route_extras.dart';
 
 class DiscoverPage extends ConsumerStatefulWidget {
   const DiscoverPage({super.key});
@@ -101,7 +102,10 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                 data: (photos) => PhotoFeed(
                   photos: photos,
                   isLoadingMore: false,
-                  onPhotoTap: (photo) => context.push('/photo/${photo.id}'),
+                  onPhotoTap: (photo) => context.push(
+                    '/photo/${photo.id}',
+                    extra: PhotoDetailExtra(photo: photo),
+                  ),
                   onUserTap: (photo) =>
                       context.push('/profile/${photo.user.username}'),
                   onLikeTap: (photo) => _toggleLike(photo),
@@ -252,6 +256,9 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   void _handleRandom() async {
     final randomPhoto = await ref.read(randomPhotoProvider.future);
     if (!mounted) return;
-    context.go('/photo/${randomPhoto.id}');
+    context.go(
+      '/photo/${randomPhoto.id}',
+      extra: PhotoDetailExtra(photo: randomPhoto),
+    );
   }
 }

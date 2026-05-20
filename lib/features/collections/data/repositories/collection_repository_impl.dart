@@ -1,4 +1,5 @@
 import 'package:dartz/dartz.dart';
+import 'package:flutter/foundation.dart';
 import 'package:musea/core/errors/exceptions.dart';
 import 'package:musea/core/errors/failures.dart';
 import 'package:musea/features/collections/data/datasources/collection_remote_datasource.dart';
@@ -53,16 +54,34 @@ class CollectionRepositoryImpl implements CollectionRepository {
   Future<Either<Failure, List<Photo>>> getCollectionPhotos(String id,
       {int page = 1, int perPage = 20}) async {
     try {
+      debugPrint(
+        '[CollectionRepository] getCollectionPhotos request id=$id page=$page perPage=$perPage',
+      );
       final photos = await remoteDataSource.getCollectionPhotos(id,
           page: page, perPage: perPage);
+      debugPrint(
+        '[CollectionRepository] getCollectionPhotos response id=$id rawCount=${photos.length}',
+      );
       return Right(photos.map((p) => p.toEntity()).toList());
     } on ServerException catch (e) {
+      debugPrint(
+        '[CollectionRepository] getCollectionPhotos serverError id=$id status=${e.statusCode} message=${e.message}',
+      );
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
+      debugPrint(
+        '[CollectionRepository] getCollectionPhotos networkError id=$id message=${e.message}',
+      );
       return Left(Failure.network(message: e.message));
     } on RateLimitException catch (e) {
+      debugPrint(
+        '[CollectionRepository] getCollectionPhotos rateLimit id=$id message=${e.message}',
+      );
       return Left(Failure.rateLimit(message: e.message));
     } catch (e) {
+      debugPrint(
+        '[CollectionRepository] getCollectionPhotos unknownError id=$id error=$e',
+      );
       return Left(Failure.unknown(message: e.toString()));
     }
   }

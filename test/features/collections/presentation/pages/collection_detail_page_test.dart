@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'dart:async';
 import 'package:musea/features/collections/data/models/collection_model.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/pages/collection_detail_page.dart';
@@ -90,6 +91,345 @@ void main() {
     expect(find.text('Preview'), findsOneWidget);
     expect(find.text('Collection Facts'), findsOneWidget);
     expect(find.text('Follow'), findsOneWidget);
+  });
+
+  testWidgets(
+      'CollectionDetailPage renders initial collection immediately while detail hydrates',
+      (tester) async {
+    final pending = Completer<Collection>();
+    const initialCollection = Collection(
+      id: 'collection-progressive',
+      title: 'United States',
+      description: 'Curated travel references.',
+      totalPhotos: 316,
+      user: curator,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-progressive').overrideWith(
+            (ref) => pending.future,
+          ),
+          collectionPhotosProvider('collection-progressive').overrideWith(
+            (ref) => <Photo>[],
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(
+            collectionId: 'collection-progressive',
+            initialCollection: initialCollection,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.text('United States'), findsOneWidget);
+    expect(find.text('Curated travel references.'), findsOneWidget);
+    expect(find.byType(PhotoGrid), findsNothing);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(
+      find.byKey(const ValueKey('collection-detail-preview-skeleton')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('collection-detail-facts-skeleton')),
+      findsOneWidget,
+    );
+  });
+
+  testWidgets(
+      'CollectionDetailPage deep link without initial collection keeps full-page loading and error states',
+      (tester) async {
+    final pending = Completer<Collection>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-deep-link').overrideWith(
+            (ref) => pending.future,
+          ),
+          collectionPhotosProvider('collection-deep-link').overrideWith(
+            (ref) => <Photo>[],
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(collectionId: 'collection-deep-link'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.byType(Center), findsWidgets);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+
+    pending.completeError(Exception('detail failed'));
+    await tester.pumpAndSettle();
+
+    expect(find.textContaining('detail failed'), findsOneWidget);
+    expect(find.text('Collection Summary'), findsNothing);
+  });
+
+  testWidgets('CollectionDetailPage back button is safe when route cannot pop',
+      (tester) async {
+    const collection = Collection(
+      id: 'collection-root',
+      title: 'Root Entry',
+      description: 'Opened directly',
+      totalPhotos: 12,
+      user: curator,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-root').overrideWith(
+            (ref) => collection,
+          ),
+          collectionPhotosProvider('collection-root').overrideWith(
+            (ref) => <Photo>[],
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(collectionId: 'collection-root'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    await tester.pumpAndSettle();
+
+    expect(tester.takeException(), isNull);
+    expect(find.text('Root Entry'), findsOneWidget);
+  });
+
+  testWidgets(
+      'CollectionDetailPage keeps initial content and shows deferred detail retry when hydration fails',
+      (tester) async {
+    const initialCollection = Collection(
+      id: 'collection-error',
+      title: 'United States',
+      description: 'Curated travel references.',
+      totalPhotos: 316,
+      user: curator,
+    );
+
+    var attempts = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-error')
+              .overrideWith((ref) async {
+            attempts++;
+            throw Exception('detail failed');
+          }),
+          collectionPhotosProvider('collection-error').overrideWith(
+            (ref) => [
+              buildPhoto(id: 'photo-1', name: 'Feed photo'),
+            ],
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(
+            collectionId: 'collection-error',
+            initialCollection: initialCollection,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('United States'), findsOneWidget);
+    expect(find.text('Curated travel references.'), findsOneWidget);
+    expect(find.text('Inside the collection'), findsOneWidget);
+    expect(find.byType(PhotoGrid), findsOneWidget);
+    expect(find.text('Retry loading details'), findsAtLeastNWidgets(1));
+
+    final retryButton = tester.widgetList<TextButton>(
+      find.widgetWithText(TextButton, 'Retry loading details'),
+    );
+    retryButton.first.onPressed!.call();
+    await tester.pump();
+    await tester.pump();
+
+    expect(attempts, greaterThan(1));
+  });
+
+  testWidgets(
+      'CollectionDetailPage replaces deferred UI when hydrated detail succeeds',
+      (tester) async {
+    final pending = Completer<Collection>();
+    const initialCollection = Collection(
+      id: 'collection-hydrate-success',
+      title: 'United States',
+      description: 'Curated travel references.',
+      totalPhotos: 316,
+      user: curator,
+    );
+    final hydratedCollection = Collection(
+      id: 'collection-hydrate-success',
+      title: 'United States',
+      description: 'Curated travel references.',
+      totalPhotos: 316,
+      publishedAt: DateTime(2024, 1, 2),
+      updatedAt: DateTime(2024, 1, 3),
+      lastCollectedAt: DateTime(2024, 1, 4),
+      previewPhotos: [
+        const PreviewPhoto(
+          id: 'preview-1',
+          thumbUrl: 'https://example.com/p1-thumb.jpg',
+          smallUrl: 'https://example.com/p1-small.jpg',
+          regularUrl: 'https://example.com/p1-regular.jpg',
+        ),
+      ],
+      user: curator,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-hydrate-success').overrideWith(
+            (ref) => pending.future,
+          ),
+          collectionPhotosProvider('collection-hydrate-success').overrideWith(
+            (ref) => <Photo>[],
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(
+            collectionId: 'collection-hydrate-success',
+            initialCollection: initialCollection,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('collection-detail-preview-skeleton')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('collection-detail-facts-skeleton')),
+      findsOneWidget,
+    );
+
+    pending.complete(hydratedCollection);
+    await tester.pump();
+    await tester.pump();
+
+    expect(
+      find.byKey(const ValueKey('collection-detail-preview-skeleton')),
+      findsNothing,
+    );
+    expect(
+      find.byKey(const ValueKey('collection-detail-facts-skeleton')),
+      findsNothing,
+    );
+    expect(find.text('Preview unavailable until details finish loading.'),
+        findsNothing);
+    expect(find.text('Retry loading details'), findsNothing);
+    expect(find.text('Published'), findsOneWidget);
+    expect(find.text('Jan 2, 2024'), findsAtLeastNWidgets(1));
+  });
+
+  testWidgets(
+      'CollectionDetailPage shows preview deferred fallback while photo feed stays independent on hydration failure',
+      (tester) async {
+    const initialCollection = Collection(
+      id: 'collection-preview-error',
+      title: 'United States',
+      description: 'Curated travel references.',
+      totalPhotos: 316,
+      user: curator,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-preview-error')
+              .overrideWith((ref) async {
+            throw Exception('detail failed');
+          }),
+          collectionPhotosProvider('collection-preview-error').overrideWith(
+            (ref) => [
+              buildPhoto(id: 'photo-1', name: 'Feed first'),
+              buildPhoto(id: 'photo-2', name: 'Feed second'),
+            ],
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(
+            collectionId: 'collection-preview-error',
+            initialCollection: initialCollection,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.text('First four photos'), findsOneWidget);
+    expect(find.text('Preview unavailable until details finish loading.'),
+        findsOneWidget);
+    expect(
+        find.text('Preview will appear when photos are added'), findsNothing);
+    expect(find.text('Inside the collection'), findsOneWidget);
+    expect(find.byType(PhotoGrid), findsOneWidget);
+    expect(find.byType(PhotoGridTile), findsNWidgets(2));
+  });
+
+  testWidgets('CollectionDetailPage feed error retry invalidates photo feed',
+      (tester) async {
+    const collection = Collection(
+      id: 'collection-feed-retry',
+      title: 'Feed Retry',
+      totalPhotos: 316,
+      user: curator,
+    );
+    var attempts = 0;
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-feed-retry').overrideWith(
+            (ref) => collection,
+          ),
+          collectionPhotosProvider('collection-feed-retry').overrideWith(
+            (ref) async {
+              attempts++;
+              throw Exception('feed failed');
+            },
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(collectionId: 'collection-feed-retry'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.textContaining('feed failed'), findsOneWidget);
+
+    final retryButton = tester.widget<ElevatedButton>(
+      find.widgetWithText(ElevatedButton, 'Try Again'),
+    );
+    retryButton.onPressed!.call();
+    await tester.pump();
+    await tester.pump();
+
+    expect(attempts, greaterThan(1));
   });
 
   testWidgets(

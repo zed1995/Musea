@@ -8,21 +8,46 @@ import 'package:musea/features/discover/presentation/providers/photos_provider.d
 import 'package:musea/features/photo_detail/presentation/widgets/color_palette_bar.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/download_sheet.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 
 class PhotoDetailPage extends ConsumerWidget {
-  const PhotoDetailPage({super.key, required this.photoId});
+  const PhotoDetailPage({
+    super.key,
+    required this.photoId,
+    this.initialPhoto,
+    this.hydrateDeferredDetailsFromInitialPhoto = false,
+  });
 
   final String photoId;
+  final Photo? initialPhoto;
+  final bool hydrateDeferredDetailsFromInitialPhoto;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final photoAsync = ref.watch(photoDetailProvider(photoId));
+    final resolvedPhoto = photoAsync.valueOrNull ?? initialPhoto;
+    final isUsingInitialPhoto =
+        initialPhoto != null && photoAsync.valueOrNull == null;
+    final shouldHydrateDeferredSections =
+        isUsingInitialPhoto && hydrateDeferredDetailsFromInitialPhoto;
+
+    if (resolvedPhoto != null) {
+      return _PhotoDetailContent(
+        photo: resolvedPhoto,
+        heroPhoto: initialPhoto ?? resolvedPhoto,
+        isHydratingDeferredContent:
+            photoAsync.isLoading && shouldHydrateDeferredSections,
+        showDeferredRetry: photoAsync.hasError && shouldHydrateDeferredSections,
+        onRetryDeferred: () => ref.invalidate(photoDetailProvider(photoId)),
+      );
+    }
 
     return photoAsync.when(
       data: (photo) => _PhotoDetailContent(
         photo: photo,
+        heroPhoto: photo,
       ),
       loading: () => const Scaffold(
         body: Center(child: LoadingIndicator()),
@@ -36,22 +61,34 @@ class PhotoDetailPage extends ConsumerWidget {
       ),
     );
   }
-
 }
 
 class _PhotoDetailContent extends ConsumerWidget {
   const _PhotoDetailContent({
     required this.photo,
+    required this.heroPhoto,
+    this.isHydratingDeferredContent = false,
+    this.showDeferredRetry = false,
+    this.onRetryDeferred,
   });
 
   final Photo photo;
+  final Photo heroPhoto;
+  final bool isHydratingDeferredContent;
+  final bool showDeferredRetry;
+  final VoidCallback? onRetryDeferred;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final showTagSkeleton = isHydratingDeferredContent && photo.tags.isEmpty;
+    final showExifSkeleton = isHydratingDeferredContent && photo.exif == null;
+    final showDeferredError =
+        showDeferredRetry && (photo.tags.isEmpty || photo.exif == null);
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: _PhotoHero(photo: photo)),
+          SliverToBoxAdapter(child: _PhotoHero(photo: heroPhoto)),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
@@ -72,6 +109,10 @@ class _PhotoDetailContent extends ConsumerWidget {
                       ),
                     ),
                   ],
+                  if (showDeferredError) ...[
+                    const SizedBox(height: 16),
+                    _DeferredRetryBanner(onRetry: onRetryDeferred),
+                  ],
                   if (photo.tags.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Wrap(
@@ -80,6 +121,19 @@ class _PhotoDetailContent extends ConsumerWidget {
                       children: photo.tags
                           .map((tag) => _TagChip(label: tag.title))
                           .toList(),
+                    ),
+                  ] else if (showTagSkeleton) ...[
+                    const SizedBox(height: 16),
+                    const _DeferredSectionSkeleton(
+                      key: ValueKey('photo-detail-tags-skeleton'),
+                      title: 'TAGS',
+                      lines: 2,
+                    ),
+                  ] else if (showDeferredError) ...[
+                    const SizedBox(height: 16),
+                    const _DeferredSectionPlaceholder(
+                      title: 'TAGS',
+                      message: 'Tags unavailable until details finish loading.',
                     ),
                   ],
                   if (_exifItems.isNotEmpty) ...[
@@ -97,6 +151,20 @@ class _PhotoDetailContent extends ConsumerWidget {
                     ),
                     const SizedBox(height: 0),
                     _ExifGrid(items: _exifItems),
+                  ] else if (showExifSkeleton) ...[
+                    const SizedBox(height: 18),
+                    const _DeferredSectionSkeleton(
+                      key: ValueKey('photo-detail-exif-skeleton'),
+                      title: 'CAMERA INFO',
+                      lines: 3,
+                    ),
+                  ] else if (showDeferredError) ...[
+                    const SizedBox(height: 18),
+                    const _DeferredSectionPlaceholder(
+                      title: 'CAMERA INFO',
+                      message:
+                          'Camera details unavailable until hydration succeeds.',
+                    ),
                   ],
                   if (photo.color.isNotEmpty) ...[
                     const SizedBox(height: 18),
@@ -162,33 +230,82 @@ class _PhotoDetailContent extends ConsumerWidget {
   }
 }
 
-class _PhotoHero extends StatelessWidget {
+class _PhotoHero extends StatefulWidget {
   const _PhotoHero({required this.photo});
 
   final Photo photo;
 
   @override
+  State<_PhotoHero> createState() => _PhotoHeroState();
+}
+
+class _PhotoHeroState extends State<_PhotoHero> {
+  final GlobalKey _frameKey = GlobalKey();
+  double? _lockedHeight;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleHeightLock();
+  }
+
+  @override
+  void didUpdateWidget(covariant _PhotoHero oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (_lockedHeight == null) {
+      _scheduleHeightLock();
+    }
+  }
+
+  void _scheduleHeightLock() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || _lockedHeight != null) return;
+      final context = _frameKey.currentContext;
+      final renderBox = context?.findRenderObject() as RenderBox?;
+      final height = renderBox?.size.height;
+      if (height != null && height > 0) {
+        setState(() {
+          _lockedHeight = height;
+        });
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Hero(
-          tag: photo.id,
-          child: CachedNetworkImage(
-            imageUrl: photo.urlRegular,
-            width: double.infinity,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Container(
-              height: 320,
-              color: Color(int.parse(photo.color.replaceFirst('#', '0xFF'))),
-              child: const Center(child: LoadingIndicator()),
-            ),
-            errorWidget: (context, url, error) => Container(
-              height: 320,
-              color: AppColors.gray200,
-              child: const Icon(Icons.broken_image, size: 48),
-            ),
+    final heroImage = Hero(
+      tag: widget.photo.id,
+      child: CachedNetworkImage(
+        imageUrl: widget.photo.urlRegular,
+        width: double.infinity,
+        fit: BoxFit.cover,
+        placeholder: (context, url) => Container(
+          height: 320,
+          color: Color(
+            int.parse(widget.photo.color.replaceFirst('#', '0xFF')),
           ),
+          child: const Center(child: LoadingIndicator()),
         ),
+        errorWidget: (context, url, error) => Container(
+          height: 320,
+          color: AppColors.gray200,
+          child: const Icon(Icons.broken_image, size: 48),
+        ),
+      ),
+    );
+
+    return Stack(
+      key: _frameKey,
+      children: [
+        if (_lockedHeight != null)
+          SizedBox(
+            key: const ValueKey('photo-detail-hero-frame'),
+            height: _lockedHeight,
+            width: double.infinity,
+            child: heroImage,
+          )
+        else
+          heroImage,
         Positioned.fill(
           child: DecoratedBox(
             decoration: BoxDecoration(
@@ -214,10 +331,10 @@ class _PhotoHero extends StatelessWidget {
               children: [
                 _HeroActionButton(
                   icon: Icons.arrow_back_ios_new,
-                  onTap: () => context.pop(),
+                  onTap: () => Navigator.maybePop(context),
                 ),
-                Row(
-                  children: const [
+                const Row(
+                  children: [
                     _HeroActionButton(icon: Icons.bookmark_border),
                     SizedBox(width: 8),
                     _HeroActionButton(icon: Icons.ios_share),
@@ -451,6 +568,124 @@ class _SectionDivider extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Divider(height: 1, thickness: 1, color: Color(0xFFF4F4F5));
+  }
+}
+
+class _DeferredRetryBanner extends StatelessWidget {
+  const _DeferredRetryBanner({this.onRetry});
+
+  final VoidCallback? onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: const Color(0xFFF8FAFC),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: Row(
+        children: [
+          const Expanded(
+            child: Text(
+              'Some detail sections could not be loaded yet.',
+              style: TextStyle(
+                fontSize: 12,
+                color: Color(0xFF475569),
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          TextButton(
+            onPressed: onRetry,
+            child: const Text('Retry loading details'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DeferredSectionSkeleton extends StatelessWidget {
+  const _DeferredSectionSkeleton({
+    super.key,
+    required this.title,
+    required this.lines,
+  });
+
+  final String title;
+  final int lines;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionDivider(),
+        const SizedBox(height: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF71717A),
+            letterSpacing: 1.0,
+          ),
+        ),
+        const SizedBox(height: 10),
+        for (var index = 0; index < lines; index++) ...[
+          Container(
+            height: 12,
+            width: index.isEven ? 160 : 120,
+            decoration: BoxDecoration(
+              color: const Color(0xFFE4E4E7),
+              borderRadius: BorderRadius.circular(999),
+            ),
+          ),
+          if (index != lines - 1) const SizedBox(height: 8),
+        ],
+      ],
+    );
+  }
+}
+
+class _DeferredSectionPlaceholder extends StatelessWidget {
+  const _DeferredSectionPlaceholder({
+    required this.title,
+    required this.message,
+  });
+
+  final String title;
+  final String message;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const _SectionDivider(),
+        const SizedBox(height: 10),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF71717A),
+            letterSpacing: 1.0,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Text(
+          message,
+          style: const TextStyle(
+            fontSize: 12,
+            color: Color(0xFF71717A),
+            height: 1.5,
+          ),
+        ),
+      ],
+    );
   }
 }
 
@@ -734,7 +969,10 @@ class _MoreFromPhotographer extends ConsumerWidget {
                   itemBuilder: (context, index) {
                     final item = displayPhotos[index];
                     return GestureDetector(
-                      onTap: () => context.push('/photo/${item.id}'),
+                      onTap: () => context.push(
+                        '/photo/${item.id}',
+                        extra: PhotoDetailExtra(photo: item),
+                      ),
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: CachedNetworkImage(

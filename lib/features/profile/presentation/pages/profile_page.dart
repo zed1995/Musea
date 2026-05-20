@@ -8,6 +8,7 @@ import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 
@@ -205,7 +206,10 @@ class _LikesSection extends StatelessWidget {
               itemBuilder: (context, index) {
                 final photo = photos[index];
                 return GestureDetector(
-                  onTap: () => context.push('/photo/${photo.id}'),
+                  onTap: () => context.push(
+                    '/photo/${photo.id}',
+                    extra: PhotoDetailExtra(photo: photo),
+                  ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(18),
                     child: CachedNetworkImage(
@@ -431,7 +435,10 @@ class _PhotosSection extends StatelessWidget {
               itemBuilder: (context, index) {
                 final photo = photos[index];
                 return GestureDetector(
-                  onTap: () => context.push('/photo/${photo.id}'),
+                  onTap: () => context.push(
+                    '/photo/${photo.id}',
+                    extra: PhotoDetailExtra(photo: photo),
+                  ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(18),
                     child: CachedNetworkImage(
@@ -460,34 +467,6 @@ class _PhotosSection extends StatelessWidget {
             ),
           ),
         ),
-      ],
-    );
-  }
-}
-
-class _PlaceholderSection extends StatelessWidget {
-  const _PlaceholderSection({
-    required this.eyebrow,
-    required this.title,
-    required this.message,
-  });
-
-  final String eyebrow;
-  final String title;
-  final String message;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _SectionHeader(
-          eyebrow: eyebrow,
-          title: title,
-          actionLabel: 'See all',
-        ),
-        const SizedBox(height: 12),
-        _SectionEmptyCard(message: message),
       ],
     );
   }
@@ -580,7 +559,10 @@ class _ProfileCollectionCard extends StatelessWidget {
             : null);
 
     return GestureDetector(
-      onTap: () => context.push('/collection/${collection.id}'),
+      onTap: () => context.push(
+        '/collection/${collection.id}',
+        extra: CollectionDetailExtra(collection: collection),
+      ),
       child: Container(
         clipBehavior: Clip.antiAlias,
         decoration: BoxDecoration(

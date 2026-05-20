@@ -5,6 +5,7 @@ import 'package:musea/features/collections/presentation/pages/collections_page.d
 import 'package:musea/features/discover/presentation/pages/discover_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
+import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/features/search/presentation/pages/search_page.dart';
 import 'package:musea/shared/widgets/bottom_nav_bar.dart';
 
@@ -58,7 +59,12 @@ final appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final id = state.pathParameters['id']!;
-        return PhotoDetailPage(photoId: id);
+        return PhotoDetailPage(
+          photoId: id,
+          initialPhoto: photoDetailFromExtra(state.extra),
+          hydrateDeferredDetailsFromInitialPhoto:
+              photoDetailShouldHydrateFromExtra(state.extra),
+        );
       },
     ),
     GoRoute(
@@ -74,7 +80,10 @@ final appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final id = state.pathParameters['id']!;
-        return CollectionDetailPage(collectionId: id);
+        return CollectionDetailPage(
+          collectionId: id,
+          initialCollection: collectionDetailFromExtra(state.extra),
+        );
       },
     ),
   ],
