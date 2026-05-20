@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:musea/features/discover/data/models/photo_model.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
+import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/color_palette_bar.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/router/detail_route_extras.dart';
 
 void main() {
   Photo buildPhoto({
@@ -187,5 +190,64 @@ void main() {
       findsAtLeastNWidgets(2),
     );
     expect(find.text('Camera'), findsAtLeastNWidgets(2));
+  });
+
+  testWidgets('PhotoDetailPage hero opens photo viewer',
+      (tester) async {
+    final photo = buildPhoto(
+      id: 'photo-main',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+    );
+
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => PhotoDetailPage(
+            photoId: photo.id,
+            initialPhoto: photo,
+          ),
+        ),
+        GoRoute(
+          path: '/photo/:id/viewer',
+          builder: (context, state) {
+            final extra = state.extra as PhotoViewerExtra?;
+            return PhotoViewerPage(
+              photoId: state.pathParameters['id']!,
+              initialPhoto: extra!.photo,
+            );
+          },
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photoDetailProvider(photo.id).overrideWith((ref) => photo),
+          userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+
+    await tester.pump();
+
+    await tester.tap(find.byKey(const ValueKey('photo-detail-hero-tap-target')));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.byType(PhotoViewerPage), findsOneWidget);
+    expect(
+      find.byKey(const ValueKey('photo-viewer-dismiss-area')),
+      findsOneWidget,
+    );
+    expect(
+      find.byKey(const ValueKey('photo-viewer-image-tap-target')),
+      findsOneWidget,
+    );
+    expect(find.byType(InteractiveViewer), findsOneWidget);
   });
 }

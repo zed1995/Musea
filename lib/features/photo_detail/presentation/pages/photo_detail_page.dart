@@ -37,6 +37,10 @@ class PhotoDetailPage extends ConsumerWidget {
       return _PhotoDetailContent(
         photo: resolvedPhoto,
         heroPhoto: initialPhoto ?? resolvedPhoto,
+        onHeroTap: () => context.push(
+          '/photo/$photoId/viewer',
+          extra: PhotoViewerExtra(photo: resolvedPhoto),
+        ),
         isHydratingDeferredContent:
             photoAsync.isLoading && shouldHydrateDeferredSections,
         showDeferredRetry: photoAsync.hasError && shouldHydrateDeferredSections,
@@ -48,6 +52,10 @@ class PhotoDetailPage extends ConsumerWidget {
       data: (photo) => _PhotoDetailContent(
         photo: photo,
         heroPhoto: photo,
+        onHeroTap: () => context.push(
+          '/photo/$photoId/viewer',
+          extra: PhotoViewerExtra(photo: photo),
+        ),
       ),
       loading: () => const Scaffold(
         body: Center(child: LoadingIndicator()),
@@ -67,6 +75,7 @@ class _PhotoDetailContent extends ConsumerWidget {
   const _PhotoDetailContent({
     required this.photo,
     required this.heroPhoto,
+    this.onHeroTap,
     this.isHydratingDeferredContent = false,
     this.showDeferredRetry = false,
     this.onRetryDeferred,
@@ -74,6 +83,7 @@ class _PhotoDetailContent extends ConsumerWidget {
 
   final Photo photo;
   final Photo heroPhoto;
+  final VoidCallback? onHeroTap;
   final bool isHydratingDeferredContent;
   final bool showDeferredRetry;
   final VoidCallback? onRetryDeferred;
@@ -88,7 +98,12 @@ class _PhotoDetailContent extends ConsumerWidget {
     return Scaffold(
       body: CustomScrollView(
         slivers: [
-          SliverToBoxAdapter(child: _PhotoHero(photo: heroPhoto)),
+          SliverToBoxAdapter(
+            child: _PhotoHero(
+              photo: heroPhoto,
+              onTap: onHeroTap,
+            ),
+          ),
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
@@ -231,9 +246,13 @@ class _PhotoDetailContent extends ConsumerWidget {
 }
 
 class _PhotoHero extends StatefulWidget {
-  const _PhotoHero({required this.photo});
+  const _PhotoHero({
+    required this.photo,
+    this.onTap,
+  });
 
   final Photo photo;
+  final VoidCallback? onTap;
 
   @override
   State<_PhotoHero> createState() => _PhotoHeroState();
@@ -275,21 +294,26 @@ class _PhotoHeroState extends State<_PhotoHero> {
   Widget build(BuildContext context) {
     final heroImage = Hero(
       tag: widget.photo.id,
-      child: CachedNetworkImage(
-        imageUrl: widget.photo.urlRegular,
-        width: double.infinity,
-        fit: BoxFit.cover,
-        placeholder: (context, url) => Container(
-          height: 320,
-          color: Color(
-            int.parse(widget.photo.color.replaceFirst('#', '0xFF')),
+      child: GestureDetector(
+        key: const ValueKey('photo-detail-hero-tap-target'),
+        behavior: HitTestBehavior.opaque,
+        onTap: widget.onTap,
+        child: CachedNetworkImage(
+          imageUrl: widget.photo.urlRegular,
+          width: double.infinity,
+          fit: BoxFit.cover,
+          placeholder: (context, url) => Container(
+            height: 320,
+            color: Color(
+              int.parse(widget.photo.color.replaceFirst('#', '0xFF')),
+            ),
+            child: const Center(child: LoadingIndicator()),
           ),
-          child: const Center(child: LoadingIndicator()),
-        ),
-        errorWidget: (context, url, error) => Container(
-          height: 320,
-          color: AppColors.gray200,
-          child: const Icon(Icons.broken_image, size: 48),
+          errorWidget: (context, url, error) => Container(
+            height: 320,
+            color: AppColors.gray200,
+            child: const Icon(Icons.broken_image, size: 48),
+          ),
         ),
       ),
     );
@@ -307,17 +331,19 @@ class _PhotoHeroState extends State<_PhotoHero> {
         else
           heroImage,
         Positioned.fill(
-          child: DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.34),
-                  Colors.black.withValues(alpha: 0.08),
-                  Colors.transparent,
-                ],
-                stops: const [0.0, 0.72, 1.0],
+          child: IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.34),
+                    Colors.black.withValues(alpha: 0.08),
+                    Colors.transparent,
+                  ],
+                  stops: const [0.0, 0.72, 1.0],
+                ),
               ),
             ),
           ),

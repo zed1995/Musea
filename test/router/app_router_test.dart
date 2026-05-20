@@ -12,6 +12,7 @@ import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/discover/presentation/providers/topics_provider.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
+import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/router/detail_route_extras.dart';
 
@@ -154,5 +155,41 @@ void main() {
     expect(collectionPage.collectionId, collection.id);
     expect(collectionPage.initialCollection, same(collection));
     expect(find.text('Forest Archive'), findsWidgets);
+  });
+
+  testWidgets('router forwards photo extra into photo viewer page',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photosProvider(1).overrideWith((ref) => <Photo>[photo]),
+          photoDetailProvider('photo-1').overrideWith((ref) => photo),
+          topicsProvider.overrideWith((ref) => <Topic>[]),
+          collectionsProvider(1).overrideWith((ref) => <Collection>[]),
+          userProfileProvider('forest').overrideWith((ref) => user),
+          userPhotosProvider('forest').overrideWith((ref) => <Photo>[photo]),
+          userCollectionsProvider('forest')
+              .overrideWith((ref) => <Collection>[collection]),
+          userLikesProvider('forest').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MuseaApp(),
+      ),
+    );
+
+    await tester.pump(const Duration(milliseconds: 200));
+
+    final appContext = tester.element(find.byType(Scaffold).first);
+    GoRouter.of(appContext).go(
+      '/photo/${photo.id}/viewer',
+      extra: PhotoViewerExtra(photo: photo),
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final viewerPage = tester.widget<PhotoViewerPage>(
+      find.byType(PhotoViewerPage),
+    );
+    expect(viewerPage.initialPhoto, same(photo));
+    expect(viewerPage.photoId, photo.id);
   });
 }

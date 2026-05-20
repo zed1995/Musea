@@ -4,6 +4,7 @@ import 'package:musea/features/collections/presentation/pages/collection_detail_
 import 'package:musea/features/collections/presentation/pages/collections_page.dart';
 import 'package:musea/features/discover/presentation/pages/discover_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
+import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/features/search/presentation/pages/search_page.dart';
@@ -64,6 +65,37 @@ final appRouter = GoRouter(
           initialPhoto: photoDetailFromExtra(state.extra),
           hydrateDeferredDetailsFromInitialPhoto:
               photoDetailShouldHydrateFromExtra(state.extra),
+        );
+      },
+    ),
+    GoRoute(
+      path: '/photo/:id/viewer',
+      parentNavigatorKey: _rootNavigatorKey,
+      pageBuilder: (context, state) {
+        final id = state.pathParameters['id']!;
+        return CustomTransitionPage<void>(
+          key: state.pageKey,
+          opaque: false,
+          barrierDismissible: false,
+          transitionDuration: const Duration(milliseconds: 280),
+          reverseTransitionDuration: const Duration(milliseconds: 240),
+          child: PhotoViewerPage(
+            photoId: id,
+            initialPhoto: photoViewerFromExtra(state.extra),
+            heroTag: photoViewerHeroTagFromExtra(state.extra),
+          ),
+          transitionsBuilder: (context, animation, secondaryAnimation, child) {
+            final fade = CurvedAnimation(
+              parent: animation,
+              curve: Curves.easeOutCubic,
+              reverseCurve: Curves.easeInCubic,
+            );
+
+            return FadeTransition(
+              opacity: fade,
+              child: child,
+            );
+          },
         );
       },
     ),
