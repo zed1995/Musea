@@ -17,8 +17,9 @@ import 'package:musea/features/discover/presentation/providers/topics_provider.d
 class MockPhotoRepository extends Mock implements PhotoRepository {}
 
 class TestTopicListNotifier extends TopicListNotifier {
+  TestTopicListNotifier(List<Topic> topics) : initialTopics = topics;
+
   final List<Topic> initialTopics;
-  TestTopicListNotifier(this.initialTopics);
 
   @override
   List<Topic> build() => initialTopics;
@@ -79,6 +80,21 @@ void main() {
     );
   }
 
+  void stubGetPhotos(
+    MockPhotoRepository repository, {
+    required List<Photo> photos,
+  }) {
+    when(
+      () => repository.getPhotos(
+        page: any(named: 'page'),
+        perPage: any(named: 'perPage'),
+      ),
+    ).thenAnswer((invocation) async {
+      final page = invocation.namedArguments[#page] as int? ?? 1;
+      return Right(page == 1 ? photos : <Photo>[]);
+    });
+  }
+
   final session = AuthSession(
     accessToken: 'access-token',
     tokenType: 'bearer',
@@ -102,6 +118,9 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final repository = MockPhotoRepository();
+    stubGetPhotos(repository, photos: [photo]);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -109,7 +128,7 @@ void main() {
           authRedirectUriProvider.overrideWithValue(
             Uri.parse('musea://auth/callback'),
           ),
-          photosProvider(1).overrideWith((ref) => <Photo>[photo]),
+          photoRepositoryProvider.overrideWithValue(repository),
           topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
         ],
         child: const MaterialApp(
@@ -143,6 +162,7 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
+    final repository = MockPhotoRepository();
     final photos = List.generate(
       10,
       (i) => Photo(
@@ -163,6 +183,7 @@ void main() {
         user: user,
       ),
     );
+    stubGetPhotos(repository, photos: photos);
 
     await tester.pumpWidget(
       ProviderScope(
@@ -171,7 +192,7 @@ void main() {
           authRedirectUriProvider.overrideWithValue(
             Uri.parse('musea://auth/callback'),
           ),
-          photosProvider(1).overrideWith((ref) => photos),
+          photoRepositoryProvider.overrideWithValue(repository),
           topicsProvider.overrideWith(() => TestTopicListNotifier([
             const Topic(
               slug: 'nature',
@@ -206,6 +227,263 @@ void main() {
         reason: 'Filter tabs should remain visible after scrolling');
   });
 
+  testWidgets('switching topic does not auto-paginate from previous scroll position',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = MockPhotoRepository();
+    final allPhotos = List.generate(
+      12,
+      (i) => Photo(
+        id: 'all-$i',
+        createdAt: DateTime(2024, 1, 1),
+        width: 1200,
+        height: 1600,
+        color: '#AABBCC',
+        description: 'All photo $i',
+        altDescription: 'All description $i',
+        urlRaw: 'https://example.com/all-$i/raw.jpg',
+        urlFull: 'https://example.com/all-$i/full.jpg',
+        urlRegular: 'https://example.com/all-$i/regular.jpg',
+        urlSmall: 'https://example.com/all-$i/small.jpg',
+        urlThumb: 'https://example.com/all-$i/thumb.jpg',
+        likes: 80,
+        downloads: 20,
+        user: user,
+      ),
+    );
+    final topicPhotos = <Photo>[
+      Photo(
+        id: 'nature-1',
+        createdAt: DateTime(2024, 1, 1),
+        width: 1200,
+        height: 1600,
+        color: '#99CC88',
+        description: 'Nature photo',
+        altDescription: 'Nature description',
+        urlRaw: 'https://example.com/nature/raw.jpg',
+        urlFull: 'https://example.com/nature/full.jpg',
+        urlRegular: 'https://example.com/nature/regular.jpg',
+        urlSmall: 'https://example.com/nature/small.jpg',
+        urlThumb: 'https://example.com/nature/thumb.jpg',
+        likes: 40,
+        downloads: 10,
+        user: user,
+      ),
+    ];
+
+    when(
+      () => repository.getPhotos(page: any(named: 'page'), perPage: any(named: 'perPage')),
+    ).thenAnswer((invocation) async {
+      final page = invocation.namedArguments[#page] as int? ?? 1;
+      return Right(page == 1 ? allPhotos : <Photo>[]);
+    });
+    when(
+      () => repository.getTopicPhotos(
+        'nature',
+        page: any(named: 'page'),
+        perPage: any(named: 'perPage'),
+      ),
+    ).thenAnswer((invocation) async {
+      final page = invocation.namedArguments[#page] as int? ?? 1;
+      return Right(page == 1 ? topicPhotos : <Photo>[]);
+    });
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authBootstrapSessionProvider.overrideWithValue(null),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
+          photoRepositoryProvider.overrideWithValue(repository),
+          topicsProvider.overrideWith(
+            () => TestTopicListNotifier([
+              const Topic(
+                slug: 'nature',
+                title: 'Nature',
+                id: '1',
+                totalPhotos: 10,
+              ),
+            ]),
+          ),
+        ],
+        child: const MaterialApp(
+          home: DiscoverPage(),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(DiscoverPage)),
+    );
+    await container.read(discoverFeedProvider(null).notifier).loadMore();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    await tester.tap(find.text('Nature'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    verifyNever(
+      () => repository.getTopicPhotos(
+        'nature',
+        page: 2,
+        perPage: any(named: 'perPage'),
+      ),
+    );
+  });
+
+  testWidgets('switching tabs preserves each feed data independently',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final repository = MockPhotoRepository();
+    final allPageOne = List.generate(
+      10,
+      (i) => Photo(
+        id: 'all-$i',
+        createdAt: DateTime(2024, 1, 1),
+        width: 1200,
+        height: 1600,
+        color: '#AABBCC',
+        description: 'All photo $i',
+        altDescription: 'All description $i',
+        urlRaw: 'https://example.com/all-$i/raw.jpg',
+        urlFull: 'https://example.com/all-$i/full.jpg',
+        urlRegular: 'https://example.com/all-$i/regular.jpg',
+        urlSmall: 'https://example.com/all-$i/small.jpg',
+        urlThumb: 'https://example.com/all-$i/thumb.jpg',
+        likes: 80,
+        downloads: 20,
+        user: user,
+      ),
+    );
+    final allPageTwo = <Photo>[
+      Photo(
+        id: 'all-10',
+        createdAt: DateTime(2024, 1, 1),
+        width: 1200,
+        height: 1600,
+        color: '#AACCEE',
+        description: 'All photo 10',
+        altDescription: 'All description 10',
+        urlRaw: 'https://example.com/all-10/raw.jpg',
+        urlFull: 'https://example.com/all-10/full.jpg',
+        urlRegular: 'https://example.com/all-10/regular.jpg',
+        urlSmall: 'https://example.com/all-10/small.jpg',
+        urlThumb: 'https://example.com/all-10/thumb.jpg',
+        likes: 10,
+        downloads: 2,
+        user: user,
+      ),
+    ];
+    final naturePhotos = <Photo>[
+      Photo(
+        id: 'nature-1',
+        createdAt: DateTime(2024, 1, 1),
+        width: 1200,
+        height: 1600,
+        color: '#99CC88',
+        description: 'Nature photo',
+        altDescription: 'Nature description',
+        urlRaw: 'https://example.com/nature/raw.jpg',
+        urlFull: 'https://example.com/nature/full.jpg',
+        urlRegular: 'https://example.com/nature/regular.jpg',
+        urlSmall: 'https://example.com/nature/small.jpg',
+        urlThumb: 'https://example.com/nature/thumb.jpg',
+        likes: 40,
+        downloads: 10,
+        user: user,
+      ),
+    ];
+
+    when(
+      () => repository.getPhotos(
+        page: any(named: 'page'),
+        perPage: any(named: 'perPage'),
+      ),
+    ).thenAnswer((invocation) async {
+      final page = invocation.namedArguments[#page] as int? ?? 1;
+      if (page == 1) return Right(allPageOne);
+      if (page == 2) return Right(allPageTwo);
+      return const Right(<Photo>[]);
+    });
+    when(
+      () => repository.getTopicPhotos(
+        'nature',
+        page: any(named: 'page'),
+        perPage: any(named: 'perPage'),
+      ),
+    ).thenAnswer((_) async => Right(naturePhotos));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authBootstrapSessionProvider.overrideWithValue(null),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
+          photoRepositoryProvider.overrideWithValue(repository),
+          topicsProvider.overrideWith(
+            () => TestTopicListNotifier([
+              const Topic(
+                slug: 'nature',
+                title: 'Nature',
+                id: '1',
+                totalPhotos: 10,
+              ),
+            ]),
+          ),
+        ],
+        child: const MaterialApp(
+          home: DiscoverPage(),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    final container = ProviderScope.containerOf(
+      tester.element(find.byType(DiscoverPage)),
+    );
+    await container.read(discoverFeedProvider(null).notifier).loadMore();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    verify(() => repository.getPhotos(page: 2, perPage: any(named: 'perPage')))
+        .called(1);
+    clearInteractions(repository);
+
+    await tester.tap(find.text('Nature'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+    verify(
+      () => repository.getTopicPhotos(
+        'nature',
+        page: 1,
+        perPage: any(named: 'perPage'),
+      ),
+    ).called(1);
+
+    await tester.tap(find.text('All'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    verifyNever(
+      () => repository.getPhotos(page: 2, perPage: any(named: 'perPage')),
+    );
+  });
+
   testWidgets('authenticated like tap calls Unsplash API and toggles state',
       (tester) async {
     tester.view.physicalSize = const Size(430, 1400);
@@ -216,6 +494,7 @@ void main() {
     final repository = MockPhotoRepository();
     final likedPhoto = buildPhoto(likedByUser: true, likes: 81);
     final unlikedPhoto = buildPhoto(likedByUser: false, likes: 80);
+    stubGetPhotos(repository, photos: [photo]);
 
     when(
       () => repository.likePhoto('photo-1'),
@@ -232,7 +511,6 @@ void main() {
             Uri.parse('musea://auth/callback'),
           ),
           photoRepositoryProvider.overrideWithValue(repository),
-          photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
         ],
         child: const MaterialApp(

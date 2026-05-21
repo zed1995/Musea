@@ -14,23 +14,39 @@ class ApiInterceptor extends Interceptor {
           : ApiConstants.publicHeaders['Authorization']!;
     }
 
-    debugPrint('REQUEST[${options.method}] => PATH: ${options.path}');
-    super.onRequest(options, handler);
+    handler.next(options);
   }
 
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     debugPrint(
-      'RESPONSE[${response.statusCode}] => PATH: ${response.requestOptions.path}',
+      'HTTP url=${_fullUrl(response.requestOptions)} '
+      'resp=${response.data} '
+      'rate_limit_remaining=${_rateLimitRemaining(response.headers)}',
     );
-    super.onResponse(response, handler);
+    handler.next(response);
   }
 
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     debugPrint(
-      'ERROR[${err.response?.statusCode}] => PATH: ${err.requestOptions.path}',
+      'HTTP_ERROR url=${_fullUrl(err.requestOptions)} '
+      'status=${err.response?.statusCode ?? 'unknown'} '
+      'resp=${err.response?.data} '
+      'rate_limit_remaining=${_rateLimitRemaining(err.response?.headers)} '
+      'error=${err.message ?? err.error}',
     );
-    super.onError(err, handler);
+    handler.next(err);
+  }
+
+  String _fullUrl(RequestOptions options) {
+    final uri = options.uri;
+    if (uri.hasScheme) return uri.toString();
+    return '${options.baseUrl}${options.path}';
+  }
+
+  String _rateLimitRemaining(Headers? headers) {
+    final remaining = headers?.value('x-ratelimit-remaining');
+    return remaining ?? 'unknown';
   }
 }

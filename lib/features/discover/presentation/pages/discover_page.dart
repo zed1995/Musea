@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
@@ -24,7 +25,7 @@ class DiscoverPage extends ConsumerStatefulWidget {
 class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   String? _selectedTopicSlug;
   final ScrollController _scrollController = ScrollController();
-  int _currentPage = 1;
+  final Map<String, double> _scrollOffsets = {};
 
   @override
   void initState() {
@@ -39,34 +40,43 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   }
 
   void _onScroll() {
-    if (_scrollController.position.pixels >=
-        _scrollController.position.maxScrollExtent - 200) {
-      _loadMore();
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+    _scrollOffsets[_currentFeedKey] = position.pixels;
+
+    if (!position.hasPixels || !position.hasContentDimensions) return;
+    if (position.maxScrollExtent <= 0) return;
+    if (position.userScrollDirection != ScrollDirection.reverse) return;
+
+    if (position.pixels >= position.maxScrollExtent - 200) {
+      ref.read(discoverFeedProvider(_selectedTopicSlug).notifier).loadMore();
     }
   }
 
-  void _loadMore() {
-    setState(() {
-      _currentPage++;
-    });
-  }
-
   void _onTopicTap(String? slug) {
+    if (_selectedTopicSlug == slug) return;
+
+    if (_scrollController.hasClients) {
+      _scrollOffsets[_currentFeedKey] = _scrollController.position.pixels;
+    }
+
     setState(() {
       _selectedTopicSlug = slug;
-      _currentPage = 1;
+    });
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_scrollController.hasClients) return;
+      final targetOffset = _scrollOffsets[_currentFeedKey] ?? 0;
+      final maxExtent = _scrollController.position.maxScrollExtent;
+      _scrollController.jumpTo(targetOffset.clamp(0, maxExtent));
     });
   }
 
   @override
   Widget build(BuildContext context) {
     final topics = ref.watch(topicsProvider);
-    final photosAsync = _selectedTopicSlug == null
-        ? ref.watch(photosProvider(_currentPage))
-        : ref.watch(topicPhotosProvider(
-            TopicPhotosParams(
-                topicSlug: _selectedTopicSlug!, page: _currentPage),
-          ));
+    final feedState = ref.watch(discoverFeedProvider(_selectedTopicSlug));
 
     return Scaffold(
       body: SafeArea(
@@ -88,15 +98,34 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
-                  ref.invalidate(photosProvider);
+                  await ref
+                      .read(discoverFeedProvider(_selectedTopicSlug).notifier)
+                      .refresh();
                 },
                 child: CustomScrollView(
                   controller: _scrollController,
                   slivers: [
-                    photosAsync.when(
-                      data: (photos) => PhotoFeed(
-                        photos: photos,
-                        isLoadingMore: false,
+                    if (feedState.isInitialLoading)
+                      const SliverFillRemaining(
+                        child: Center(child: LoadingIndicator()),
+                      )
+                    else if (feedState.error != null &&
+                        feedState.photos.isEmpty)
+                      SliverFillRemaining(
+                        child: ErrorState(
+                          message: feedState.error.toString(),
+                          onRetry: () {
+                            ref
+                                .read(discoverFeedProvider(_selectedTopicSlug)
+                                    .notifier)
+                                .refresh();
+                          },
+                        ),
+                      )
+                    else
+                      PhotoFeed(
+                        photos: feedState.photos,
+                        isLoadingMore: feedState.isLoadingMore,
                         onPhotoTap: (photo) => context.push(
                           '/photo/${photo.id}',
                           extra: PhotoDetailExtra(photo: photo),
@@ -107,16 +136,6 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                         onLikeTap: (photo) => _toggleLike(photo),
                         onBookmarkTap: (photo) => _handleDownload(context),
                       ),
-                      loading: () => const SliverFillRemaining(
-                        child: Center(child: LoadingIndicator()),
-                      ),
-                      error: (error, stack) => SliverFillRemaining(
-                        child: ErrorState(
-                          message: error.toString(),
-                          onRetry: () => ref.invalidate(photosProvider),
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -274,4 +293,6 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
       extra: PhotoDetailExtra(photo: randomPhoto),
     );
   }
+
+  String get _currentFeedKey => _selectedTopicSlug ?? discoverAllFeedKey;
 }

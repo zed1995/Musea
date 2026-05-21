@@ -18,11 +18,6 @@ class DioClient {
 
     dio.interceptors.addAll([
       ApiInterceptor(),
-      LogInterceptor(
-        requestBody: true,
-        responseBody: true,
-        error: true,
-      ),
     ]);
 
     return dio;

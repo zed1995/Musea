@@ -75,11 +75,22 @@ final topicPhotosProvider = FutureProvider.family<List<Photo>, TopicPhotosParams
 });
 
 class TopicPhotosParams {
-  final String topicSlug;
-  final int page;
-
   TopicPhotosParams({
     required this.topicSlug,
     this.page = 1,
   });
+
+  final String topicSlug;
+  final int page;
+
+  @override
+  bool operator ==(Object other) {
+    if (identical(this, other)) return true;
+    return other is TopicPhotosParams &&
+        other.topicSlug == topicSlug &&
+        other.page == page;
+  }
+
+  @override
+  int get hashCode => Object.hash(topicSlug, page);
 }
