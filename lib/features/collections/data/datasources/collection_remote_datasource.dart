@@ -5,6 +5,17 @@ import 'package:musea/features/discover/data/models/photo_model.dart';
 
 abstract class CollectionRemoteDataSource {
   Future<List<CollectionModel>> getCollections({int page = 1, int perPage = 20});
+  Future<CollectionModel> updateCollection(
+    String id, {
+    String? title,
+    String? description,
+    bool? private,
+  });
+  Future<void> deleteCollection(String id);
+  Future<void> removePhotoFromCollection({
+    required String collectionId,
+    required String photoId,
+  });
   Future<List<CollectionModel>> getUserCollections(
     String username, {
     int page = 1,
@@ -86,6 +97,36 @@ class CollectionRemoteDataSourceImpl implements CollectionRemoteDataSource {
     return (response as List)
         .map((json) => PhotoModel.fromJson(json))
         .toList();
+  }
+
+  @override
+  Future<CollectionModel> updateCollection(
+    String id, {String? title, String? description, bool? private,
+  }) async {
+    final response = await _dioClient.put(
+      '${ApiConstants.collections}/$id',
+      data: {
+        if (title != null) 'title': title,
+        if (description != null) 'description': description,
+        if (private != null) 'private': private,
+      },
+    );
+    return CollectionModel.fromJson(response);
+  }
+
+  @override
+  Future<void> deleteCollection(String id) async {
+    await _dioClient.delete('${ApiConstants.collections}/$id');
+  }
+
+  @override
+  Future<void> removePhotoFromCollection({
+    required String collectionId, required String photoId,
+  }) async {
+    await _dioClient.delete(
+      ApiConstants.collectionRemove(collectionId),
+      data: {'photo_id': photoId},
+    );
   }
 
   @override

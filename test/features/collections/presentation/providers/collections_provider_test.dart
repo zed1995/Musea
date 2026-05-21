@@ -49,6 +49,59 @@ void main() {
 
     secondSub.close();
   });
+
+  test('updateCollectionProvider returns updated collection', () async {
+    final repository = _FakeCollectionRepository();
+    final container = ProviderContainer(
+      overrides: [
+        collectionRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    final result = await container.read(
+      updateCollectionProvider((
+        id: 'col-1',
+        title: 'New Title',
+        description: 'Desc',
+        private: false,
+      )).future,
+    );
+    expect(result.title, 'New Title');
+  });
+
+  test('deleteCollectionProvider completes successfully', () async {
+    final repository = _FakeCollectionRepository();
+    final container = ProviderContainer(
+      overrides: [
+        collectionRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await expectLater(
+      container.read(deleteCollectionProvider('col-1').future),
+      completes,
+    );
+  });
+
+  test('removePhotoFromCollectionProvider completes successfully', () async {
+    final repository = _FakeCollectionRepository();
+    final container = ProviderContainer(
+      overrides: [
+        collectionRepositoryProvider.overrideWithValue(repository),
+      ],
+    );
+    addTearDown(container.dispose);
+
+    await expectLater(
+      container.read(removePhotoFromCollectionProvider((
+        collectionId: 'col-1',
+        photoId: 'photo-123',
+      )).future),
+      completes,
+    );
+  });
 }
 
 class _FakeCollectionRepository implements CollectionRepository {
@@ -111,6 +164,25 @@ class _FakeCollectionRepository implements CollectionRepository {
     required String photoId,
   }) {
     throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, Collection>> updateCollection(
+    String id, {String? title, String? description, bool? private,
+  }) async {
+    return Right(Collection(id: id, title: title ?? 'Updated', totalPhotos: 0));
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteCollection(String id) async {
+    return const Right(null);
+  }
+
+  @override
+  Future<Either<Failure, void>> removePhotoFromCollection({
+    required String collectionId, required String photoId,
+  }) async {
+    return const Right(null);
   }
 }
 

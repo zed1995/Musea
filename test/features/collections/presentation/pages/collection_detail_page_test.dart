@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'dart:async';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/data/models/collection_model.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/pages/collection_detail_page.dart';
@@ -73,6 +74,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-1').overrideWith(
             (ref) => collection,
           ),
@@ -110,6 +112,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-progressive').overrideWith(
             (ref) => pending.future,
           ),
@@ -150,6 +153,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-deep-link').overrideWith(
             (ref) => pending.future,
           ),
@@ -188,6 +192,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-root').overrideWith(
             (ref) => collection,
           ),
@@ -225,6 +230,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-error')
               .overrideWith((ref) async {
             attempts++;
@@ -297,6 +303,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-hydrate-success').overrideWith(
             (ref) => pending.future,
           ),
@@ -357,6 +364,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-preview-error')
               .overrideWith((ref) async {
             throw Exception('detail failed');
@@ -403,6 +411,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-feed-retry').overrideWith(
             (ref) => collection,
           ),
@@ -452,6 +461,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-feed').overrideWith(
             (ref) => collection,
           ),
@@ -497,6 +507,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-liked-feed').overrideWith(
             (ref) => collection,
           ),
@@ -531,6 +542,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-2').overrideWith(
             (ref) => collection,
           ),
@@ -563,6 +575,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-3').overrideWith(
             (ref) => collection,
           ),
@@ -635,6 +648,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-5').overrideWith(
             (ref) => collection,
           ),
@@ -671,6 +685,7 @@ void main() {
           path: '/',
           builder: (context, state) => ProviderScope(
             overrides: [
+              currentAuthStateProvider.overrideWithValue(const AuthState()),
               collectionDetailProvider('collection-4').overrideWith(
                 (ref) => collection,
               ),

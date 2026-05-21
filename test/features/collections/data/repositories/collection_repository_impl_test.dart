@@ -142,4 +142,73 @@ group('addPhotoToCollection', () {
     );
   });
 });
+
+group('updateCollection', () {
+  test('returns Right with Collection on success', () async {
+    final model = CollectionModel(
+      id: 'col-1', title: 'Updated', description: 'New desc',
+      isPrivate: false, totalPhotos: 5,
+    );
+    when(() => mockDataSource.updateCollection(
+      any(), title: any(named: 'title'),
+      description: any(named: 'description'), private: any(named: 'private'),
+    )).thenAnswer((_) async => model);
+
+    final result = await repository.updateCollection(
+      'col-1', title: 'Updated', description: 'New desc', private: false,
+    );
+    expect(result, isA<Right<Failure, Collection>>());
+    expect(result.getOrElse(() => throw 'unexpected').title, 'Updated');
+  });
+
+  test('returns Left with ServerFailure on exception', () async {
+    when(() => mockDataSource.updateCollection(
+      any(), title: any(named: 'title'),
+      description: any(named: 'description'), private: any(named: 'private'),
+    )).thenThrow(ServerException(statusCode: 500, message: 'Server error'));
+
+    final result = await repository.updateCollection('col-1', title: 'Test');
+    expect(result, isA<Left<Failure, Collection>>());
+  });
+});
+
+group('deleteCollection', () {
+  test('returns Right on success', () async {
+    when(() => mockDataSource.deleteCollection(any()))
+        .thenAnswer((_) async => null);
+    final result = await repository.deleteCollection('col-1');
+    expect(result, isA<Right<Failure, void>>());
+  });
+
+  test('returns Left on exception', () async {
+    when(() => mockDataSource.deleteCollection(any()))
+        .thenThrow(ServerException(statusCode: 500, message: 'Error'));
+    final result = await repository.deleteCollection('col-1');
+    expect(result, isA<Left<Failure, void>>());
+  });
+});
+
+group('removePhotoFromCollection', () {
+  test('returns Right on success', () async {
+    when(() => mockDataSource.removePhotoFromCollection(
+      collectionId: any(named: 'collectionId'),
+      photoId: any(named: 'photoId'),
+    )).thenAnswer((_) async => null);
+    final result = await repository.removePhotoFromCollection(
+      collectionId: 'col-1', photoId: 'photo-123',
+    );
+    expect(result, isA<Right<Failure, void>>());
+  });
+
+  test('returns Left on exception', () async {
+    when(() => mockDataSource.removePhotoFromCollection(
+      collectionId: any(named: 'collectionId'),
+      photoId: any(named: 'photoId'),
+    )).thenThrow(ServerException(statusCode: 500, message: 'Error'));
+    final result = await repository.removePhotoFromCollection(
+      collectionId: 'col-1', photoId: 'photo-123',
+    );
+    expect(result, isA<Left<Failure, void>>());
+  });
+});
 }

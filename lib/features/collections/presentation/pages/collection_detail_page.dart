@@ -4,8 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/core/theme/text_styles.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
+import 'package:musea/features/collections/presentation/pages/collection_remove_photos_page.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
+import 'package:musea/features/collections/presentation/widgets/collection_delete_sheet.dart';
+import 'package:musea/features/collections/presentation/widgets/collection_edit_sheet.dart';
+import 'package:musea/features/collections/presentation/widgets/collection_manage_sheet.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/router/detail_route_extras.dart';
@@ -31,6 +36,9 @@ class CollectionDetailPage extends ConsumerWidget {
     final resolvedCollection = hydratedCollection ?? initialCollection;
     final isUsingInitialCollection =
         initialCollection != null && hydratedCollection == null;
+    final authState = ref.watch(currentAuthStateProvider);
+    final isOwner = authState?.isAuthenticated == true &&
+        authState?.session?.user.id == resolvedCollection?.user?.id;
     final showDeferredPreview =
         isUsingInitialCollection && _hasDeferredPreviewGap(initialCollection!);
     final showDeferredFacts =
@@ -50,6 +58,7 @@ class CollectionDetailPage extends ConsumerWidget {
       return _CollectionDetailContent(
         collection: resolvedCollection,
         photosAsync: photosAsync,
+        isOwner: isOwner,
         allowPhotoFeedPreviewFallback: !isUsingInitialCollection,
         onRetryFeed: () =>
             ref.invalidate(collectionPhotosProvider(collectionId)),
@@ -66,12 +75,17 @@ class CollectionDetailPage extends ConsumerWidget {
     }
 
     return collectionAsync.when(
-      data: (collection) => _CollectionDetailContent(
-        collection: collection,
-        photosAsync: photosAsync,
-        onRetryFeed: () =>
-            ref.invalidate(collectionPhotosProvider(collectionId)),
-      ),
+      data: (collection) {
+        final dataIsOwner = authState?.isAuthenticated == true &&
+            authState?.session?.user.id == collection.user?.id;
+        return _CollectionDetailContent(
+          collection: collection,
+          photosAsync: photosAsync,
+          isOwner: dataIsOwner,
+          onRetryFeed: () =>
+              ref.invalidate(collectionPhotosProvider(collectionId)),
+        );
+      },
       loading: () => const Scaffold(
         body: Center(child: LoadingIndicator()),
       ),
@@ -100,6 +114,7 @@ class _CollectionDetailContent extends StatelessWidget {
   const _CollectionDetailContent({
     required this.collection,
     required this.photosAsync,
+    this.isOwner = false,
     this.allowPhotoFeedPreviewFallback = true,
     required this.onRetryFeed,
     this.showDeferredPreviewSkeleton = false,
@@ -111,6 +126,7 @@ class _CollectionDetailContent extends StatelessWidget {
 
   final Collection collection;
   final AsyncValue<List<Photo>> photosAsync;
+  final bool isOwner;
   final bool allowPhotoFeedPreviewFallback;
   final VoidCallback onRetryFeed;
   final bool showDeferredPreviewSkeleton;
@@ -118,6 +134,22 @@ class _CollectionDetailContent extends StatelessWidget {
   final bool showDeferredFactSkeleton;
   final bool showDeferredFactRetry;
   final VoidCallback? onRetryDeferred;
+
+  void _showManageSheet(BuildContext context) {
+    final photosList = photosAsync.valueOrNull ?? [];
+    showCollectionManageSheet(
+      context,
+      collection: collection,
+      onEdit: () =>
+          showCollectionEditSheet(context, collection: collection),
+      onRemovePhotos: () => context.push(
+        '/collection/${collection.id}/remove',
+        extra: collection.title,
+      ),
+      onDelete: () =>
+          showCollectionDeleteSheet(context, collection: collection),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,6 +168,8 @@ class _CollectionDetailContent extends StatelessWidget {
             child: _CollectionHero(
               collection: collection,
               coverUrl: _coverUrl(collection),
+              isOwner: isOwner,
+              onManageTap: () => _showManageSheet(context),
             ),
           ),
           SliverToBoxAdapter(
@@ -257,10 +291,14 @@ class _CollectionHero extends StatelessWidget {
   const _CollectionHero({
     required this.collection,
     required this.coverUrl,
+    this.isOwner = false,
+    this.onManageTap,
   });
 
   final Collection collection;
   final String? coverUrl;
+  final bool isOwner;
+  final VoidCallback? onManageTap;
 
   @override
   Widget build(BuildContext context) {
@@ -314,11 +352,13 @@ class _CollectionHero extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          _GlassActionButton(
-                            icon: Icons.bookmark_border_rounded,
-                            onPressed: () {},
-                          ),
-                          const SizedBox(width: 8),
+                          if (isOwner) ...[
+                            _GlassActionButton(
+                              icon: Icons.grid_view_rounded,
+                              onPressed: onManageTap ?? () {},
+                            ),
+                            const SizedBox(width: 8),
+                          ],
                           _GlassActionButton(
                             icon: Icons.ios_share_rounded,
                             onPressed: () {},

@@ -187,4 +187,60 @@ class CollectionRepositoryImpl implements CollectionRepository {
       return Left(Failure.unknown(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, Collection>> updateCollection(
+    String id, {String? title, String? description, bool? private,
+  }) async {
+    try {
+      final collection = await remoteDataSource.updateCollection(
+        id, title: title, description: description, private: private,
+      );
+      return Right(collection.toEntity());
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> deleteCollection(String id) async {
+    try {
+      await remoteDataSource.deleteCollection(id);
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> removePhotoFromCollection({
+    required String collectionId, required String photoId,
+  }) async {
+    try {
+      await remoteDataSource.removePhotoFromCollection(
+        collectionId: collectionId, photoId: photoId,
+      );
+      return const Right(null);
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
 }

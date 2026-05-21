@@ -60,6 +60,60 @@ final AutoDisposeFutureProviderFamily<List<Photo>, String>
   );
 });
 
+final updateCollectionProvider = FutureProvider.family<Collection, ({
+  String id,
+  String? title,
+  String? description,
+  bool? private,
+})>((ref, params) async {
+  final repository = ref.watch(collectionRepositoryProvider);
+  final result = await repository.updateCollection(
+    params.id,
+    title: params.title,
+    description: params.description,
+    private: params.private,
+  );
+  return result.fold(
+    (failure) => throw _mapFailureToException(failure),
+    (collection) {
+      ref.invalidate(collectionDetailProvider(params.id));
+      return collection;
+    },
+  );
+});
+
+final deleteCollectionProvider =
+    FutureProvider.family<void, String>((ref, id) async {
+  final repository = ref.watch(collectionRepositoryProvider);
+  final result = await repository.deleteCollection(id);
+  return result.fold(
+    (failure) => throw _mapFailureToException(failure),
+    (_) {
+      ref.invalidate(collectionsProvider(1));
+      return;
+    },
+  );
+});
+
+final removePhotoFromCollectionProvider = FutureProvider.family<void, ({
+  String collectionId,
+  String photoId,
+})>((ref, params) async {
+  final repository = ref.watch(collectionRepositoryProvider);
+  final result = await repository.removePhotoFromCollection(
+    collectionId: params.collectionId,
+    photoId: params.photoId,
+  );
+  return result.fold(
+    (failure) => throw _mapFailureToException(failure),
+    (_) {
+      ref.invalidate(collectionDetailProvider(params.collectionId));
+      ref.invalidate(collectionPhotosProvider(params.collectionId));
+      return;
+    },
+  );
+});
+
 Exception _mapFailureToException(Failure failure) {
   return failure.when(
     network: (message) => Exception('Network error: $message'),

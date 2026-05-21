@@ -79,6 +79,106 @@ void main() {
     });
   });
 
+group('updateCollection', () {
+    test('sends PUT with title, description, private and returns CollectionModel', () async {
+      when(
+        () => dioClient.put(
+          '/collections/col-1',
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer((_) async => <String, dynamic>{
+            'id': 'col-1',
+            'title': 'Updated Title',
+            'description': 'Updated desc',
+            'private': false,
+            'total_photos': 5,
+          });
+
+      final result = await dataSource.updateCollection(
+        'col-1',
+        title: 'Updated Title',
+        description: 'Updated desc',
+        private: false,
+      );
+
+      verify(
+        () => dioClient.put(
+          '/collections/col-1',
+          data: {
+            'title': 'Updated Title',
+            'description': 'Updated desc',
+            'private': false,
+          },
+        ),
+      ).called(1);
+
+      expect(result, isA<CollectionModel>());
+      expect(result.title, 'Updated Title');
+    });
+
+    test('sends PUT with partial fields when optional params omitted', () async {
+      when(
+        () => dioClient.put(
+          '/collections/col-1',
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer((_) async => <String, dynamic>{
+            'id': 'col-1',
+            'title': 'Just Title',
+            'total_photos': 3,
+          });
+
+      final result = await dataSource.updateCollection(
+        'col-1',
+        title: 'Just Title',
+      );
+
+      verify(
+        () => dioClient.put(
+          '/collections/col-1',
+          data: {'title': 'Just Title'},
+        ),
+      ).called(1);
+
+      expect(result.title, 'Just Title');
+    });
+  });
+
+  group('deleteCollection', () {
+    test('sends DELETE and succeeds', () async {
+      when(
+        () => dioClient.delete('/collections/col-1'),
+      ).thenAnswer((_) async => null);
+
+      await dataSource.deleteCollection('col-1');
+
+      verify(() => dioClient.delete('/collections/col-1')).called(1);
+    });
+  });
+
+  group('removePhotoFromCollection', () {
+    test('sends DELETE to /collections/{id}/remove with photo_id', () async {
+      when(
+        () => dioClient.delete(
+          '/collections/col-1/remove',
+          data: any(named: 'data'),
+        ),
+      ).thenAnswer((_) async => null);
+
+      await dataSource.removePhotoFromCollection(
+        collectionId: 'col-1',
+        photoId: 'photo-123',
+      );
+
+      verify(
+        () => dioClient.delete(
+          '/collections/col-1/remove',
+          data: {'photo_id': 'photo-123'},
+        ),
+      ).called(1);
+    });
+  });
+
 group('addPhotoToCollection', () {
   test('sends POST to /collections/{id}/add with photo_id', () async {
     when(

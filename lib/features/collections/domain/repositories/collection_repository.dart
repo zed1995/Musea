@@ -29,4 +29,18 @@ abstract class CollectionRepository {
     required String collectionId,
     required String photoId,
   });
+
+  Future<Either<Failure, Collection>> updateCollection(
+    String id, {
+    String? title,
+    String? description,
+    bool? private,
+  });
+
+  Future<Either<Failure, void>> deleteCollection(String id);
+
+  Future<Either<Failure, void>> removePhotoFromCollection({
+    required String collectionId,
+    required String photoId,
+  });
 }

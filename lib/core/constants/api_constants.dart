@@ -71,4 +71,6 @@ class ApiConstants {
       '$users/$username/collections';
   static String collectionAdd(String collectionId) =>
       '$collections/$collectionId/add';
+  static String collectionRemove(String collectionId) =>
+      '$collections/$collectionId/remove';
 }

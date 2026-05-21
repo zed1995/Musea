@@ -14,6 +14,10 @@ import 'package:musea/features/auth/domain/entities/auth_session.dart';
 import 'package:musea/features/auth/domain/repositories/auth_repository.dart';
 
 final authBootstrapSessionProvider = Provider<AuthSession?>((ref) => null);
+
+final currentAuthStateProvider = Provider<AuthState?>((ref) {
+  return ref.watch(authControllerProvider);
+});
 final authClockProvider = Provider<DateTime Function()>((ref) => DateTime.now);
 final authRedirectUriProvider = Provider<Uri>((ref) {
   return Uri.parse(ApiConstants.redirectUri);
