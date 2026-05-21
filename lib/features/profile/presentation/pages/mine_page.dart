@@ -94,6 +94,8 @@ class _SignedOutMineView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomScrollPadding = MediaQuery.paddingOf(context).bottom + 40;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: Column(
@@ -103,13 +105,14 @@ class _SignedOutMineView extends StatelessWidget {
             child: const SafeArea(
               bottom: false,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
+                padding: EdgeInsets.fromLTRB(12, 12, 12, 10),
                 child: _MineGuestTopBar(),
               ),
             ),
           ),
           Expanded(
             child: SingleChildScrollView(
+              padding: EdgeInsets.only(bottom: bottomScrollPadding),
               child: Column(
                 children: [
                   _buildHeroContent(),
@@ -207,7 +210,7 @@ class _SignedOutMineView extends StatelessWidget {
                   Expanded(
                     child: _QuickActionChip(
                       icon: Icons.visibility_outlined,
-                      label: 'Public profiles still work',
+                      label: 'Browse profiles',
                       onTap: () {},
                     ),
                   ),
@@ -261,7 +264,8 @@ class _GuestTopBarButton extends StatelessWidget {
       ),
       child: IconButton(
         onPressed: () {},
-        icon: const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF27272A)),
+        icon:
+            const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF27272A)),
         padding: EdgeInsets.zero,
       ),
     );
@@ -376,16 +380,20 @@ class _SignInCard extends StatelessWidget {
                         ),
                       )
                     : const Row(
-                        mainAxisSize: MainAxisSize.min,
+                        mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(Icons.chevron_right_rounded, size: 20),
                           SizedBox(width: 8),
-                          Text(
-                            'Continue with Unsplash',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
+                          Flexible(
+                            child: Text(
+                              'Continue with Unsplash',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
                             ),
                           ),
                         ],
@@ -592,12 +600,16 @@ class _GuestChip extends StatelessWidget {
         border: Border.all(color: const Color(0xFFEAEAF0)),
       ),
       alignment: Alignment.center,
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 12,
-          fontWeight: FontWeight.w700,
-          color: Color(0xFF3F3F46),
+      child: FittedBox(
+        fit: BoxFit.scaleDown,
+        child: Text(
+          label,
+          maxLines: 1,
+          style: const TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            color: Color(0xFF3F3F46),
+          ),
         ),
       ),
     );
@@ -1114,32 +1126,47 @@ class _QuickActionChip extends StatelessWidget {
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(999),
-      child: Container(
-        height: 44,
-        padding: const EdgeInsets.symmetric(horizontal: 14),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(999),
-          border: Border.all(color: const Color(0xFFEAEAF0)),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon, size: 16, color: const Color(0xFF18181B)),
-            const SizedBox(width: 8),
-            Flexible(
-              child: Text(
-                label,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF18181B),
-                ),
-              ),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final text = Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF18181B),
             ),
-          ],
-        ),
+          );
+
+          return Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(color: const Color(0xFFEAEAF0)),
+            ),
+            child: constraints.maxWidth.isFinite
+                ? Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(icon, size: 16, color: const Color(0xFF18181B)),
+                      const SizedBox(width: 6),
+                      Expanded(child: text),
+                    ],
+                  )
+                : Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(icon, size: 16, color: const Color(0xFF18181B)),
+                      const SizedBox(width: 6),
+                      text,
+                    ],
+                  ),
+          );
+        },
       ),
     );
   }
@@ -1304,7 +1331,6 @@ class _SectionEmptyCard extends StatelessWidget {
     );
   }
 }
-
 
 String _formatCount(int count) {
   if (count >= 1000000) {

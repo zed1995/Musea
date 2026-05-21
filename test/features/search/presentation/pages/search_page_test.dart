@@ -163,6 +163,12 @@ void main() {
     await tester.pumpWidget(buildApp());
     await tester.pumpAndSettle();
 
+    expect(find.text('Start typing to search'), findsOneWidget);
+    expect(find.text('Forest Archive'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('search-submit-button')));
+    await tester.pumpAndSettle();
+
     expect(find.text('Photos'), findsWidgets);
     expect(find.text('Collections'), findsWidgets);
     expect(find.text('Users'), findsWidgets);
@@ -174,6 +180,9 @@ void main() {
   testWidgets('SearchPage opens and closes the photo filter panel',
       (tester) async {
     await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('search-submit-button')));
     await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(const Key('photo-filter-trigger')));
@@ -193,6 +202,9 @@ void main() {
   testWidgets('SearchPage switches to collections and users segments',
       (tester) async {
     await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('search-submit-button')));
     await tester.pumpAndSettle();
 
     await tester.tap(find.text('Collections').last);
@@ -231,7 +243,25 @@ void main() {
     await tester.enterText(find.byType(TextField), 'desert');
     await tester.pumpAndSettle();
 
-    expect(find.text('Forest Archive'), findsOneWidget);
+    expect(find.text('Start typing to search'), findsOneWidget);
+    expect(find.text('Forest Archive'), findsNothing);
+    expect(find.text('No matching photos'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('search-submit-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No matching photos'), findsOneWidget);
+  });
+
+  testWidgets('SearchPage does not search on keyboard submit', (tester) async {
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'desert');
+    await tester.testTextInput.receiveAction(TextInputAction.search);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Start typing to search'), findsOneWidget);
     expect(find.text('No matching photos'), findsNothing);
 
     await tester.tap(find.byKey(const Key('search-submit-button')));

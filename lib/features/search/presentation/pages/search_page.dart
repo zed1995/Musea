@@ -36,6 +36,10 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   static const double _photoFilterPanelHeight = 210;
   late final TextEditingController _controller;
   late String _submittedQuery;
+  late PhotoSortOption _submittedSortOption;
+  late PhotoColorOption _submittedColorOption;
+  late PhotoOrientationOption _submittedOrientationOption;
+  late PhotoContentSafetyOption _submittedContentSafetyOption;
   SearchSegment _segment = SearchSegment.photos;
   bool _isFilterPanelVisible = false;
   PhotoSortOption _sortOption = PhotoSortOption.relevant;
@@ -47,7 +51,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialQuery);
-    _submittedQuery = widget.initialQuery.trim();
+    _submittedQuery = '';
+    _submittedSortOption = _sortOption;
+    _submittedColorOption = _colorOption;
+    _submittedOrientationOption = _orientationOption;
+    _submittedContentSafetyOption = _contentSafetyOption;
     _controller.addListener(() => setState(() {}));
   }
 
@@ -211,10 +219,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   void _submitSearch() {
     final query = _controller.text.trim();
-    if (query == _submittedQuery) return;
+    final hasQueryChanged = query != _submittedQuery;
+    final haveFiltersChanged = _sortOption != _submittedSortOption ||
+        _colorOption != _submittedColorOption ||
+        _orientationOption != _submittedOrientationOption ||
+        _contentSafetyOption != _submittedContentSafetyOption;
+    if (!hasQueryChanged && !haveFiltersChanged) return;
 
     setState(() {
       _submittedQuery = query;
+      _submittedSortOption = _sortOption;
+      _submittedColorOption = _colorOption;
+      _submittedOrientationOption = _orientationOption;
+      _submittedContentSafetyOption = _contentSafetyOption;
       _isFilterPanelVisible = false;
     });
   }
@@ -222,23 +239,23 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   PhotoSearchParams _photoParams(String query) {
     return PhotoSearchParams(
       query: query,
-      orderBy: switch (_sortOption) {
+      orderBy: switch (_submittedSortOption) {
         PhotoSortOption.relevant => 'relevant',
         PhotoSortOption.latest => 'latest',
       },
-      color: switch (_colorOption) {
+      color: switch (_submittedColorOption) {
         PhotoColorOption.any => null,
         PhotoColorOption.green => 'green',
         PhotoColorOption.blue => 'blue',
         PhotoColorOption.blackAndWhite => 'black_and_white',
       },
-      orientation: switch (_orientationOption) {
+      orientation: switch (_submittedOrientationOption) {
         PhotoOrientationOption.any => null,
         PhotoOrientationOption.landscape => 'landscape',
         PhotoOrientationOption.portrait => 'portrait',
         PhotoOrientationOption.squarish => 'squarish',
       },
-      contentFilter: switch (_contentSafetyOption) {
+      contentFilter: switch (_submittedContentSafetyOption) {
         PhotoContentSafetyOption.low => 'low',
         PhotoContentSafetyOption.high => 'high',
       },
@@ -321,8 +338,7 @@ class _SearchHeader extends StatelessWidget {
                         child: TextField(
                           controller: controller,
                           autofocus: true,
-                          textInputAction: TextInputAction.search,
-                          onSubmitted: (_) => onSearch(),
+                          textInputAction: TextInputAction.done,
                           decoration: const InputDecoration(
                             isCollapsed: true,
                             border: InputBorder.none,

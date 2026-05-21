@@ -13,6 +13,11 @@ import 'package:musea/shared/widgets/collection_card.dart';
 
 void main() {
   testWidgets('Mine tab shows sign-in surface when signed out', (tester) async {
+    tester.view.physicalSize = const Size(393, 852);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -34,9 +39,32 @@ void main() {
       find.text('Your visual archive, synced with Unsplash'),
       findsOneWidget,
     );
-    expect(find.text('You can keep exploring as a guest'), findsOneWidget);
+    expect(
+        find.text('You can keep exploring without signing in'), findsOneWidget);
     expect(find.text('Continue with Unsplash'), findsAtLeastNWidgets(1));
     expect(find.text('What you unlock'), findsNothing);
+
+    final scrollView = tester.widget<SingleChildScrollView>(
+      find.byType(SingleChildScrollView),
+    );
+    final scrollPadding = scrollView.padding as EdgeInsets? ?? EdgeInsets.zero;
+    expect(scrollPadding.bottom, greaterThan(0));
+
+    final topBarPadding = tester.widgetList<Padding>(find.byType(Padding)).firstWhere(
+      (widget) {
+        final padding = widget.padding;
+        return padding is EdgeInsets &&
+            padding.left == 12 &&
+            padding.top == 12 &&
+            padding.right == 12;
+      },
+    );
+    expect((topBarPadding.padding as EdgeInsets).bottom, greaterThan(0));
+
+    final collectionsChips = tester.widgetList<Text>(find.text('Collections'));
+    expect(collectionsChips.any((widget) => widget.maxLines == 1), isTrue);
+
+    expect(find.text('Browse profiles'), findsOneWidget);
   });
 
   testWidgets('Mine tab shows cached profile content when signed in',

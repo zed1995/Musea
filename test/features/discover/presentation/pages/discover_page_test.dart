@@ -142,8 +142,32 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    expect(find.text('Save this to your Musea flow'), findsOneWidget);
-    expect(find.text('Continue with Unsplash'), findsOneWidget);
+    expect(find.text('Sign in to like photos'), findsOneWidget);
+    expect(
+      find.text(
+        'Save what moves you, keep your visual trail together, and sync every like with your Unsplash account.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text('Liked photos'), findsOneWidget);
+    expect(find.text('Save for later'), findsOneWidget);
+    expect(find.text('Not now'), findsOneWidget);
+    expect(find.text('Continue with Unsplash'), findsAtLeastNWidgets(2));
+
+    final sheetContainer = tester.widgetList<Container>(find.byType(Container)).firstWhere(
+      (widget) {
+        final padding = widget.padding;
+        final decoration = widget.decoration;
+        return padding is EdgeInsets &&
+            padding.left == 16 &&
+            padding.top == 10 &&
+            padding.right == 16 &&
+            decoration is BoxDecoration &&
+            decoration.borderRadius ==
+                const BorderRadius.vertical(top: Radius.circular(28));
+      },
+    );
+    expect((sheetContainer.padding as EdgeInsets).bottom, 0);
 
     final containers = tester.widgetList<Container>(find.byType(Container));
     expect(
@@ -155,7 +179,8 @@ void main() {
     );
   });
 
-  testWidgets('search bar and filter tabs remain fixed when scrolling photo feed',
+  testWidgets(
+      'search bar and filter tabs remain fixed when scrolling photo feed',
       (tester) async {
     tester.view.physicalSize = const Size(430, 1400);
     tester.view.devicePixelRatio = 1.0;
@@ -194,13 +219,13 @@ void main() {
           ),
           photoRepositoryProvider.overrideWithValue(repository),
           topicsProvider.overrideWith(() => TestTopicListNotifier([
-            const Topic(
-              slug: 'nature',
-              title: 'Nature',
-              id: '1',
-              totalPhotos: 10,
-            ),
-          ])),
+                const Topic(
+                  slug: 'nature',
+                  title: 'Nature',
+                  id: '1',
+                  totalPhotos: 10,
+                ),
+              ])),
         ],
         child: const MaterialApp(
           home: DiscoverPage(),
@@ -227,7 +252,8 @@ void main() {
         reason: 'Filter tabs should remain visible after scrolling');
   });
 
-  testWidgets('switching topic does not auto-paginate from previous scroll position',
+  testWidgets(
+      'switching topic does not auto-paginate from previous scroll position',
       (tester) async {
     tester.view.physicalSize = const Size(430, 1400);
     tester.view.devicePixelRatio = 1.0;
@@ -276,7 +302,8 @@ void main() {
     ];
 
     when(
-      () => repository.getPhotos(page: any(named: 'page'), perPage: any(named: 'perPage')),
+      () => repository.getPhotos(
+          page: any(named: 'page'), perPage: any(named: 'perPage')),
     ).thenAnswer((invocation) async {
       final page = invocation.namedArguments[#page] as int? ?? 1;
       return Right(page == 1 ? allPhotos : <Photo>[]);
