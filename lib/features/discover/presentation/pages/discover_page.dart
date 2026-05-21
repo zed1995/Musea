@@ -110,7 +110,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                     extra: PhotoDetailExtra(photo: photo),
                   ),
                   onUserTap: (photo) =>
-                      context.push('/profile/${photo.user.username}'),
+                      context.push('/profile/${photo.user.username}', extra: ProfileDetailExtra(user: photo.user)),
                   onLikeTap: (photo) => _toggleLike(photo),
                   onBookmarkTap: (photo) => _handleDownload(context),
                 ),

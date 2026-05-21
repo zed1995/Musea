@@ -439,7 +439,10 @@ class _UserRow extends StatelessWidget {
     return Row(
       children: [
         GestureDetector(
-          onTap: () => context.push('/profile/${photo.user.username}'),
+          onTap: () => context.push(
+            '/profile/${photo.user.username}',
+            extra: ProfileDetailExtra(user: photo.user),
+          ),
           child: CircleAvatar(
             radius: 17,
             backgroundImage:
@@ -1019,7 +1022,10 @@ class _MoreFromPhotographer extends ConsumerWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => context.push('/profile/${photo.user.username}'),
+                  onTap: () => context.push(
+                    '/profile/${photo.user.username}',
+                    extra: ProfileDetailExtra(user: photo.user),
+                  ),
                   child: const Text(
                     'See all',
                     style: TextStyle(

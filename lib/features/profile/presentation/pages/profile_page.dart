@@ -8,16 +8,20 @@ import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
-import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
 
 class ProfilePage extends ConsumerWidget {
-  const ProfilePage({super.key, required this.username});
+  const ProfilePage({
+    super.key,
+    required this.username,
+    this.initialUser,
+  });
 
   final String username;
+  final User? initialUser;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -26,13 +30,19 @@ class ProfilePage extends ConsumerWidget {
     final collectionsAsync = ref.watch(userCollectionsProvider(username));
     final likesAsync = ref.watch(userLikesProvider(username));
 
-    return userAsync.when(
-      data: (user) => _ProfileContent(
-        user: user,
+    final resolvedUser = userAsync.valueOrNull ?? initialUser;
+
+    if (resolvedUser != null) {
+      return _ProfileContent(
+        user: resolvedUser,
         photosAsync: photosAsync,
         collectionsAsync: collectionsAsync,
         likesAsync: likesAsync,
-      ),
+      );
+    }
+
+    return userAsync.when(
+      data: (_) => const SizedBox.shrink(),
       loading: () => const Scaffold(
         body: Center(child: LoadingIndicator()),
       ),

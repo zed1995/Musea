@@ -113,7 +113,10 @@ final appRouter = GoRouter(
       parentNavigatorKey: _rootNavigatorKey,
       builder: (context, state) {
         final username = state.pathParameters['username']!;
-        return ProfilePage(username: username);
+        return ProfilePage(
+          username: username,
+          initialUser: profileDetailFromExtra(state.extra),
+        );
       },
     ),
     GoRoute(

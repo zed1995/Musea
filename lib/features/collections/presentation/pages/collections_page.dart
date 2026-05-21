@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/empty_state.dart';

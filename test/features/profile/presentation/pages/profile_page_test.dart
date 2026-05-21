@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -6,6 +8,7 @@ import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/shared/widgets/loading_indicator.dart';
 
 void main() {
   const user = User(
@@ -153,5 +156,163 @@ void main() {
     expect(find.text('Curated groupings'), findsNothing);
     expect(find.text('Saved inspiration'), findsNothing);
     expect(find.text('No liked photos yet'), findsNothing);
+  });
+
+  testWidgets('ProfilePage renders initialUser immediately while API loads',
+      (tester) async {
+    final pendingUser = Completer<User>();
+    const initialUser = User(
+      id: 'user-3',
+      username: 'preview',
+      name: 'Preview Name',
+      bio: 'Preview bio',
+      location: 'Preview City',
+      profileImageSmall: 'https://example.com/small.jpg',
+      profileImageMedium: 'https://example.com/medium.jpg',
+      profileImageLarge: 'https://example.com/large.jpg',
+      totalPhotos: 5,
+      totalLikes: 100,
+      totalCollections: 3,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userProfileProvider('preview').overrideWith((ref) => pendingUser.future),
+          userPhotosProvider('preview').overrideWith((ref) => <Photo>[]),
+          userCollectionsProvider('preview').overrideWith((ref) => <Collection>[]),
+          userLikesProvider('preview').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          home: ProfilePage(
+            username: 'preview',
+            initialUser: initialUser,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Preview Name'), findsOneWidget);
+    expect(find.text('Preview bio'), findsOneWidget);
+    expect(find.textContaining('@preview'), findsOneWidget);
+    expect(find.textContaining('Preview City'), findsOneWidget);
+    expect(find.byType(LoadingIndicator), findsNothing);
+  });
+
+  testWidgets('ProfilePage keeps initialUser when fetch fails',
+      (tester) async {
+    const initialUser = User(
+      id: 'user-4',
+      username: 'offline',
+      name: 'Offline User',
+      profileImageSmall: 'https://example.com/small.jpg',
+      profileImageMedium: 'https://example.com/medium.jpg',
+      profileImageLarge: 'https://example.com/large.jpg',
+      totalPhotos: 0,
+      totalLikes: 0,
+      totalCollections: 0,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userProfileProvider('offline').overrideWith(
+            (ref) => Future<User>.error(Exception('network error')),
+          ),
+          userPhotosProvider('offline').overrideWith((ref) => <Photo>[]),
+          userCollectionsProvider('offline').overrideWith((ref) => <Collection>[]),
+          userLikesProvider('offline').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          home: ProfilePage(
+            username: 'offline',
+            initialUser: initialUser,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.text('Offline User'), findsOneWidget);
+    expect(find.textContaining('@offline'), findsOneWidget);
+    expect(find.byType(LoadingIndicator), findsNothing);
+  });
+
+  testWidgets('ProfilePage shows loading when no initialUser',
+      (tester) async {
+    final pendingUser = Completer<User>();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userProfileProvider('pending').overrideWith((ref) => pendingUser.future),
+          userPhotosProvider('pending').overrideWith((ref) => <Photo>[]),
+          userCollectionsProvider('pending').overrideWith((ref) => <Collection>[]),
+          userLikesProvider('pending').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          home: ProfilePage(username: 'pending'),
+        ),
+      ),
+    );
+
+    expect(find.byType(LoadingIndicator), findsOneWidget);
+    expect(find.text('Paula Poeira'), findsNothing);
+  });
+
+  testWidgets('ProfilePage replaces initialUser when API succeeds',
+      (tester) async {
+    final pendingUser = Completer<User>();
+    const initialUser = User(
+      id: 'user-5',
+      username: 'replace',
+      name: 'Placeholder',
+      profileImageSmall: 'https://example.com/small.jpg',
+      profileImageMedium: 'https://example.com/medium.jpg',
+      profileImageLarge: 'https://example.com/large.jpg',
+      totalPhotos: 0,
+      totalLikes: 0,
+      totalCollections: 0,
+    );
+    const hydratedUser = User(
+      id: 'user-5',
+      username: 'replace',
+      name: 'Hydrated Name',
+      bio: 'Fresh bio from API',
+      profileImageSmall: 'https://example.com/small.jpg',
+      profileImageMedium: 'https://example.com/medium.jpg',
+      profileImageLarge: 'https://example.com/large.jpg',
+      totalPhotos: 42,
+      totalLikes: 999,
+      totalCollections: 7,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          userProfileProvider('replace').overrideWith((ref) => pendingUser.future),
+          userPhotosProvider('replace').overrideWith((ref) => <Photo>[]),
+          userCollectionsProvider('replace').overrideWith((ref) => <Collection>[]),
+          userLikesProvider('replace').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          home: ProfilePage(
+            username: 'replace',
+            initialUser: initialUser,
+          ),
+        ),
+      ),
+    );
+
+    expect(find.text('Placeholder'), findsOneWidget);
+    expect(find.text('Fresh bio from API'), findsNothing);
+
+    pendingUser.complete(hydratedUser);
+    await tester.pump();
+
+    expect(find.text('Hydrated Name'), findsOneWidget);
+    expect(find.text('Fresh bio from API'), findsOneWidget);
+    expect(find.text('Placeholder'), findsNothing);
   });
 }

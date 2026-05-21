@@ -8,6 +8,7 @@ import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
@@ -360,7 +361,10 @@ class _CollectionHero extends StatelessWidget {
                       Expanded(
                         child: InkWell(
                           onTap: canOpenProfile
-                              ? () => context.push('/profile/$curatorUsername')
+                              ? () => context.push(
+                                    '/profile/$curatorUsername',
+                                    extra: ProfileDetailExtra(user: collection.user!),
+                                  )
                               : null,
                           borderRadius: BorderRadius.circular(16),
                           child: Padding(

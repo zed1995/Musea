@@ -6,6 +6,7 @@ import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/features/search/presentation/providers/search_provider.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
@@ -723,7 +724,10 @@ class _UserResultsSection extends StatelessWidget {
               final user = users[index];
               final isFollowing = user.followedByUser == true;
               return GestureDetector(
-                onTap: () => context.push('/profile/${user.username}'),
+                onTap: () => context.push(
+                  '/profile/${user.username}',
+                  extra: ProfileDetailExtra(user: user),
+                ),
                 child: Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
