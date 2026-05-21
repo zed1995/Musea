@@ -128,6 +128,76 @@ void main() {
     );
   });
 
+  testWidgets('search bar and filter tabs remain fixed when scrolling photo feed',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final photos = List.generate(
+      10,
+      (i) => Photo(
+        id: 'photo-$i',
+        createdAt: DateTime(2024, 1, 1),
+        width: 1200,
+        height: 1600,
+        color: '#AABBCC',
+        description: 'Photo $i',
+        altDescription: 'Description $i',
+        urlRaw: 'https://example.com/$i/raw.jpg',
+        urlFull: 'https://example.com/$i/full.jpg',
+        urlRegular: 'https://example.com/$i/regular.jpg',
+        urlSmall: 'https://example.com/$i/small.jpg',
+        urlThumb: 'https://example.com/$i/thumb.jpg',
+        likes: 80,
+        downloads: 20,
+        user: user,
+      ),
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authBootstrapSessionProvider.overrideWithValue(null),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
+          photosProvider(1).overrideWith((ref) => photos),
+          topicsProvider.overrideWith((ref) => [
+            const Topic(
+              slug: 'nature',
+              title: 'Nature',
+              id: '1',
+              totalPhotos: 10,
+            ),
+          ]),
+        ],
+        child: const MaterialApp(
+          home: DiscoverPage(),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    // Guard: ensure the search header rendered before testing scroll behavior
+    expect(find.byIcon(Icons.search), findsOneWidget);
+
+    // Scroll down the CustomScrollView
+    await tester.drag(find.byType(CustomScrollView), const Offset(0, -500));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    // The search bar and filter tabs must still be in the widget tree
+    // after scrolling (they should NOT scroll off screen).
+    // In the RED (broken) layout, the sliver lazy-rebuilds and they disappear.
+    expect(find.byIcon(Icons.search), findsOneWidget,
+        reason: 'Search bar should remain visible after scrolling');
+    expect(find.text('All'), findsOneWidget,
+        reason: 'Filter tabs should remain visible after scrolling');
+  });
+
   testWidgets('authenticated like tap calls Unsplash API and toggles state',
       (tester) async {
     tester.view.physicalSize = const Size(430, 1400);

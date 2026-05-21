@@ -70,62 +70,66 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
     return Scaffold(
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () async {
-            ref.invalidate(photosProvider);
-            ref.invalidate(topicsProvider);
-          },
-          child: CustomScrollView(
-            controller: _scrollController,
-            slivers: [
-              SliverToBoxAdapter(
-                child: Column(
-                  children: [
-                    Container(
-                      decoration: const BoxDecoration(
-                        color: Colors.white,
-                        border: Border(
-                          bottom: BorderSide(color: Color(0xFFF1F1F2)),
+        child: Column(
+          children: [
+            // Fixed search bar
+            Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFF1F1F2)),
+                ),
+              ),
+              child: _buildHeader(),
+            ),
+            // Fixed filter tabs
+            topicsAsync.when(
+              data: (topics) => _buildFilterTabs(topics),
+              loading: () => const SizedBox(
+                height: 38,
+                child: Center(child: LoadingIndicator()),
+              ),
+              error: (error, stack) => const SizedBox.shrink(),
+            ),
+            // Scrollable photo feed
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(photosProvider);
+                  ref.invalidate(topicsProvider);
+                },
+                child: CustomScrollView(
+                  controller: _scrollController,
+                  slivers: [
+                    photosAsync.when(
+                      data: (photos) => PhotoFeed(
+                        photos: photos,
+                        isLoadingMore: false,
+                        onPhotoTap: (photo) => context.push(
+                          '/photo/${photo.id}',
+                          extra: PhotoDetailExtra(photo: photo),
                         ),
+                        onUserTap: (photo) =>
+                            context.push('/profile/${photo.user.username}',
+                                extra: ProfileDetailExtra(user: photo.user)),
+                        onLikeTap: (photo) => _toggleLike(photo),
+                        onBookmarkTap: (photo) => _handleDownload(context),
                       ),
-                      child: _buildHeader(),
-                    ),
-                    topicsAsync.when(
-                      data: (topics) => _buildFilterTabs(topics),
-                      loading: () => const SizedBox(
-                        height: 38,
+                      loading: () => const SliverFillRemaining(
                         child: Center(child: LoadingIndicator()),
                       ),
-                      error: (error, stack) => const SizedBox.shrink(),
+                      error: (error, stack) => SliverFillRemaining(
+                        child: ErrorState(
+                          message: error.toString(),
+                          onRetry: () => ref.invalidate(photosProvider),
+                        ),
+                      ),
                     ),
                   ],
                 ),
               ),
-              photosAsync.when(
-                data: (photos) => PhotoFeed(
-                  photos: photos,
-                  isLoadingMore: false,
-                  onPhotoTap: (photo) => context.push(
-                    '/photo/${photo.id}',
-                    extra: PhotoDetailExtra(photo: photo),
-                  ),
-                  onUserTap: (photo) =>
-                      context.push('/profile/${photo.user.username}', extra: ProfileDetailExtra(user: photo.user)),
-                  onLikeTap: (photo) => _toggleLike(photo),
-                  onBookmarkTap: (photo) => _handleDownload(context),
-                ),
-                loading: () => const SliverFillRemaining(
-                  child: Center(child: LoadingIndicator()),
-                ),
-                error: (error, stack) => SliverFillRemaining(
-                  child: ErrorState(
-                    message: error.toString(),
-                    onRetry: () => ref.invalidate(photosProvider),
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
