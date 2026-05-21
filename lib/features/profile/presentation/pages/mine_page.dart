@@ -96,96 +96,52 @@ class _SignedOutMineView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: Container(
-              decoration: const BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Color(0xFFFCFCFD),
-                    Color(0xFFF7F7F8),
-                  ],
-                ),
-                border: Border(
-                  bottom: BorderSide(color: Color(0xFFF1F1F2)),
-                ),
-              ),
-              child: SafeArea(
-                bottom: false,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const _SignedOutTopBar(),
-                      const SizedBox(height: 18),
-                      _SignedOutSheet(
-                        isAuthorizing: isAuthorizing,
-                        errorMessage: errorMessage,
-                        onSignIn: onSignIn,
-                      ),
-                      const SizedBox(height: 14),
-                      const Row(
-                        children: [
-                          Expanded(
-                            child: _MetricCard(value: '0', label: 'Photos'),
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: _MetricCard(
-                              value: '0',
-                              label: 'Collections',
-                            ),
-                          ),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: _MetricCard(value: '0', label: 'Likes'),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
+      body: Column(
+        children: [
+          Container(
+            color: const Color(0xFFFCFCFD),
+            child: const SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(12, 12, 12, 0),
+                child: _MineGuestTopBar(),
               ),
             ),
           ),
-          const SliverToBoxAdapter(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(12, 18, 12, 28),
+          Expanded(
+            child: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Why sign in',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: Color(0xFF18181B),
+                  _buildHeroContent(),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(12, 16, 12, 28),
+                    child: Column(
+                      children: [
+                        _FeatureCard(
+                          icon: Icons.favorite_border_rounded,
+                          title: 'Liked photos',
+                          description:
+                              'Revisit favorites you loved without hunting through the feed again.',
+                        ),
+                        SizedBox(height: 12),
+                        _FeatureCard(
+                          icon: Icons.bookmark_border_rounded,
+                          title: 'Saved collections',
+                          description:
+                              'Build a shelf of references, moods, and places you want to return to.',
+                        ),
+                        SizedBox(height: 12),
+                        _FeatureCard(
+                          icon: Icons.article_outlined,
+                          title: 'Personal space',
+                          description:
+                              'A home for your archive now, with room for preferences and history later.',
+                        ),
+                        SizedBox(height: 16),
+                        _GuestModeSection(),
+                      ],
                     ),
                   ),
-                  SizedBox(height: 12),
-                  _BenefitCard(
-                    title: 'Liked photos',
-                    body:
-                        'Revisit favorites you save and keep your archive in sync with Unsplash.',
-                  ),
-                  SizedBox(height: 10),
-                  _BenefitCard(
-                    title: 'Saved collections',
-                    body:
-                        'Keep inspiration grouped in the same workspace you already browse from.',
-                  ),
-                  SizedBox(height: 10),
-                  _BenefitCard(
-                    title: 'Personal space',
-                    body:
-                        'Unlock a calmer home for your uploads, preferences, and future tools.',
-                  ),
-                  SizedBox(height: 20),
-                  _SignedOutGuestCard(),
                 ],
               ),
             ),
@@ -194,48 +150,126 @@ class _SignedOutMineView extends StatelessWidget {
       ),
     );
   }
+
+  Widget _buildHeroContent() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFFFCFCFD),
+            Color(0xFFF7F7F8),
+          ],
+        ),
+        border: Border(
+          bottom: BorderSide(color: Color(0xFFF1F1F2)),
+        ),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
+          child: Column(
+            children: [
+              _SignInCard(
+                isAuthorizing: isAuthorizing,
+                errorMessage: errorMessage,
+                onSignIn: onSignIn,
+              ),
+              const SizedBox(height: 16),
+              const Row(
+                children: [
+                  Expanded(
+                    child: _MetricCard(value: '0', label: 'Photos'),
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: _MetricCard(value: '0', label: 'Collections'),
+                  ),
+                  SizedBox(width: 8),
+                  Expanded(
+                    child: _MetricCard(value: '0', label: 'Likes'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickActionChip(
+                      icon: Icons.home_outlined,
+                      label: 'Browse as guest',
+                      onTap: () {},
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _QuickActionChip(
+                      icon: Icons.visibility_outlined,
+                      label: 'Public profiles still work',
+                      onTap: () {},
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
-class _SignedOutTopBar extends StatelessWidget {
-  const _SignedOutTopBar();
+class _MineGuestTopBar extends StatelessWidget {
+  const _MineGuestTopBar();
 
   @override
   Widget build(BuildContext context) {
     return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Workspace',
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.3,
-                color: Color(0xFFA1A1AA),
-              ),
-            ),
-            SizedBox(height: 6),
-            Text(
-              'Mine',
-              style: TextStyle(
-                fontSize: 30,
-                height: 1,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -1.2,
-                color: Color(0xFF18181B),
-              ),
-            ),
-          ],
+        Text(
+          'Mine',
+          style: TextStyle(
+            fontSize: 30,
+            height: 1,
+            fontWeight: FontWeight.w700,
+            letterSpacing: -1.2,
+            color: Color(0xFF18181B),
+          ),
         ),
+        _GuestTopBarButton(),
       ],
     );
   }
 }
 
-class _SignedOutSheet extends StatelessWidget {
-  const _SignedOutSheet({
+class _GuestTopBarButton extends StatelessWidget {
+  const _GuestTopBarButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: const Color(0xFFECECF0)),
+      ),
+      child: IconButton(
+        onPressed: () {},
+        icon: const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF27272A)),
+        padding: EdgeInsets.zero,
+      ),
+    );
+  }
+}
+
+class _SignInCard extends StatelessWidget {
+  const _SignInCard({
     required this.isAuthorizing,
     required this.errorMessage,
     required this.onSignIn,
@@ -248,96 +282,89 @@ class _SignedOutSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      width: double.infinity,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(24),
-        gradient: const LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFFFFFF),
-            Color(0xFFFFFFFF),
-            Color(0xFFFCFBF9),
-          ],
-        ),
-        border: Border.all(color: const Color(0xFFF1ECE5)),
+        color: Colors.white.withValues(alpha: 0.9),
+        border: Border.all(color: const Color(0xFFF4F4F5)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 32,
-            offset: const Offset(0, 14),
+            blurRadius: 40,
+            offset: const Offset(0, 18),
+          ),
+          BoxShadow(
+            color: Colors.white.withValues(alpha: 0.92),
+            blurRadius: 0,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+        padding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _BrandOrb(),
-                SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Sign in',
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 1.6,
-                          color: Color(0xFF71717A),
-                        ),
-                      ),
-                      SizedBox(height: 8),
-                      Text(
-                        'Your visual archive, synced with Unsplash',
-                        style: TextStyle(
-                          fontSize: 28,
-                          height: 1.04,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -1.1,
-                          color: Color(0xFF18181B),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 14),
+            const _BrandMark(),
+            const SizedBox(height: 16),
             const Text(
-              'Keep every like, save, and future personal surface connected to the photos you care about.',
+              'Sign in',
               style: TextStyle(
-                fontSize: 14,
-                height: 1.5,
-                color: Color(0xFF52525B),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1.8,
+                color: Color(0xFF71717A),
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Your visual archive, synced with Unsplash',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                height: 1.02,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -1.2,
+                color: Color(0xFF18181B),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 8),
+              child: Text(
+                'Keep likes, saves, and your personal archive connected in one calm workspace.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 13,
+                  height: 1.5,
+                  color: Color(0xFF71717A),
+                ),
               ),
             ),
             if (errorMessage != null) ...[
               const SizedBox(height: 14),
               Text(
                 errorMessage!,
+                textAlign: TextAlign.center,
                 style: const TextStyle(
                   fontSize: 13,
                   color: Color(0xFFB91C1C),
                 ),
               ),
             ],
-            const SizedBox(height: 18),
+            const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
+              height: 54,
               child: FilledButton(
                 onPressed: isAuthorizing ? null : onSignIn,
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF18181B),
                   foregroundColor: Colors.white,
-                  minimumSize: const Size.fromHeight(54),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(18),
                   ),
+                  elevation: 14,
+                  shadowColor: Colors.black.withValues(alpha: 0.18),
                 ),
                 child: isAuthorizing
                     ? const SizedBox(
@@ -348,21 +375,30 @@ class _SignedOutSheet extends StatelessWidget {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Continue with Unsplash',
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w700,
-                        ),
+                    : const Row(
+                        mainAxisSize: MainAxisSize.min,
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.chevron_right_rounded, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Continue with Unsplash',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
                       ),
               ),
             ),
             const SizedBox(height: 12),
             const Text(
               'We use your Unsplash account to sync likes, saves, and your personal archive.',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 12,
-                height: 1.5,
+                height: 1.25,
                 color: Color(0xFF71717A),
               ),
             ),
@@ -373,114 +409,79 @@ class _SignedOutSheet extends StatelessWidget {
   }
 }
 
-class _SignedOutGuestCard extends StatelessWidget {
-  const _SignedOutGuestCard();
+class _BrandMark extends StatelessWidget {
+  const _BrandMark();
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(18),
+      width: 68,
+      height: 68,
       decoration: BoxDecoration(
-        color: const Color(0xFFFBFBFA),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: const Color(0xFFF0F0EE)),
-      ),
-      child: const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'You can keep exploring as a guest',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w700,
-              color: Color(0xFF18181B),
-            ),
-          ),
-          SizedBox(height: 8),
-          Text(
-            'Discover, search, browse collections, and open public profiles without signing in. Mine becomes your personal home when you are ready.',
-            style: TextStyle(
-              fontSize: 13,
-              height: 1.5,
-              color: Color(0xFF71717A),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BrandOrb extends StatelessWidget {
-  const _BrandOrb();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 60,
-      height: 60,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
-        gradient: const RadialGradient(
-          center: Alignment(-0.3, -0.3),
-          colors: [
-            Colors.white,
-            Color(0xFFF8F4EE),
-            Color(0xFFEAD8C2),
-          ],
-        ),
+        color: const Color(0xFF18181B),
+        borderRadius: BorderRadius.circular(22),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
+            color: Colors.black.withValues(alpha: 0.16),
             blurRadius: 32,
-            offset: const Offset(0, 14),
+            offset: const Offset(0, 16),
           ),
         ],
       ),
-      child: const Icon(
-        Icons.auto_awesome_rounded,
-        size: 26,
-        color: Color(0xFF18181B),
+      child: const Center(
+        child: Text(
+          'M',
+          style: TextStyle(
+            fontSize: 26,
+            fontWeight: FontWeight.w800,
+            letterSpacing: -2.08,
+            color: Colors.white,
+          ),
+        ),
       ),
     );
   }
 }
 
-class _BenefitCard extends StatelessWidget {
-  const _BenefitCard({
+class _FeatureCard extends StatelessWidget {
+  const _FeatureCard({
+    required this.icon,
     required this.title,
-    required this.body,
+    required this.description,
   });
 
+  final IconData icon;
   final String title;
-  final String body;
+  final String description;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.86),
-        borderRadius: BorderRadius.circular(18),
-        border: Border.all(color: const Color(0xFFEFE9E1)),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF1F1F3)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.05),
+            blurRadius: 28,
+            offset: const Offset(0, 12),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            width: 36,
-            height: 36,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: const Color(0xFFF7F0E7),
-              borderRadius: BorderRadius.circular(12),
+              color: const Color(0xFFF4F4F5),
+              borderRadius: BorderRadius.circular(16),
             ),
-            child: const Icon(
-              Icons.auto_awesome_rounded,
-              size: 18,
-              color: Color(0xFF18181B),
-            ),
+            child: Icon(icon, size: 20, color: const Color(0xFF3F3F46)),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -490,17 +491,17 @@ class _BenefitCard extends StatelessWidget {
                 Text(
                   title,
                   style: const TextStyle(
-                    fontSize: 15,
+                    fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: Color(0xFF18181B),
                   ),
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  body,
+                  description,
                   style: const TextStyle(
                     fontSize: 13,
-                    height: 1.45,
+                    height: 1.5,
                     color: Color(0xFF71717A),
                   ),
                 ),
@@ -508,6 +509,96 @@ class _BenefitCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _GuestModeSection extends StatelessWidget {
+  const _GuestModeSection();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFBFA),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF0F0EE)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Guest mode',
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              letterSpacing: 1.6,
+              color: Color(0xFFA1A1AA),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'You can keep exploring without signing in',
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.54,
+              color: Color(0xFF18181B),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Discover, search, browse collections, and open public photographer profiles anytime. Sign in only when you want your activity to stay with you.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: Color(0xFF71717A),
+            ),
+          ),
+          SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(child: _GuestChip(label: 'Discover')),
+              SizedBox(width: 8),
+              Expanded(child: _GuestChip(label: 'Search')),
+              SizedBox(width: 8),
+              Expanded(child: _GuestChip(label: 'Collections')),
+              SizedBox(width: 8),
+              Expanded(child: _GuestChip(label: 'Profiles')),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _GuestChip extends StatelessWidget {
+  const _GuestChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 44,
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: const Color(0xFFEAEAF0)),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        label,
+        style: const TextStyle(
+          fontSize: 12,
+          fontWeight: FontWeight.w700,
+          color: Color(0xFF3F3F46),
+        ),
       ),
     );
   }
@@ -1032,16 +1123,19 @@ class _QuickActionChip extends StatelessWidget {
           border: Border.all(color: const Color(0xFFEAEAF0)),
         ),
         child: Row(
-          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(icon, size: 16, color: const Color(0xFF18181B)),
             const SizedBox(width: 8),
-            Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                color: Color(0xFF18181B),
+            Flexible(
+              child: Text(
+                label,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF18181B),
+                ),
               ),
             ),
           ],
