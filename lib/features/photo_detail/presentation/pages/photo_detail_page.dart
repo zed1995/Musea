@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/auth/presentation/widgets/auth_gate_sheet.dart';
+import 'package:musea/features/collections/presentation/widgets/save_to_collection_sheet.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
@@ -99,6 +100,20 @@ class _PhotoDetailContent extends ConsumerWidget {
     final showDeferredError =
         showDeferredRetry && (photo.tags.isEmpty || photo.exif == null);
 
+    void handleBookmark() {
+      final authState = ref.read(authControllerProvider);
+      if (!authState.isAuthenticated) {
+        showAuthGateSheet(
+          context,
+          ref,
+          title: 'Sign in to save photos',
+          body:
+              'Build collections of what inspires you and keep them in sync with your Unsplash account.',
+        );
+      }
+      showSaveToCollectionSheet(context, photoId: photo.id);
+    }
+
     return Scaffold(
       body: CustomScrollView(
         slivers: [
@@ -106,6 +121,7 @@ class _PhotoDetailContent extends ConsumerWidget {
             child: _PhotoHero(
               photo: heroPhoto,
               onTap: onHeroTap,
+              onBookmarkTap: handleBookmark,
             ),
           ),
           SliverToBoxAdapter(
@@ -274,10 +290,12 @@ class _PhotoHero extends StatefulWidget {
   const _PhotoHero({
     required this.photo,
     this.onTap,
+    this.onBookmarkTap,
   });
 
   final Photo photo;
   final VoidCallback? onTap;
+  final VoidCallback? onBookmarkTap;
 
   @override
   State<_PhotoHero> createState() => _PhotoHeroState();
@@ -384,13 +402,16 @@ class _PhotoHeroState extends State<_PhotoHero> {
                   icon: Icons.arrow_back_ios_new,
                   onTap: () => Navigator.maybePop(context),
                 ),
-                const Row(
+                Row(
                   children: [
-                    _HeroActionButton(icon: Icons.bookmark_border),
-                    SizedBox(width: 8),
-                    _HeroActionButton(icon: Icons.ios_share),
-                    SizedBox(width: 8),
-                    _HeroActionButton(icon: Icons.more_horiz),
+                    _HeroActionButton(
+                      icon: Icons.bookmark_border,
+                      onTap: widget.onBookmarkTap,
+                    ),
+                    const SizedBox(width: 8),
+                    const _HeroActionButton(icon: Icons.ios_share),
+                    const SizedBox(width: 8),
+                    const _HeroActionButton(icon: Icons.more_horiz),
                   ],
                 ),
               ],

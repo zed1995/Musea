@@ -69,6 +69,15 @@ class _FakeCollectionRepository implements CollectionRepository {
   }
 
   @override
+  Future<Either<Failure, List<Collection>>> getUserCollections(
+    String username, {
+    int page = 1,
+    int perPage = 20,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<Either<Failure, List<Photo>>> getCollectionPhotos(
     String id, {
     int page = 1,
@@ -92,6 +101,14 @@ class _FakeCollectionRepository implements CollectionRepository {
     required String title,
     String? description,
     bool? private,
+  }) {
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<Either<Failure, void>> addPhotoToCollection({
+    required String collectionId,
+    required String photoId,
   }) {
     throw UnimplementedError();
   }

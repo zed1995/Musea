@@ -5,6 +5,11 @@ import 'package:musea/features/discover/data/models/photo_model.dart';
 
 abstract class CollectionRemoteDataSource {
   Future<List<CollectionModel>> getCollections({int page = 1, int perPage = 20});
+  Future<List<CollectionModel>> getUserCollections(
+    String username, {
+    int page = 1,
+    int perPage = 20,
+  });
   Future<CollectionModel> getCollection(String id);
   Future<List<PhotoModel>> getCollectionPhotos(String id, {int page = 1, int perPage = 20});
   Future<({int total, int totalPages, List<CollectionModel> results})>
@@ -19,6 +24,11 @@ abstract class CollectionRemoteDataSource {
     String? description,
     bool? private,
   });
+
+  Future<void> addPhotoToCollection({
+    required String collectionId,
+    required String photoId,
+  });
 }
 
 class CollectionRemoteDataSourceImpl implements CollectionRemoteDataSource {
@@ -30,6 +40,24 @@ class CollectionRemoteDataSourceImpl implements CollectionRemoteDataSource {
   Future<List<CollectionModel>> getCollections({int page = 1, int perPage = 20}) async {
     final response = await _dioClient.get(
       ApiConstants.collections,
+      queryParameters: {
+        'page': page,
+        'per_page': perPage,
+      },
+    );
+    return (response as List)
+        .map((json) => CollectionModel.fromJson(json))
+        .toList();
+  }
+
+  @override
+  Future<List<CollectionModel>> getUserCollections(
+    String username, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    final response = await _dioClient.get(
+      ApiConstants.userCollections(username),
       queryParameters: {
         'page': page,
         'per_page': perPage,
@@ -102,5 +130,16 @@ class CollectionRemoteDataSourceImpl implements CollectionRemoteDataSource {
       },
     );
     return CollectionModel.fromJson(response);
+  }
+
+  @override
+  Future<void> addPhotoToCollection({
+    required String collectionId,
+    required String photoId,
+  }) async {
+    await _dioClient.post(
+      ApiConstants.collectionAdd(collectionId),
+      data: {'photo_id': photoId},
+    );
   }
 }

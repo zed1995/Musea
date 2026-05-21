@@ -78,4 +78,27 @@ void main() {
       expect(result.title, 'Minimal');
     });
   });
+
+group('addPhotoToCollection', () {
+  test('sends POST to /collections/{id}/add with photo_id', () async {
+    when(
+      () => dioClient.post(
+        '/collections/col-1/add',
+        data: any(named: 'data'),
+      ),
+    ).thenAnswer((_) async => <String, dynamic>{'id': 'col-1'});
+
+    await dataSource.addPhotoToCollection(
+      collectionId: 'col-1',
+      photoId: 'photo-123',
+    );
+
+    verify(
+      () => dioClient.post(
+        '/collections/col-1/add',
+        data: {'photo_id': 'photo-123'},
+      ),
+    ).called(1);
+  });
+});
 }

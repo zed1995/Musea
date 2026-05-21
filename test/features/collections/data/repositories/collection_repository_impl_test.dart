@@ -84,4 +84,62 @@ void main() {
       );
     });
   });
+
+group('addPhotoToCollection', () {
+  test('returns Right<void> on success', () async {
+    when(
+      () => mockDataSource.addPhotoToCollection(
+        collectionId: any(named: 'collectionId'),
+        photoId: any(named: 'photoId'),
+      ),
+    ).thenAnswer((_) async {});
+
+    final result = await repository.addPhotoToCollection(
+      collectionId: 'col-1',
+      photoId: 'photo-123',
+    );
+
+    expect(result, isA<Right<Failure, void>>());
+  });
+
+  test('returns Left with ServerFailure on ServerException', () async {
+    when(
+      () => mockDataSource.addPhotoToCollection(
+        collectionId: any(named: 'collectionId'),
+        photoId: any(named: 'photoId'),
+      ),
+    ).thenThrow(ServerException(statusCode: 500, message: 'Server error'));
+
+    final result = await repository.addPhotoToCollection(
+      collectionId: 'col-1',
+      photoId: 'photo-123',
+    );
+
+    expect(result, isA<Left<Failure, void>>());
+    result.fold(
+      (failure) => expect(failure, isA<ServerFailure>()),
+      (_) => fail('Expected Left'),
+    );
+  });
+
+  test('returns Left with NetworkFailure on NetworkException', () async {
+    when(
+      () => mockDataSource.addPhotoToCollection(
+        collectionId: any(named: 'collectionId'),
+        photoId: any(named: 'photoId'),
+      ),
+    ).thenThrow(NetworkException(message: 'No internet'));
+
+    final result = await repository.addPhotoToCollection(
+      collectionId: 'col-1',
+      photoId: 'photo-123',
+    );
+
+    expect(result, isA<Left<Failure, void>>());
+    result.fold(
+      (failure) => expect(failure, isA<NetworkFailure>()),
+      (_) => fail('Expected Left'),
+    );
+  });
+});
 }

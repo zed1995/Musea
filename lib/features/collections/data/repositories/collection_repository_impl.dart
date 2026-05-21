@@ -32,6 +32,30 @@ class CollectionRepositoryImpl implements CollectionRepository {
   }
 
   @override
+  Future<Either<Failure, List<Collection>>> getUserCollections(
+    String username, {
+    int page = 1,
+    int perPage = 20,
+  }) async {
+    try {
+      final collections = await remoteDataSource.getUserCollections(
+        username,
+        page: page,
+        perPage: perPage,
+      );
+      return Right(collections.map((c) => c.toEntity()).toList());
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
+
+  @override
   Future<Either<Failure, Collection>> getCollection(String id) async {
     try {
       final collection = await remoteDataSource.getCollection(id);
@@ -131,6 +155,28 @@ class CollectionRepositoryImpl implements CollectionRepository {
         private: private,
       );
       return Right(collection.toEntity());
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> addPhotoToCollection({
+    required String collectionId,
+    required String photoId,
+  }) async {
+    try {
+      await remoteDataSource.addPhotoToCollection(
+        collectionId: collectionId,
+        photoId: photoId,
+      );
+      return const Right(null);
     } on ServerException catch (e) {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {

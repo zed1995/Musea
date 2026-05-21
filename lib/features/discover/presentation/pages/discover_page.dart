@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/auth/presentation/widgets/auth_gate_sheet.dart';
+import 'package:musea/features/collections/presentation/widgets/save_to_collection_sheet.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 import 'package:musea/features/discover/presentation/providers/topics_provider.dart';
@@ -134,7 +135,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                             context.push('/profile/${photo.user.username}',
                                 extra: ProfileDetailExtra(user: photo.user)),
                         onLikeTap: (photo) => _toggleLike(photo),
-                        onBookmarkTap: (photo) => _handleDownload(context),
+                        onBookmarkTap: (photo) => _handleBookmark(photo),
                       ),
                   ],
                 ),
@@ -279,10 +280,19 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     );
   }
 
-  void _handleDownload(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Open photo to download')),
-    );
+  Future<void> _handleBookmark(Photo photo) async {
+    final authState = ref.read(authControllerProvider);
+    if (!authState.isAuthenticated) {
+      await showAuthGateSheet(
+        context,
+        ref,
+        title: 'Sign in to save photos',
+        body:
+            'Build collections of what inspires you and keep them in sync with your Unsplash account.',
+      );
+    }
+    if (!mounted) return;
+    showSaveToCollectionSheet(context, photoId: photo.id);
   }
 
   void _handleRandom() async {
