@@ -13,6 +13,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 No production code without a failing test first. Code written before its test must be deleted and rewritten following TDD.
 
+5. **One commit per feature/bugfix** — do not commit mid-workflow during `superpowers` execution. All changes accumulate until the user explicitly confirms. After execution completes and the user approves, create a single squashed commit.
+
 ## Build & Test Commands
 
 ```bash

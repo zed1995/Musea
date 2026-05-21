@@ -113,20 +113,14 @@ class PhotoRepositoryImpl implements PhotoRepository {
     try {
       final topics =
           await remoteDataSource.getTopics(page: page, perPage: perPage);
-      await topicLocalDataSource.cacheTopics(topics);
+      await topicLocalDataSource.saveTopics(topics);
       return Right(topics.map((t) => t.toEntity()).toList());
     } on ServerException catch (e) {
-      final cached = await topicLocalDataSource.getCachedTopics();
-      if (cached.isNotEmpty) {
-        return Right(cached.map((t) => t.toEntity()).toList());
-      }
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
-      final cached = await topicLocalDataSource.getCachedTopics();
-      if (cached.isNotEmpty) {
-        return Right(cached.map((t) => t.toEntity()).toList());
-      }
       return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
     } catch (e) {
       return Left(Failure.unknown(message: e.toString()));
     }

@@ -1,740 +1,713 @@
-# Musea 功能模块详细设计
+# Musea Functional Module Design
 
-> **版本**: v1.0
-> **日期**: 2026-05-17
-> **基于**: Unsplash API 数据能力
-
----
-
-## 一、整体导航结构
-
-采用 **底部 Tab 导航**，共 4 个主 Tab：
-
-| # | Tab 名称 | 图标 | 核心用途 |
-|---|---------|------|---------|
-| 1 | **发现** | 🏠 | 编辑推荐 + 主题浏览 + 随机发现 |
-| 2 | **探索** | 🔍 | 多维度搜索 + 过滤 |
-| 3 | **收藏** | 📁 | 本地收藏集管理 |
-| 4 | **我的** | 👤 | 设置 + 统计 + 关于 |
+> **Version**: v1.0
+> **Date**: 2026-05-17
+> **Based on**: Unsplash API data capabilities
 
 ---
 
-## 二、Tab 1：发现 (Discover)
+## 1. Overall Navigation Structure
 
-### 2.1 页面结构
+**Bottom Tab Navigation** with 4 main tabs:
+
+| # | Tab Name | Icon | Core Purpose |
+|---|---------|------|-------------|
+| 1 | **Discover** | 🏠 | Editor's picks + topic browsing + random discovery |
+| 2 | **Explore** | 🔍 | Multi-dimension search + filter |
+| 3 | **Collections** | 📁 | Local collection management |
+| 4 | **Profile** | 👤 | Settings + stats + about |
+
+---
+
+## 2. Tab 1: Discover
+
+### 2.1 Page Layout
 
 ```
 ┌──────────────────────────────────────┐
-│  🔍 搜索图片、摄影师...     [🎲]    │  ← 顶部搜索入口 + 随机按钮
+│  🔍 Search photos, photographers...    │  ← Search bar + random button
 ├──────────────────────────────────────┤
-│  [全部] [自然] [建筑] [人物] [电影] ⋯   │  ← 主题标签横向滚动
+│  [All] [Nature] [Architecture] [People] [Film] ⋯  │  ← Topic bar (horizontal scroll)
 ├──────────────────────────────────────┤
 │                                      │
 │  ┌──────────────────────────────┐   │
 │  │                              │   │
-│  │         P H O T O           │   │  ← 全宽图片
-│  │         (全屏宽)              │   │     自适应高度比
-│  │                              │   │     BlurHash → 渐入
+│  │         P H O T O           │   │  ← Full-width photo
+│  │                              │   │     Adaptive height
 │  ├────────────────────────────────┤  │
-│  │                                │  │  ← 底部叠加栏 (半透明渐变遮罩)
-│  │  ◎ 用户名  [♡ 1.2k] [💾 892] [⬇ 456]│  │     左: 头像+用户名
-│  └────────────────────────────────┘  │     右: 三个操作按钮(自带计数)
+│  │                                │  │  ← Overlay bar (translucent gradient)
+│  │  ◎ username  [♡ 1.2k] [💾 892] [⬇ 456]│  │      Left: avatar + username
+│  └────────────────────────────────┘  │      Right: three action buttons + counts
 │                                      │
 │  ┌──────────────────────────────┐   │
-│  │                              │   │  ← 下一张
+│  │                              │   │  ← Next photo
 │  │         P H O T O           │   │
-│  │                              │   │
 │  ├────────────────────────────────┤  │
-│  │  ◎ 用户名  [♡ 892] [💾 2.1k] [⬇ 128]│  │
+│  │  ◎ username  [♡ 892] [💾 2.1k] [⬇ 128]│  │
 │  └────────────────────────────────┘  │
 │                                      │
-│         [加载更多...]               │  ← 无限滚动 + 骨架屏
+│         [Load more...]               │  ← Infinite scroll + skeleton
 └──────────────────────────────────────┘
 ```
 
-### 2.2 顶部区域
+### 2.2 Top Area
 
-**搜索入口条**（不可编辑，点击跳转到探索 Tab）：
-- 左侧放大镜图标 + "搜索图片、摄影师..."
-- 右侧随机骰子图标 → 点击触发 `/photos/random`，跳转到随机图片详情页
+**Search bar** (non-editable, tap navigates to Explore tab):
+- Left: magnifying glass icon + "Search photos, photographers..."
+- Right: random dice icon → triggers `/photos/random`, navigates to random photo detail
 
-### 2.3 主题标签栏 (Topics Bar)
+### 2.3 Topic Bar
 
-横向滚动的 Chip 列表，数据来源 `GET /topics`。
+Horizontal scrolling chip list, sourced from `GET /topics`.
 
-| 元素 | 数据字段 | 展示形式 |
-|------|---------|---------|
-| 全部 | 无（固定项） | 默认选中，带背景色的圆角 Chip |
-| 每个主题 | `topic.title` + `topic.cover_photo.urls.thumb` | 圆角 Pill，选中有色填充，未选中透明描边 |
-| 选中行为 | 切换调用 `GET /topics/:slug/photos` | 替换下方照片流数据源 |
+| Element | Data Field | Display |
+|---------|-----------|---------|
+| All | None (fixed item) | Default selected, rounded chip with background color |
+| Each topic | `topic.title` + `topic.cover_photo.urls.thumb` | Rounded pill, filled when selected, outline when unselected |
+| Selection | Switches to `GET /topics/:slug/photos` | Replaces photo feed data source |
 
-**主题 Chip 样式**：
+**Topic chip style**:
 ```
  ┌──────────────┐  ┌──────────┐  ┌────────┐  ┌──────────┐
- │  ✦ 全部      │  │  🌲 自然  │  │ 🏛 建筑 │  │ 👤 人物  │  ⋯
+ │  ✦ All       │  │  🌲 Nature│  │ 🏛 Arch │  │ 👤 People│  ⋯
  └──────────────┘  └──────────┘  └────────┘  └──────────┘
 ```
 
-### 2.4 照片卡片设计 (Photo Card)
+### 2.4 Photo Card Design
 
-这是整个应用最核心的 UI 组件，在发现流、搜索、主题、收藏等多处复用。**采用单列全宽布局**，聚焦图片本身，信息精炼，操作直接。
+The core UI component reused across discover feed, search, topics, and collections. **Single-column full-width layout** focused on the image itself, with streamlined information and direct actions.
 
 ```
 ┌────────────────────────────────────┐
 │                                    │
-│                                    │
 │            P H O T O              │
-│                                    │  ← 全宽自适应图片
+│                                    │  ← Full-width adaptive image
 │                                    │     src: photo.urls.regular
 │                                    │     placeholder: blur_hash
-│                                    │
 ├────────────────────────────────────┤
-│                                    │  ← 底部叠加栏
-│  ◎ 用户名  [♡ 1.2k] [💾 892] [⬇ 456]│     渐变遮罩背景 (transparent → 半透明黑)
-│                                    │     左: 头像(圆形) + 用户名
-└────────────────────────────────────┘     右: 三个操作按钮 + 计数
+│                                    │  ← Bottom overlay bar
+│  ◎ username  [♡ 1.2k] [💾 892] [⬇ 456]│     Gradient background (transparent → semi-transparent black)
+│                                    │     Left: avatar(round) + username
+└────────────────────────────────────┘     Right: three action buttons + counts
 ```
 
-**卡片布局**：叠加栏位于图片底部，左半部分显示用户信息，右半部分显示操作按钮。
+**Card layout**: Overlay at the bottom of the image, left side shows user info, right side shows action buttons.
 
 ```
 ┌──────────────────────────────────────────┐
 │                                          │
-│                                          │
-│               P H O T O                 │  ← 全宽自适应图片
-│                                          │
+│               P H O T O                 │  ← Full-width adaptive image
 │                                          │
 ├──────────────────────────────────────────┤
-│  ░░ 渐变遮罩 (transparent → black@40%)  │
-│  ◎ 用户名      [♡ 1.2k] [💾 892] [⬇ 456]  │
+│  ░░ Gradient overlay (transparent → black@40%)  │
+│  ◎ username      [♡ 1.2k] [💾 892] [⬇ 456]  │
 └──────────────────────────────────────────┘
 ```
 
-**底部叠加栏**：
+**Bottom overlay bar**:
 
-| 区域 | 元素 | 数据源 | 说明 |
-|------|------|-------|------|
-| 左 | 头像(圆形) | `photo.user.profile_image.medium` (64x64) | 可点击跳转摄影师主页 |
-| 左 | 用户名 | `photo.user.name` | 白色粗体，可点击 |
-| 右 | ♡ 点赞 | `photo.likes` (超1000显示 `k`) | 点击切换点赞状态，MVP 本地状态 |
-| 右 | 💾 收藏 | 本地统计收藏次数 | 点击弹出收藏集选择 Sheet |
-| 右 | ⬇ 下载 | `photo.downloads` 或本地统计 | 点击弹出尺寸选择弹窗 |
+| Area | Element | Data Source | Notes |
+|------|---------|-------------|-------|
+| Left | Avatar (round) | `photo.user.profile_image.medium` (64x64) | Tappable → photographer profile |
+| Left | Username | `photo.user.name` | White bold, tappable |
+| Right | ♡ Like | `photo.likes` (show `k` format > 1000) | Toggle like state, local state for MVP |
+| Right | 💾 Bookmark | Local bookmark count | Shows collection picker sheet |
+| Right | ⬇ Download | `photo.downloads` or local count | Shows size selection dialog |
 
-**交互行为**：
-- 点击图片 → 进入图片详情页（Hero 共享元素过渡）
-- 点击头像/用户名 → 进入摄影师主页
-- 点击操作按钮 → 触发对应操作
+**Interactions**:
+- Tap image → photo detail page (Hero shared element transition)
+- Tap avatar/username → photographer profile page
+- Tap action buttons → trigger corresponding actions
 
-**交互行为**：
-- 点击图片 → 进入图片详情页（Hero 共享元素过渡）
-- 点击头像/用户名 → 进入摄影师主页
-- 点击操作按钮 → 触发对应操作
-
-**图片尺寸适配**：
+**Image size adaptation**:
 ```
-图片宽度 = 屏幕宽度 (全宽)
-图片高度 = 屏幕宽度 × (photo.height / photo.width)
+Image width = screen width (full-width)
+Image height = screen width × (photo.height / photo.width)
 
-对于超高图片 (比例 > 3:1)，限制最大高度为屏幕高度的 60%
-下方提示 "查看完整图片"
+For tall images (ratio > 3:1), cap max height at 60% of screen height
+Show hint "View full image"
 ```
 
-### 2.5 数据加载策略
+### 2.5 Data Loading Strategy
 
-| 行为 | 数据源 | 触发条件 |
-|------|-------|---------|
-| 初始加载 | `GET /photos?page=1&per_page=20` | 进入发现页 |
-| 加载更多 | `GET /photos?page=N&per_page=20` | 滚动到底部前 2 屏 |
-| 主题切换 | `GET /topics/:slug/photos?page=1` | 点击主题 Chip |
-| 刷新 | 重新请求当前数据源 page=1 | 下拉刷新 |
-| 随机 | `GET /photos/random?count=1` | 点击顶部骰子按钮 |
+| Action | Data Source | Trigger |
+|--------|-------------|---------|
+| Initial load | `GET /photos?page=1&per_page=20` | Enter Discover page |
+| Load more | `GET /photos?page=N&per_page=20` | 2 screens before scroll bottom |
+| Topic switch | `GET /topics/:slug/photos?page=1` | Tap topic chip |
+| Refresh | Re-request current data source page=1 | Pull to refresh |
+| Random | `GET /photos/random?count=1` | Tap dice button |
 
-**加载状态**：
-- 首次：骨架屏（BlurHash 占位网格）
-- 加载更多：底部圆形进度指示器
-- 刷新：顶部刷新指示器
-- 错误：SnackBar 提示 + 重试按钮
+**Loading states**:
+- First load: skeleton screen (BlurHash placeholder grid)
+- Load more: bottom circular progress indicator
+- Refresh: top refresh indicator
+- Error: SnackBar + retry button
 
 ---
 
-## 三、Tab 2：探索 (Explore)
+## 3. Tab 2: Explore
 
-### 3.1 页面结构
+### 3.1 Page Layout
 
 ```
 ┌──────────────────────────────────────┐
-│  ┌────────────────────────────┐ [×] │  ← 搜索输入框 (实时激活)
-│  │ 🔍 搜索图片或摄影师...      │     │     自带清除按钮
+│  ┌────────────────────────────┐ [×] │  ← Search input (real-time)
+│  │ 🔍 Search photos...        │     │     With clear button
 │  └────────────────────────────┘     │
 ├──────────────────────────────────────┤
-│  颜色: [■全部] [■黑白] [■红] [■蓝]⋯   │  ← 颜色过滤条 (横滚)
-│  方向: [▼ 全部]  [▬ 横向]  [▬ 竖向]   │  ← 方向过滤 (3选1)
-│  排序: [● 相关度]  [○ 最新]            │  ← 排序切换
+│  Color: [■All] [■B&W] [■Red] [■Blue]⋯ │  ← Color filter bar (horizontal scroll)
+│  Orientation: [▼ All]  [▬ Landscape]  [▬ Portrait]   │  ← Orientation filter (3-select-1)
+│  Sort: [● Relevance]  [○ Latest]            │  ← Sort toggle
 ├──────────────────────────────────────┤
-│  搜索结果 (124)                       │  ← 结果计数
+│  Search results (124)                │  ← Result count
 ├──────────────────────────────────────┤
 │                                      │
 │  ┌──────────────────────────────┐   │
-│  │                              │   │
-│  │         P H O T O           │   │  ← 单列 Feed (复用发现页卡片)
-│  │                              │   │
+│  │         P H O T O           │   │  ← Single-column feed (reuses Discover card)
 │  ├────────────────────────────────┤  │
-│  │  ◎ 用户名  [♡ 892] [💾 2.1k] [⬇ 456] │  │
+│  │  ◎ username  [♡ 892] [💾 2.1k] [⬇ 456] │  │
 │  └────────────────────────────────┘  │
 │                                      │
-│  ┌──────────────────────────────┐   │
-│  │         P H O T O           │   │
-│  ├────────────────────────────────┤  │
-│  │  ◎ 用户名  [♡ 128] [💾 456] [⬇ 12k] │  │
-│  └────────────────────────────────┘  │
-│                                      │
-│         [加载更多...]                │  ← 无限滚动
+│         [Load more...]               │  ← Infinite scroll
 └──────────────────────────────────────┘
 ```
 
-**搜索结果空状态**：
+**Empty search results**:
 ```
 ┌──────────────────────────────────────┐
 │                                      │
 │              🔍                      │
-│      没有找到相关图片                 │
+│      No matching photos found        │
 │                                      │
-│  试试这些建议：                       │
-│  • 使用更通用的关键词                 │
-│  • 减少过滤条件                       │
-│  • 检查拼写                          │
+│  Try these suggestions:              │
+│  • Use broader keywords              │
+│  • Reduce filter criteria            │
+│  • Check spelling                    │
 │                                      │
-│  [热门搜索: Nature] [Wallpaper] [Minimal]│
+│  [Popular: Nature] [Wallpaper] [Minimal]  │
 │                                      │
 └──────────────────────────────────────┘
 ```
 
-### 3.2 搜索输入框
+### 3.2 Search Input
 
-| 功能 | 实现方式 |
-|------|---------|
-| 输入触发 | 防抖 300ms，自动发起搜索 |
-| 清除按钮 | 输入内容时右侧显示 × 按钮 |
-| 空输入显示 | 搜索历史（本地存储）+ 热门搜索建议 |
-| 提交搜索 | 键盘搜索按钮触发 |
+| Feature | Implementation |
+|---------|---------------|
+| Input trigger | 300ms debounce, auto-initiate search |
+| Clear | Show × button when input has content |
+| Empty input | Search history (local storage) + popular suggestions |
+| Submit | Keyboard search button triggers search |
 
-**数据源**：`GET /search/photos?query={keyword}`
+**Data source**: `GET /search/photos?query={keyword}`
 
-### 3.3 过滤栏
+### 3.3 Filter Bar
 
-**颜色过滤**（横向滚动 Chip）：
-
-```
-[■ 全部] [⬤ 黑白] [■ 红] [■ 橙] [■ 黄] [■ 绿] [■ 青] [■ 蓝] [■ 紫] [■ 品] [■ 白] [■ 黑]
-```
-
-| 颜色 | API 参数值 | 色块 |
-|------|-----------|------|
-| 全部 | 不传参 | 彩虹渐变 |
-| 黑白 | `black_and_white` | 黑白渐变 |
-| 红 | `red` | 🔴 |
-| 橙 | `orange` | 🟠 |
-| 黄 | `yellow` | 🟡 |
-| 绿 | `green` | 🟢 |
-| 青 | `teal` | 青色 |
-| 蓝 | `blue` | 🔵 |
-| 紫 | `purple` | 🟣 |
-| 品 | `magenta` | 品红 |
-| 白 | `white` | ⚪ |
-| 黑 | `black` | ⚫ |
-
-点击颜色 Chip → 切换选中状态，自动重新搜索（带动画）。
-
-**方向过滤**（3 个 Pill 按钮）：
+**Color filter** (horizontal scrolling chips):
 
 ```
-[▬ 全部]  [▯ 横向]  [▮ 竖向]
+[■ All] [⬤ B&W] [■ Red] [■ Orange] [■ Yellow] [■ Green] [■ Teal] [■ Blue] [■ Purple] [■ Magenta] [■ White] [■ Black]
 ```
 
-| 选项 | API 参数 | 说明 |
-|------|---------|------|
-| 全部 | 不传参 | 显示所有方向 |
-| 横向 | `orientation=landscape` | 宽 > 高 |
-| 竖向 | `orientation=portrait` | 高 > 宽 |
+| Color | API Parameter | Swatch |
+|-------|--------------|--------|
+| All | (omit param) | Rainbow gradient |
+| B&W | `black_and_white` | B&W gradient |
+| Red | `red` | 🔴 |
+| Orange | `orange` | 🟠 |
+| Yellow | `yellow` | 🟡 |
+| Green | `green` | 🟢 |
+| Teal | `teal` | Teal |
+| Blue | `blue` | 🔵 |
+| Purple | `purple` | 🟣 |
+| Magenta | `magenta` | Magenta |
+| White | `white` | ⚪ |
+| Black | `black` | ⚫ |
 
-选中状态：实心填充 + 白色文字；未选中：描边 + 灰色文字。
+Tapping a color chip toggles selection and auto-triggers a search (with animation).
 
-**排序切换**：
+**Orientation filter** (3 pill buttons):
 
 ```
-[● 相关度]  [○ 最新]
+[▬ All]  [▯ Landscape]  [▮ Portrait]
 ```
 
-### 3.4 搜索结果
+| Option | API Parameter | Notes |
+|--------|--------------|-------|
+| All | (omit param) | Show all orientations |
+| Landscape | `orientation=landscape` | Width > Height |
+| Portrait | `orientation=portrait` | Height > Width |
 
-| 元素 | 数据源 | 说明 |
-|------|-------|------|
-| 结果总数 | `search_photos.total` | 显示 "搜索结果 (N)" |
-| 结果列表 | `search_photos.results[]` | 单列 Feed，复用发现页卡片（`photo.urls.regular` 全宽显示） |
-| 分页 | `page` + `per_page` 参数 | 无限滚动 |
-| 空结果 | — | 显示引导建议 + 热门搜索标签 |
-| 首次进入（未搜索） | — | 展示搜索历史和热门标签 |
-| 视图切换 | 可选 | 用户可切换"单列"和"网格"两种浏览模式（感谢反馈） |
+Selected: filled background + white text; Unselected: outline + gray text.
 
-**搜索结果 Header**：
+**Sort toggle**:
+
 ```
-搜索结果 (124)         排序: 相关度 ▼
+[● Relevance]  [○ Latest]
 ```
 
-### 3.5 搜索历史与推荐
+### 3.4 Search Results
 
-| 区域 | 内容 | 数据源 |
-|------|------|-------|
-| 搜索历史 | 最近 10 条搜索词 | 本地存储 |
-| 热门搜索 | 预设热门关键词（如：Nature、Wallpaper、Minimal） | 本地预设 + 未来可扩展 |
-| 热门标签 | 从 `GET /topics` 取前 10 个主题名 | Unsplash API |
+| Element | Data Source | Notes |
+|---------|-------------|-------|
+| Total count | `search_photos.total` | Display "Search results (N)" |
+| Result list | `search_photos.results[]` | Single-column feed, reuses discover card (`photo.urls.regular` full-width) |
+| Pagination | `page` + `per_page` params | Infinite scroll |
+| Empty results | — | Show guidance suggestions + popular search tags |
+| First entry (no search yet) | — | Show search history and popular tags |
+| View toggle | Optional | User can toggle between "single column" and "grid" modes |
+
+**Search results header**:
+```
+Search results (124)         Sort: Relevance ▼
+```
+
+### 3.5 Search History & Recommendations
+
+| Area | Content | Data Source |
+|------|---------|-------------|
+| Search history | Last 10 search terms | Local storage |
+| Popular searches | Preset hot keywords (e.g., Nature, Wallpaper, Minimal) | Local preset + future expandable |
+| Popular tags | Top 10 topic names from `GET /topics` | Unsplash API |
 
 ---
 
-## 四、Tab 3：收藏 (Collections)
+## 4. Tab 3: Collections
 
-### 4.1 页面结构
+### 4.1 Page Layout
 
 ```
 ┌────────────────────────────────────┐
-│  我的收藏集                    [+] │  ← 标题 + 新建按钮
+│  My Collections                [+] │  ← Title + create button
 ├────────────────────────────────────┤
 │                                    │
 │  ┌──────────┐  ┌──────────┐      │
 │  │          │  │          │      │
-│  │ 封面图片 │  │ 封面图片 │      │  ← 收藏集卡片 (2列网格)
-│  │          │  │          │      │
+│  │  Cover   │  │  Cover   │      │  ← Collection cards (2-column grid)
+│  │  Photo   │  │  Photo   │      │
 │  ├──────────┤  ├──────────┤      │
-│  │ 旅行灵感  │  │ 壁纸收藏  │      │
-│  │ 24张图片  │  │ 8张图片   │      │
+│  │ Travel   │  │ Wallpaper│      │
+│  │ 24 photos│  │ 8 photos │      │
 │  └──────────┘  └──────────┘      │
 │                                    │
 │  ┌──────────┐                      │
 │  │          │                      │
-│  │ 封面图片 │                      │
-│  │          │                      │
+│  │  Cover   │                      │
+│  │  Photo   │                      │
 │  ├──────────┤                      │
-│  │ 设计参考  │                      │
-│  │ 15张图片  │                      │
+│  │ Design   │                      │
+│  │ 15 photos│                      │
 │  └──────────┘                      │
 │                                    │
-│         [无更多数据]               │
+│         [No more data]             │
 └────────────────────────────────────┘
 ```
 
-### 4.2 收藏集卡片
+### 4.2 Collection Card
 
 ```
 ┌────────────────────┐
 │                     │
-│    Cover Photo     │  ← 收藏集封面 (collection.cover_photo.urls.small)
-│     (2:1 比例)      │     若无封面，使用第1张图片
+│    Cover Photo     │  ← Collection cover (collection.cover_photo.urls.small)
+│     (2:1 ratio)     │     If no cover, use first image
 │                     │
 ├────────────────────┤
 │                     │
-│  📁 旅行灵感         │  ← 收藏集标题，粗体
-│  24 张图片          │  ← 图片计数
+│  📁 Travel Ideas    │  ← Collection title, bold
+│  24 photos         │  ← Photo count
 │                     │
 └────────────────────┘
 ```
 
-| 卡片元素 | 说明 |
-|---------|------|
-| 封面图片 | 收藏集的第一张图片或手动设置的第一张 |
-| 标题 | 用户创建时命名，可编辑 |
-| 图片计数 | "N 张图片" |
-| 交互 | 点击进入收藏集详情；长按弹出编辑/删除菜单 |
+| Card Element | Notes |
+|-------------|-------|
+| Cover image | Collection's first image or manually set cover |
+| Title | User-created name, editable |
+| Photo count | "N photos" |
+| Interaction | Tap → collection detail; Long press → edit/delete menu |
 
-**空状态**（首次使用时）：
+**Empty state** (first use):
 ```
 ┌─────────────────────────┐
 │                         │
 │       📂                │
-│  还没有收藏集            │
-│  点击右上角 + 新建       │
-│  你的第一个收藏集        │
+│  No collections yet     │
+│  Tap + in top right     │
+│  to create your first   │
+│  collection             │
 │                         │
 └─────────────────────────┘
 ```
 
-### 4.3 新建/编辑收藏集弹窗
+### 4.3 Create/Edit Collection Dialog
 
 ```
 ┌─────────────────────────┐
-│  新建收藏集              │
+│  Create Collection       │
 │                         │
-│  名称                    │
+│  Name                    │
 │  ┌─────────────────┐   │
-│  │ 例如：旅行灵感    │   │
+│  │ e.g., Travel Ideas│   │
 │  └─────────────────┘   │
 │                         │
-│  描述 (可选)             │
+│  Description (optional)  │
 │  ┌─────────────────┐   │
-│  │ 我喜欢的旅行照片   │   │
+│  │ My favorite travel   │   │
+│  │ photos           │   │
 │  └─────────────────┘   │
 │                         │
-│  [取消]      [创建]     │
+│  [Cancel]      [Create] │
 └─────────────────────────┘
 ```
 
-### 4.4 收藏集详情页
+### 4.4 Collection Detail Page
 
 ```
 ┌──────────────────────────────────────┐
-│  ← 收藏                          ⋮  │  ← 顶部导航 + 更多菜单
+│  ← Collections                   ⋮  │  ← Top nav + more menu
 ├──────────────────────────────────────┤
 │  ┌──────────────────────────────┐   │
-│  │                              │   │
-│  │     封面大图 (Banner)        │   │  ← 收藏集封面 (16:9)
-│  │                              │   │
+│  │         Banner Cover         │   │  ← Collection cover (16:9)
 │  └──────────────────────────────┘   │
 │                                      │
-│  📁 旅行灵感                         │  ← 标题
-│  我喜欢的旅行摄影作品                 │  ← 描述
-│  24 张图片 · 创建于 2026.05          │  ← 元数据
+│  📁 Travel Ideas                     │  ← Title
+│  My favorite travel photography      │  ← Description
+│  24 photos · Created May 2026       │  ← Metadata
 │                                      │
-│  [编辑]  [清空]                      │  ← 操作按钮
-│                                      │
-│  ┌──────────────────────────────┐   │
-│  │                              │   │  ← 单列 Feed (复用 Photo Card)
-│  │         P H O T O           │   │
-│  │                              │   │
-│  ├────────────────────────────────┤  │
-│  │  ◎ 用户名  [♡ 892] [💾 已收藏] [⬇ 2.1k]│  │
-│  └────────────────────────────────┘  │
+│  [Edit]  [Clear]                     │  ← Action buttons
 │                                      │
 │  ┌──────────────────────────────┐   │
-│  │                              │   │
-│  │         P H O T O           │   │
+│  │         P H O T O           │   │  ← Single-column feed (reuses Photo Card)
 │  ├────────────────────────────────┤  │
-│  │  ◎ 用户名  [♡ 128] [💾 已收藏] [⬇ 456]│  │
+│  │  ◎ username  [♡ 892] [💾 Saved] [⬇ 2.1k]│  │
 │  └────────────────────────────────┘  │
 │                                      │
-│         [加载更多...]                │  ← 无限滚动
+│         [Load more...]               │  ← Infinite scroll
 └──────────────────────────────────────┘
 ```
 
-**收藏集空状态**：
+**Collection empty state**:
 ```
 ┌──────────────────────────────────────┐
 │                                      │
 │              📂                      │
-│      这个收藏集还没有图片             │
+│       This collection is empty       │
 │                                      │
-│  浏览发现页，点击图片的收藏按钮       │
-│  将喜欢的图片添加到这个收藏集         │
+│  Browse the discover page and tap    │
+│  the bookmark button on photos       │
+│  to add them to this collection      │
 │                                      │
-│  [去发现]                             │
+│  [Go to Discover]                    │
 └──────────────────────────────────────┘
 ```
 
-### 4.5 添加图片到收藏集流程
+### 4.5 Add Photo to Collection Flow
 
-从图片详情页或快捷菜单触发：
+Triggered from photo detail page or quick menu:
 
 ```
-                 长按/点击收藏按钮
+                 Long press / tap bookmark button
                          │
                          ▼
                ┌───────────────────┐
-               │  保存到收藏集       │
+               │  Save to Collection │
                │                   │
-               │  ○ 旅行灵感 (24)   │  ← 已有收藏集列表，单选
-               │  ○ 壁纸收藏 (8)    │
-               │  ○ 设计参考 (15)   │
+               │  ○ Travel Ideas (24)│  ← Collection list, single-select
+               │  ○ Wallpapers (8)   │
+               │  ○ Design Ref (15)  │
                │                   │
-               │  [+ 新建收藏集]    │
+               │  [+ New Collection] │
                │                   │
-               │  [取消]  [保存]   │
+               │  [Cancel]  [Save]  │
                └───────────────────┘
 ```
 
-### 4.6 数据存储
+### 4.6 Data Storage
 
-> 由于 MVP 阶段无 OAuth 用户系统，收藏集数据使用**本地存储**。
+> Since there is no OAuth user system during MVP, collection data uses **local storage**.
 
-| 数据类型 | 存储方案 | 说明 |
-|---------|---------|------|
-| 收藏集列表 | `Hive` 或 `drift` | 包含 id、名称、描述、创建时间 |
-| 收藏集-图片映射 | 本地 DB | 图片 ID + 收藏集 ID + 添加时间 |
-| 图片缓存数据 | `Hive` | 缓存 `Photo` 对象的必要字段（id, urls, user.name 等）|
-| 搜索历史 | `SharedPreferences` | 最近 10 条搜索词 |
+| Data Type | Storage | Notes |
+|-----------|---------|-------|
+| Collection list | `Hive` or `drift` | Contains id, name, description, creation time |
+| Collection-photo mapping | Local DB | Photo ID + collection ID + added time |
+| Photo cache data | `Hive` | Cache `Photo` essential fields (id, urls, user.name, etc.) |
+| Search history | `SharedPreferences` | Last 10 search terms |
 
-> **注意**：本地存储意味着收藏集数据不跨设备同步。后续 OAuth 集成后可迁移到服务端。
+> **Note**: Local storage means collection data is not synced across devices. Can be migrated to server-side after OAuth integration.
 
 ---
 
-## 五、图片详情页 (Photo Detail)
+## 5. Photo Detail Page
 
-### 5.1 页面结构
+### 5.1 Page Layout
 
 ```
 ┌────────────────────────────────────┐
-│  ← 返回  [下载]  [收藏+]    [⋮]  │  ← 顶部导航栏
+│  ← Back  [Download]  [Bookmark]    [⋮]  │  ← Top navigation bar
 ├────────────────────────────────────┤
 │                                    │
 │        ┌──────────────────┐       │
 │        │                  │       │
-│        │   全屏图片展示    │       │  ← 主图区 (fit: contain)
-│        │   双击缩放/平移   │       │     源: photo.urls.regular
-│        │                  │       │     点击切换全屏模式
+│        │   Fullscreen     │       │  ← Main image area (fit: contain)
+│        │   Image Display  │       │     Source: photo.urls.regular
+│        │   Pinch to Zoom  │       │     Tap to toggle fullscreen mode
 │        └──────────────────┘       │
 │                                    │
 ├────────────────────────────────────┤
 │                                    │
-│  ◎ 用户名  @username              │  ← 摄影师信息行
-│  "摄影师个人简介"                  │     可点击跳转
+│  ◎ username  @username            │  ← Photographer info row
+│  "Photographer bio"                │     Tappable → profile
 │                                    │
 ├────────────────────────────────────┤
-│  ♡ 1,284   ·  👁 52.3k  ·  ⬇ 12k  │  ← 互动数据
+│  ♡ 1,284   ·  👁 52.3k  ·  ⬇ 12k  │  ← Engagement stats
 │                                    │
 ├────────────────────────────────────┤
-│  照片信息                          │  ← 元数据分组
+│  Photo Info                        │  ← Metadata group
 │  ┌──────────────────────────────┐ │
-│  │ 📷 相机   Sony A7 III        │ │
-│  │ 🔭 镜头   FE 24-70mm F2.8   │ │
-│  │ ⏱ 快门   1/250s             │ │
-│  │ 🔆 光圈   f/2.8              │ │
-│  │ 🔢 ISO    400                │ │
-│  │ 📏 焦距   35mm               │ │
-│  │ 📐 尺寸    6000×4000        │ │
+│  │ 📷 Camera  Sony A7 III       │ │
+│  │ 🔭 Lens    FE 24-70mm F2.8  │ │
+│  │ ⏱ Shutter 1/250s            │ │
+│  │ 🔆 Aperture f/2.8           │ │
+│  │ 🔢 ISO     400               │ │
+│  │ 📏 Focal    35mm             │ │
+│  │ 📐 Size     6000×4000       │ │
 │  └──────────────────────────────┘ │
 │                                    │
-│  拍摄地点                          │
+│  Location                          │
 │  ┌──────────────────────────────┐ │
-│  │ 📍 京都, 日本                │ │
-│  │ [🗺 地图缩略图 (可选)]       │ │  ← 可展开地图
+│  │ 📍 Kyoto, Japan              │ │
+│  │ [🗺 Map thumbnail (optional)] │ │  ← Expandable map
 │  └──────────────────────────────┘ │
 │                                    │
-│  色调                              │
+│  Color Palette                     │
 │  ┌──────────────────────────────┐ │
-│  │ 主色调: ■ #5B7B9A            │ │
-│  │ 调色板: ■■■■■■■■              │ │  ← 从图片提取或使用标签
+│  │ Primary: ■ #5B7B9A          │ │
+│  │ Palette: ■■■■■■■■            │ │  ← Extracted from image or tags
 │  └──────────────────────────────┘ │
 │                                    │
-│  标签                              │
+│  Tags                              │
 │  ┌──────────────────────────────┐ │
-│  │ [京都] [寺庙] [秋天] [红枫] [旅行]││  ← 横向滚动标签
-│  │ [日本] [建筑] [风景]         │ │     点击跳转到探索页搜索
+│  │ [Kyoto] [Temple] [Autumn]    │ │  ← Horizontal scroll tags
+│  │ [Japan] [Architecture]       │ │     Tap → explore page with pre-filled search
 │  └──────────────────────────────┘ │
 │                                    │
 ├────────────────────────────────────┤
-│  更多来自该摄影师                   │  ← 摄影师推荐
+│  More from this photographer       │  ← Photographer recommendations
 │  ┌────┐ ┌────┐ ┌────┐ ┌────┐     │
-│  │图片│ │图片│ │图片│ │图片│ ⋯    │  ← 水平滚动
+│  │ img│ │img │ │img │ │img │ ⋯    │  ← Horizontal scroll
 │  └────┘ └────┘ └────┘ └────┘     │
 │                                    │
 ├────────────────────────────────────┤
-│  相似图片                          │  ← 相关推荐
+│  Similar Photos                    │  ← Related recommendations
 │  ┌────┐ ┌────┐ ┌────┐ ┌────┐     │
-│  │图片│ │图片│ │图片│ │图片│ ⋯    │  ← 水平滚动
+│  │ img│ │img │ │img │ │img │ ⋯    │  ← Horizontal scroll
 │  └────┘ └────┘ └────┘ └────┘     │
 │                                    │
 └────────────────────────────────────┘
 ```
 
-### 5.2 各模块数据映射
+### 5.2 Module Data Mapping
 
-| 模块 | 数据字段 | API 来源 |
-|------|---------|---------|
-| 主图 | `photo.urls.regular` (默认) → `full` (全屏) | `GET /photos/:id` |
-| 摄影师 | `photo.user.name` + `photo.user.username` + `photo.user.profile_image.medium` + `photo.user.bio` | `GET /photos/:id` (内嵌 user) |
-| 互动数据 | `photo.likes` + 需额外调用统计 | `GET /photos/:id` (likes) + `GET /photos/:id/statistics` |
-| EXIF 信息 | `photo.exif.make`, `.model`, `.exposure_time`, `.aperture`, `.focal_length`, `.iso` | `GET /photos/:id` |
-| 位置 | `photo.location.city`, `.country`, `.position.latitude`, `.position.longitude` | `GET /photos/:id` |
-| 色调 | `photo.color` (HEX) | `GET /photos/:id` |
-| 标签 | `photo.tags[].title` | `GET /photos/:id` (完整响应包含 tags) |
-| 更多作品 | `GET /users/:username/photos` | 额外调用 |
-| 相似推荐 | 基于当前图片的 `tags` 或 `color` 调用 `GET /search/photos` | 额外调用 |
+| Module | Data Field | API Source |
+|--------|-----------|------------|
+| Main image | `photo.urls.regular` (default) → `full` (fullscreen) | `GET /photos/:id` |
+| Photographer | `photo.user.name` + `photo.user.username` + `photo.user.profile_image.medium` + `photo.user.bio` | `GET /photos/:id` (embedded user) |
+| Engagement | `photo.likes` + additional stats call | `GET /photos/:id` (likes) + `GET /photos/:id/statistics` |
+| EXIF | `photo.exif.make`, `.model`, `.exposure_time`, `.aperture`, `.focal_length`, `.iso` | `GET /photos/:id` |
+| Location | `photo.location.city`, `.country`, `.position.latitude`, `.position.longitude` | `GET /photos/:id` |
+| Color | `photo.color` (HEX) | `GET /photos/:id` |
+| Tags | `photo.tags[].title` | `GET /photos/:id` (full response includes tags) |
+| More works | `GET /users/:username/photos` | Extra call |
+| Similar | Based on current photo's `tags` or `color`, call `GET /search/photos` | Extra call |
 
-### 5.3 下载功能
+### 5.3 Download Flow
 
 ```
-点击下载按钮
+Tap download button
     │
     ▼
 ┌─────────────────────┐
-│  选择尺寸             │
+│  Select Size         │
 │                     │
-│  ● Raw (原始)  42MB │  ← 从 urls.raw 获取
-│  ○ Full (全屏)  8MB │  ← 从 urls.full 获取
-│  ○ Regular     2MB  │  ← 从 urls.regular 获取
-│  ○ Small       500KB│  ← 从 urls.small 获取
-│  ○ Thumb       200KB│  ← 从 urls.thumb 获取
+│  ● Raw (Original) 42MB │  ← From urls.raw
+│  ○ Full (Fullscreen) 8MB│  ← From urls.full
+│  ○ Regular     2MB  │  ← From urls.regular
+│  ○ Small       500KB│  ← From urls.small
+│  ○ Thumb       200KB│  ← From urls.thumb
 │                     │
-│  [取消]  [下载]      │
+│  [Cancel]  [Download]│
 └─────────────────────┘
 ```
 
-**下载流程**：
-1. 用户选择尺寸 → 点击下载
-2. 调用 `GET /photos/:id/download`（API 合规要求）
-3. 从返回的 `url` 下载图片到本地相册
-4. 显示下载成功 SnackBar
+**Download process**:
+1. User selects size → tap Download
+2. Call `GET /photos/:id/download` (API compliance requirement)
+3. Download image from returned `url` to local album
+4. Show success SnackBar
 
-### 5.4 全屏浏览模式
+### 5.4 Fullscreen Browse Mode
 
 ```
-点击图片 → 隐藏导航栏 + 信息面板
-         → 图片充满屏幕
-         → 双击缩放 / 双指捏合
-         → 上下滑动退出全屏
+Tap image → hide nav bar + info panel
+         → image fills screen
+         → double-tap zoom / pinch to zoom
+         → vertical swipe to exit fullscreen
 
-再次点击 → 恢复导航栏和信息面板
+Tap again → restore nav bar and info panel
 ```
 
 ---
 
-## 六、Tab 4：我的 (Profile)
+## 6. Tab 4: Profile
 
-### 6.1 页面结构
+### 6.1 Page Layout
 
 ```
 ┌────────────────────────────────────┐
-│  我的                               │
+│  Profile                            │
 ├────────────────────────────────────┤
 │                                    │
 │  ┌──────────────────────────┐     │
-│  │   📊  已收藏 52 张图片    │     │  ← 数据统计卡片
-│  │       已创建 3 个收藏集    │     │
+│  │   📊  52 photos bookmarked │     │  ← Stats card
+│  │       3 collections created│     │
 │  └──────────────────────────┘     │
 │                                    │
 │  ┌──────────────────────────┐     │
-│  │   ⚙️ 设置                 │  →  │  ← 菜单列表
+│  │   ⚙️ Settings             │  →  │  ← Menu list
 │  ├──────────────────────────┤     │
-│  │   🌙 深色模式             │ 🔘  │  ← 开关
+│  │   🌙 Dark Mode           │ 🔘  │  ← Toggle
 │  ├──────────────────────────┤     │
-│  │   💾 清除图片缓存         │  →  │
+│  │   💾 Clear Image Cache   │  →  │
 │  ├──────────────────────────┤     │
-│  │   ❔ 关于 Musea           │  →  │
+│  │   ❔ About Musea          │  →  │
 │  └──────────────────────────┘     │
 │                                    │
 │  ┌──────────────────────────┐     │
-│  │   ⚡ 数据来源              │     │
-│  │    Unsplash API v1       │     │  ← 品牌信息
-│  │    50 次/小时剩余         │     │
+│  │   ⚡ Data Source          │     │
+│  │    Unsplash API v1       │     │  ← Brand info
+│  │    50 requests/hour left│     │
 │  └──────────────────────────┘     │
 │                                    │
 └────────────────────────────────────┘
 ```
 
-### 6.2 设置项
+### 6.2 Settings
 
-| 设置项 | 类型 | 说明 |
-|-------|------|------|
-| 深色模式 | 开关 | 切换应用主题（亮色/暗色/跟随系统）|
-| 清除图片缓存 | 按钮 | 清空图片磁盘缓存，显示当前缓存大小 |
-| 关于 Musea | 跳转 | 版本号、技术栈、致谢信息 |
-
----
-
-## 七、通用组件设计
-
-### 7.1 图片 Feed (PhotoFeed)
-
-可复用的单列 Feed 组件，在发现、探索、主题、收藏集详情等多处使用。每个 item 是一张全宽照片卡片。
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `photos` | `List<Photo>` | 图片数据列表 |
-| `onPhotoTap` | `(Photo, int) → void` | 点击图片进入详情页（传入索引支持左右滑动浏览）|
-| `onUserTap` | `(User) → void` | 点击头像跳转摄影师页 |
-| `onLikeTap` | `(Photo) → void` | 点赞按钮回调 |
-| `onSaveTap` | `(Photo) → void` | 收藏按钮回调（弹出收藏集选择）|
-| `onDownloadTap` | `(Photo) → void` | 下载按钮回调（弹出尺寸选择）|
-| `onLoadMore` | `() → void` | 滚动到底部加载更多 |
-| `isLiked` | `(Photo) → bool` | 判断某图片是否已点赞（本地状态）|
-| `isSaved` | `(Photo) → bool` | 判断某图片是否已收藏（本地状态）|
-
-### 7.2 主题标签栏 (TopicBar)
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `topics` | `List<Topic>` | Unsplash 主题列表 |
-| `selectedId` | `String` | 当前选中的主题 ID |
-| `onTopicTap` | `(Topic) → void` | 主题切换回调 |
-| `showAll` | `bool` | 是否包含"全部"选项 |
-
-### 7.3 搜索过滤栏 (SearchFilters)
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `selectedColor` | `String?` | 当前选中的颜色参数 |
-| `selectedOrientation` | `String?` | 当前选中的方向参数 |
-| `selectedOrder` | `String` | 排序方式 |
-| `onFilterChanged` | `(Filters) → void` | 过滤条件变更回调 |
-
-### 7.4 空状态组件 (EmptyState)
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `icon` | `IconData` | 空状态图标 |
-| `title` | `String` | 标题 |
-| `subtitle` | `String?` | 副标题 |
-| `action` | `Widget?` | 操作按钮（如"去发现"）|
-
-### 7.5 错误状态组件 (ErrorState)
-
-| 属性 | 类型 | 说明 |
-|------|------|------|
-| `message` | `String` | 错误信息 |
-| `onRetry` | `VoidCallback?` | 重试按钮回调 |
+| Setting | Type | Notes |
+|---------|------|-------|
+| Dark mode | Toggle | Switch theme (light/dark/system) |
+| Clear image cache | Button | Clear disk cache, show current cache size |
+| About Musea | Navigate | Version, tech stack, credits |
 
 ---
 
-## 八、导航与页面路由
+## 7. Shared Components
 
-### 8.1 页面栈
+### 7.1 PhotoFeed
+
+Reusable single-column feed component used in Discover, Explore, Topics, Collection Detail, etc. Each item is a full-width photo card.
+
+| Prop | Type | Notes |
+|------|------|-------|
+| `photos` | `List<Photo>` | Photo data list |
+| `onPhotoTap` | `(Photo, int) → void` | Tap photo → detail page (pass index for swipe navigation) |
+| `onUserTap` | `(User) → void` | Tap avatar → photographer page |
+| `onLikeTap` | `(Photo) → void` | Like button callback |
+| `onSaveTap` | `(Photo) → void` | Save button callback (show collection picker) |
+| `onDownloadTap` | `(Photo) → void` | Download button callback (show size picker) |
+| `onLoadMore` | `() → void` | Scroll to bottom → load more |
+| `isLiked` | `(Photo) → bool` | Check if photo is liked (local state) |
+| `isSaved` | `(Photo) → bool` | Check if photo is saved (local state) |
+
+### 7.2 TopicBar
+
+| Prop | Type | Notes |
+|------|------|-------|
+| `topics` | `List<Topic>` | Unsplash topic list |
+| `selectedId` | `String` | Currently selected topic ID |
+| `onTopicTap` | `(Topic) → void` | Topic switch callback |
+| `showAll` | `bool` | Whether to include "All" option |
+
+### 7.3 SearchFilters
+
+| Prop | Type | Notes |
+|------|------|-------|
+| `selectedColor` | `String?` | Current color parameter |
+| `selectedOrientation` | `String?` | Current orientation parameter |
+| `selectedOrder` | `String` | Sort order |
+| `onFilterChanged` | `(Filters) → void` | Filter change callback |
+
+### 7.4 EmptyState
+
+| Prop | Type | Notes |
+|------|------|-------|
+| `icon` | `IconData` | Empty state icon |
+| `title` | `String` | Title |
+| `subtitle` | `String?` | Subtitle |
+| `action` | `Widget?` | Action button (e.g., "Go to Discover") |
+
+### 7.5 ErrorState
+
+| Prop | Type | Notes |
+|------|------|-------|
+| `message` | `String` | Error message |
+| `onRetry` | `VoidCallback?` | Retry button callback |
+
+---
+
+## 8. Navigation & Routes
+
+### 8.1 Page Stack
 
 ```
 App
-├── 首页 (Bottom Navigation)
-│   ├── 发现 (DiscoverPage)
-│   ├── 探索 (ExplorePage)
-│   ├── 收藏 (CollectionsPage)
-│   └── 我的 (ProfilePage)
-├── 图片详情页 (PhotoDetailPage)
-├── 摄影师主页 (PhotographerPage)
-├── 收藏集详情页 (CollectionDetailPage)
-├── 主题详情页 (TopicDetailPage)
-└── 全屏图片页 (FullScreenImagePage)
+├── Home (Bottom Navigation)
+│   ├── Discover (DiscoverPage)
+│   ├── Explore (ExplorePage)
+│   ├── Collections (CollectionsPage)
+│   └── Profile (ProfilePage)
+├── Photo Detail Page (PhotoDetailPage)
+├── Photographer Page (PhotographerPage)
+├── Collection Detail Page (CollectionDetailPage)
+├── Topic Detail Page (TopicDetailPage)
+└── Full Screen Image Page (FullScreenImagePage)
 ```
 
-### 8.2 页面关系
+### 8.2 Page Relationships
 
 ```
-发现 ──点击图片──→ 图片详情 ──点击摄影师──→ 摄影师主页
-                      │                        │
-                      ├──点击标签──→ 探索(预填充搜索)
-                      ├──收藏────→ 收藏集选择弹窗
-                      └──相似图片──→ 另一图片详情
+Discover ──tap photo──→ Photo Detail ──tap photographer──→ Photographer Page
+                          │                                  │
+                          ├──tap tag──→ Explore (pre-filled search)
+                          ├──bookmark──→ Collection picker dialog
+                          └──similar photo──→ Another photo detail
 
-探索 ──搜索结果──→ 图片详情
+Explore ──search results──→ Photo Detail
 
-主题标签 ──点击──→ 主题详情 ──点击图片──→ 图片详情
+Topic chip ──tap──→ Topic Detail ──tap photo──→ Photo Detail
 
-收藏 ──点击收藏集──→ 收藏集详情 ──点击图片──→ 图片详情
+Collections ──tap collection──→ Collection Detail ──tap photo──→ Photo Detail
   │                                    │
-  └──新建/编辑──→ 弹窗               └──移除──→ 确认弹窗
+  └──create/edit──→ Dialog           └──remove──→ Confirmation dialog
 ```
 
 ---
 
-## 九、数据流概览
+## 9. Data Flow Overview
 
 ```
 ┌──────────────────────────────────────────────┐
 │                  UI Layer                      │
 │  Pages / Widgets / Components                  │
 └────────────────────┬─────────────────────────┘
-                     │ 状态管理 (State Management)
+                     │ State Management
                      ▼
 ┌──────────────────────────────────────────────┐
 │            Business Logic Layer                │
 │  UseCases / Providers / Blocs                  │
-│  - 数据聚合 (如详情页 = 图片+统计+摄影师作品)   │
-│  - 缓存策略                                   │
-│  - 收藏集 CRUD                                │
+│  - Data aggregation (e.g., detail = photo+stats+photographer works)  │
+│  - Caching strategy                           │
+│  - Collection CRUD                            │
 └────────────────────┬─────────────────────────┘
                      ▼
 ┌──────────────────────────────────────────────┐
@@ -746,47 +719,47 @@ App
 └──────────────────────────────────────────────┘
 ```
 
-### 数据融合示例：详情页
+### Data Fusion Example: Detail Page
 
 ```
-PhotoDetailPage 需要的数据：
-  1. 照片详情   → GET /photos/:id              (API)
-  2. 统计数据   → GET /photos/:id/statistics   (API, 可选)
-  3. 摄影师作品 → GET /users/:username/photos  (API)
-  4. 相似推荐   → GET /search/photos (基于标签)  (API)
-  5. 收藏状态   → 本地查询该图片是否已收藏      (Local)
+PhotoDetailPage required data:
+  1. Photo details  → GET /photos/:id              (API)
+  2. Statistics     → GET /photos/:id/statistics   (API, optional)
+  3. Photographer   → GET /users/:username/photos  (API)
+  4. Similar        → GET /search/photos (based on tags)  (API)
+  5. Save status    → Local query: is photo saved?  (Local)
 ```
 
 ---
 
-## 十、交互与动效
+## 10. Interactions & Animations
 
-| 场景 | 动效 | 说明 |
-|------|------|------|
-| 图片加载 | BlurHash → 图片渐入 | 模糊占位平滑过渡到清晰图片 |
-| 列表进入 | 卡片逐个淡入上移 | Staggered 动画，每项间隔 50ms |
-| 切换 Tab | 平滑水平滑动 | PageView + 底部导航联动 |
-| 下拉刷新 | 标准刷新指示器 | 刷新图标 + 文案 |
-| 搜索过滤 | AnimatedSwitcher | 过滤器切换时内容淡入淡出 |
-| 详情页进入 | 共享元素过渡 (Hero) + 滑动返回 | Feed 中图片放大到详情页，支持从左侧边缘滑动返回 |
-| 收藏弹窗 | 底部弹出 Sheet | 从底部滑入 |
-| 空状态 | 微动效插画 | 柔和呼吸动画 |
+| Scenario | Animation | Notes |
+|----------|-----------|-------|
+| Image loading | BlurHash → fade-in image | Blur placeholder smooth transition to clear image |
+| List entry | Cards fade-in and slide-up one by one | Staggered animation, 50ms interval per item |
+| Tab switch | Smooth horizontal slide | PageView + bottom nav sync |
+| Pull to refresh | Standard refresh indicator | Refresh icon + text |
+| Search filter | AnimatedSwitcher | Content fade-in/out on filter change |
+| Detail page entry | Hero shared element transition + swipe back | Feed image expands to detail; edge swipe to go back |
+| Collection popup | Bottom sheet | Slide up from bottom |
+| Empty state | Micro-animation illustration | Soft breathing animation |
 
 ---
 
-## 十一、各页面对应的 API 调用汇总
+## 11. API Call Summary by Page
 
-| 页面 | API 调用 | 频率 |
-|------|---------|------|
-| 发现页 - 全部 | `GET /photos?page=N` | 每次进入/加载更多 |
-| 发现页 - 主题 | `GET /topics` + `GET /topics/:slug/photos` | 进入时 + 切换主题 |
-| 探索页 - 搜索 | `GET /search/photos?query=&color=&orientation=&order_by=` | 用户输入/切换过滤 |
-| 图片详情页 | `GET /photos/:id` (+ 可选 stat) | 进入详情 |
-| 详情 - 更多作品 | `GET /users/:username/photos` | 进入详情 |
-| 详情 - 相似推荐 | `GET /search/photos?query=tag1,tag2` | 进入详情 |
-| 收藏集页 | 本地读取 | 进入收藏页 |
-| 收藏集详情页 | 本地读取 + `GET /photos/:id` (按需) | 进入收藏集 |
-| 摄影师主页 | `GET /users/:username` + `/users/:username/photos` | 进入主页 |
-| 主题详情页 | `GET /topics/:slug` + `GET /topics/:slug/photos` | 进入主题 |
+| Page | API Call | Frequency |
+|------|---------|-----------|
+| Discover - All | `GET /photos?page=N` | Each entry / load more |
+| Discover - Topic | `GET /topics` + `GET /topics/:slug/photos` | Entry + topic switch |
+| Explore - Search | `GET /search/photos?query=&color=&orientation=&order_by=` | User input / filter change |
+| Photo detail | `GET /photos/:id` (+ optional stats) | Entry |
+| Detail - More works | `GET /users/:username/photos` | Entry |
+| Detail - Similar | `GET /search/photos?query=tag1,tag2` | Entry |
+| Collections page | Local read | Entry |
+| Collection detail | Local read + `GET /photos/:id` (on demand) | Entry |
+| Photographer page | `GET /users/:username` + `/users/:username/photos` | Entry |
+| Topic detail | `GET /topics/:slug` + `GET /topics/:slug/photos` | Entry |
 
-**速率控制策略**：对重复调用使用内存缓存（如主题列表、摄影师资料），减少 API 请求量。图片本身走 CDN 热链接不计入限额。
+**Rate control strategy**: Use in-memory cache for repeated calls (topic list, photographer profiles) to reduce API requests. Image CDN hotlinks don't count toward rate limits.

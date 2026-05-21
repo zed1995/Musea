@@ -16,6 +16,14 @@ import 'package:musea/features/discover/presentation/providers/topics_provider.d
 
 class MockPhotoRepository extends Mock implements PhotoRepository {}
 
+class TestTopicListNotifier extends TopicListNotifier {
+  final List<Topic> initialTopics;
+  TestTopicListNotifier(this.initialTopics);
+
+  @override
+  List<Topic> build() => initialTopics;
+}
+
 void main() {
   const user = User(
     id: 'user-1',
@@ -102,7 +110,7 @@ void main() {
             Uri.parse('musea://auth/callback'),
           ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
-          topicsProvider.overrideWith((ref) => <Topic>[]),
+          topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
         ],
         child: const MaterialApp(
           home: DiscoverPage(),
@@ -164,14 +172,14 @@ void main() {
             Uri.parse('musea://auth/callback'),
           ),
           photosProvider(1).overrideWith((ref) => photos),
-          topicsProvider.overrideWith((ref) => [
+          topicsProvider.overrideWith(() => TestTopicListNotifier([
             const Topic(
               slug: 'nature',
               title: 'Nature',
               id: '1',
               totalPhotos: 10,
             ),
-          ]),
+          ])),
         ],
         child: const MaterialApp(
           home: DiscoverPage(),
@@ -225,7 +233,7 @@ void main() {
           ),
           photoRepositoryProvider.overrideWithValue(repository),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
-          topicsProvider.overrideWith((ref) => <Topic>[]),
+          topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
         ],
         child: const MaterialApp(
           home: DiscoverPage(),

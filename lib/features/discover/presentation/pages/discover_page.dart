@@ -60,7 +60,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
   @override
   Widget build(BuildContext context) {
-    final topicsAsync = ref.watch(topicsProvider);
+    final topics = ref.watch(topicsProvider);
     final photosAsync = _selectedTopicSlug == null
         ? ref.watch(photosProvider(_currentPage))
         : ref.watch(topicPhotosProvider(
@@ -83,20 +83,12 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
               child: _buildHeader(),
             ),
             // Fixed filter tabs
-            topicsAsync.when(
-              data: (topics) => _buildFilterTabs(topics),
-              loading: () => const SizedBox(
-                height: 38,
-                child: Center(child: LoadingIndicator()),
-              ),
-              error: (error, stack) => const SizedBox.shrink(),
-            ),
+            _buildFilterTabs(topics),
             // Scrollable photo feed
             Expanded(
               child: RefreshIndicator(
                 onRefresh: () async {
                   ref.invalidate(photosProvider);
-                  ref.invalidate(topicsProvider);
                 },
                 child: CustomScrollView(
                   controller: _scrollController,

@@ -3,14 +3,15 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:musea/features/discover/data/models/topic_model.dart';
 
 abstract class TopicLocalDataSource {
-  Future<void> cacheTopics(List<TopicModel> topics);
-  Future<List<TopicModel>> getCachedTopics();
+  Future<void> saveTopics(List<TopicModel> topics);
+  Future<List<TopicModel>> getTopics();
+  Future<DateTime?> getLastUpdatedAt();
   Future<void> clearCache();
 }
 
 class TopicLocalDataSourceImpl implements TopicLocalDataSource {
   static const String _boxName = 'topics_cache';
-  static const String _topicsKey = 'topics_json';
+  static const String _dataKey = 'topic_data';
   Box<dynamic>? _box;
 
   Future<Box<dynamic>> get box async {
@@ -19,35 +20,50 @@ class TopicLocalDataSourceImpl implements TopicLocalDataSource {
   }
 
   @override
-  Future<void> cacheTopics(List<TopicModel> topics) async {
+  Future<void> saveTopics(List<TopicModel> topics) async {
     final topicBox = await box;
-    // Convert to JSON and remove cover_photo to avoid Hive serialization issues
     final jsonList = topics.map((topic) {
       final json = topic.toJson();
-      // Remove cover_photo as it contains PhotoModel which can't be serialized by Hive
       json.remove('cover_photo');
       return json;
     }).toList();
-    
-    // Convert to JSON string to ensure Hive can store it
-    final jsonString = jsonEncode(jsonList);
-    await topicBox.put(_topicsKey, jsonString);
+
+    final payload = {
+      'topics': jsonList,
+      'lastUpdatedAt': DateTime.now().toUtc().toIso8601String(),
+    };
+    await topicBox.put(_dataKey, jsonEncode(payload));
   }
 
   @override
-  Future<List<TopicModel>> getCachedTopics() async {
+  Future<List<TopicModel>> getTopics() async {
     final topicBox = await box;
-    final jsonString = topicBox.get(_topicsKey);
-    if (jsonString == null || jsonString is! String) return [];
-    
+    final raw = topicBox.get(_dataKey);
+    if (raw == null || raw is! String) return [];
+
     try {
-      final jsonList = jsonDecode(jsonString) as List;
+      final data = jsonDecode(raw) as Map<String, dynamic>;
+      final jsonList = data['topics'] as List;
       return jsonList
           .map((json) => TopicModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
-      // If deserialization fails, return empty list
       return [];
+    }
+  }
+
+  @override
+  Future<DateTime?> getLastUpdatedAt() async {
+    final topicBox = await box;
+    final raw = topicBox.get(_dataKey);
+    if (raw == null || raw is! String) return null;
+
+    try {
+      final data = jsonDecode(raw) as Map<String, dynamic>;
+      final timestamp = data['lastUpdatedAt'] as String?;
+      return timestamp != null ? DateTime.parse(timestamp) : null;
+    } catch (e) {
+      return null;
     }
   }
 

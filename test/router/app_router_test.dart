@@ -18,6 +18,14 @@ import 'package:musea/features/profile/presentation/providers/profile_provider.d
 import 'package:musea/router/app_router.dart';
 import 'package:musea/router/detail_route_extras.dart';
 
+class TestTopicListNotifier extends TopicListNotifier {
+  final List<Topic> initialTopics;
+  TestTopicListNotifier(this.initialTopics);
+
+  @override
+  List<Topic> build() => initialTopics;
+}
+
 void main() {
   setUp(() {
     appRouter.go('/discover');
@@ -74,7 +82,7 @@ void main() {
             Uri.parse('musea://auth/callback'),
           ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
-          topicsProvider.overrideWith((ref) => <Topic>[]),
+          topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
           collectionsProvider(1).overrideWith((ref) => <Collection>[]),
         ],
         child: const MuseaApp(),
@@ -99,7 +107,7 @@ void main() {
             Uri.parse('musea://auth/callback'),
           ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
-          topicsProvider.overrideWith((ref) => <Topic>[]),
+          topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
           collectionsProvider(1).overrideWith((ref) => <Collection>[]),
         ],
         child: const MuseaApp(),
@@ -128,7 +136,7 @@ void main() {
           ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           photoDetailProvider('photo-1').overrideWith((ref) => photo),
-          topicsProvider.overrideWith((ref) => <Topic>[]),
+          topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
           collectionsProvider(1).overrideWith((ref) => <Collection>[]),
           userProfileProvider('forest').overrideWith((ref) => user),
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[photo]),
@@ -186,7 +194,7 @@ void main() {
           ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           photoDetailProvider('photo-1').overrideWith((ref) => photo),
-          topicsProvider.overrideWith((ref) => <Topic>[]),
+          topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
           collectionsProvider(1).overrideWith((ref) => <Collection>[]),
           userProfileProvider('forest').overrideWith((ref) => user),
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[photo]),
