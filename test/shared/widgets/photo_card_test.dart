@@ -76,6 +76,7 @@ void main() {
     expect(find.byIcon(Icons.favorite), findsOneWidget);
     expect(find.byIcon(Icons.favorite_border), findsNothing);
     expect(likeIcon.color, const Color(0xFFE11D48));
+    expect(tester.widget<Text>(find.text('42')).style?.color, Colors.white);
   });
 
   testWidgets('PhotoCard triggers onPhotoTap on tap', (tester) async {

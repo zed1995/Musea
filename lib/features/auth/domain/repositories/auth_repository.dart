@@ -9,5 +9,5 @@ abstract class AuthRepository {
   Future<void> savePendingOAuthState(String? state);
   Uri buildAuthorizationUri({required String state});
   Future<OAuthToken> exchangeCodeForToken(String code);
-  Future<AuthUser> fetchCurrentUser(String accessToken);
+  Future<AuthUser> fetchCurrentUser();
 }

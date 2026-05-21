@@ -10,15 +10,15 @@ import 'package:musea/features/discover/data/datasources/topic_local_datasource.
 import 'package:musea/features/search/domain/entities/search_result.dart';
 
 class PhotoRepositoryImpl implements PhotoRepository {
-  final PhotoRemoteDataSource remoteDataSource;
-  final PhotoLocalDataSource localDataSource;
-  final TopicLocalDataSource topicLocalDataSource;
-
   PhotoRepositoryImpl({
     required this.remoteDataSource,
     required this.localDataSource,
     required this.topicLocalDataSource,
   });
+
+  final PhotoRemoteDataSource remoteDataSource;
+  final PhotoLocalDataSource localDataSource;
+  final TopicLocalDataSource topicLocalDataSource;
 
   @override
   Future<Either<Failure, List<Photo>>> getPhotos(
@@ -45,7 +45,7 @@ class PhotoRepositoryImpl implements PhotoRepository {
       return Right(photo.toEntity());
     } on ServerException catch (e) {
       if (e.statusCode == 404) {
-        return Left(Failure.notFound(message: 'Photo not found'));
+        return const Left(Failure.notFound(message: 'Photo not found'));
       }
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
@@ -163,15 +163,9 @@ class PhotoRepositoryImpl implements PhotoRepository {
   }
 
   @override
-  Future<Either<Failure, Photo>> likePhoto(
-    String photoId, {
-    required String accessToken,
-  }) async {
+  Future<Either<Failure, Photo>> likePhoto(String photoId) async {
     try {
-      final photo = await remoteDataSource.likePhoto(
-        photoId,
-        accessToken: accessToken,
-      );
+      final photo = await remoteDataSource.likePhoto(photoId);
       return Right(photo.toEntity());
     } on UnauthorizedException catch (e) {
       return Left(Failure.unauthorized(message: e.message));
@@ -187,15 +181,9 @@ class PhotoRepositoryImpl implements PhotoRepository {
   }
 
   @override
-  Future<Either<Failure, Photo>> unlikePhoto(
-    String photoId, {
-    required String accessToken,
-  }) async {
+  Future<Either<Failure, Photo>> unlikePhoto(String photoId) async {
     try {
-      final photo = await remoteDataSource.unlikePhoto(
-        photoId,
-        accessToken: accessToken,
-      );
+      final photo = await remoteDataSource.unlikePhoto(photoId);
       return Right(photo.toEntity());
     } on UnauthorizedException catch (e) {
       return Left(Failure.unauthorized(message: e.message));

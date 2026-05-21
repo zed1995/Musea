@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:musea/core/network/auth_token_store.dart';
 import 'package:musea/features/auth/domain/entities/auth_session.dart';
 import 'package:musea/features/auth/domain/entities/auth_user.dart';
 import 'package:musea/features/auth/domain/repositories/auth_repository.dart';
@@ -7,6 +8,10 @@ import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 
 void main() {
   group('AuthController', () {
+    setUp(() {
+      AuthTokenStore.instance.clear();
+    });
+
     test('beginSignIn persists pending state and launches authorize URL',
         () async {
       final repository = _FakeAuthRepository();
@@ -87,6 +92,7 @@ void main() {
       expect(state.isAuthenticated, isTrue);
       expect(state.session?.user.username, 'spaciba');
       expect(state.errorMessage, isNull);
+      expect(AuthTokenStore.instance.accessToken, 'token-123');
     });
 
     test('handleCallback ignores duplicate callback for same code and state',
@@ -215,6 +221,49 @@ void main() {
         'updated',
       );
       expect(repository.savedSession?.user.username, 'updated');
+      expect(AuthTokenStore.instance.accessToken, 'token-1');
+    });
+
+    test('bootstrap session seeds auth token store and sign out clears it',
+        () async {
+      final session = AuthSession(
+        accessToken: 'token-1',
+        tokenType: 'bearer',
+        scope: 'public read_user',
+        createdAt: 1,
+        user: const AuthUser(
+          id: 'user-1',
+          username: 'fresh',
+          displayName: 'Fresh User',
+          profileImageMedium: 'https://example.com/avatar.jpg',
+          totalPhotos: 1,
+          totalLikes: 2,
+          totalCollections: 3,
+        ),
+        lastProfileRefreshAt: DateTime(2026, 5, 20, 10, 55),
+      );
+
+      final repository = _FakeAuthRepository()..storedSession = session;
+
+      final container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          authLauncherProvider.overrideWithValue(_FakeAuthLauncher()),
+          authBootstrapSessionProvider.overrideWithValue(session),
+          authClockProvider.overrideWithValue(() => DateTime(2026, 5, 20, 11)),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      container.read(authControllerProvider);
+      expect(AuthTokenStore.instance.accessToken, 'token-1');
+
+      await container.read(authControllerProvider.notifier).signOut();
+
+      expect(AuthTokenStore.instance.accessToken, isNull);
     });
   });
 }
@@ -250,8 +299,8 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser> fetchCurrentUser(String accessToken) async {
-    requestedMeToken = accessToken;
+  Future<AuthUser> fetchCurrentUser() async {
+    requestedMeToken = AuthTokenStore.instance.accessToken;
     return userToReturn!;
   }
 

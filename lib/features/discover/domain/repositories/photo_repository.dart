@@ -23,12 +23,6 @@ abstract class PhotoRepository {
   Future<Either<Failure, List<Photo>>> getTopicPhotos(String topicSlug,
       {int page = 1, int perPage = 20});
   Future<Either<Failure, void>> trackDownload(String photoId);
-  Future<Either<Failure, Photo>> likePhoto(
-    String photoId, {
-    required String accessToken,
-  });
-  Future<Either<Failure, Photo>> unlikePhoto(
-    String photoId, {
-    required String accessToken,
-  });
+  Future<Either<Failure, Photo>> likePhoto(String photoId);
+  Future<Either<Failure, Photo>> unlikePhoto(String photoId);
 }

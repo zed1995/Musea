@@ -1,6 +1,5 @@
 import 'package:musea/core/network/dio_client.dart';
 import 'package:musea/core/constants/api_constants.dart';
-import 'package:dio/dio.dart';
 import 'package:musea/features/discover/data/models/photo_model.dart';
 import 'package:musea/features/discover/data/models/topic_model.dart';
 
@@ -22,14 +21,14 @@ abstract class PhotoRemoteDataSource {
   Future<List<PhotoModel>> getTopicPhotos(String topicSlug,
       {int page = 1, int perPage = 20});
   Future<void> trackDownload(String photoId);
-  Future<PhotoModel> likePhoto(String photoId, {required String accessToken});
-  Future<PhotoModel> unlikePhoto(String photoId, {required String accessToken});
+  Future<PhotoModel> likePhoto(String photoId);
+  Future<PhotoModel> unlikePhoto(String photoId);
 }
 
 class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
-  final DioClient _dioClient;
-
   PhotoRemoteDataSourceImpl(this._dioClient);
+
+  final DioClient _dioClient;
 
   @override
   Future<List<PhotoModel>> getPhotos({int page = 1, int perPage = 20}) async {
@@ -139,35 +138,17 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
   }
 
   @override
-  Future<PhotoModel> likePhoto(
-    String photoId, {
-    required String accessToken,
-  }) async {
+  Future<PhotoModel> likePhoto(String photoId) async {
     final response = await _dioClient.post(
       ApiConstants.photoLike(photoId),
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Accept-Version': 'v1',
-        },
-      ),
     );
     return PhotoModel.fromJson(response['photo'] as Map<String, dynamic>);
   }
 
   @override
-  Future<PhotoModel> unlikePhoto(
-    String photoId, {
-    required String accessToken,
-  }) async {
+  Future<PhotoModel> unlikePhoto(String photoId) async {
     final response = await _dioClient.delete(
       ApiConstants.photoLike(photoId),
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Accept-Version': 'v1',
-        },
-      ),
     );
     return PhotoModel.fromJson(response['photo'] as Map<String, dynamic>);
   }

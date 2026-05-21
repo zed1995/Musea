@@ -1,7 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/auth/domain/entities/auth_user.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
@@ -9,7 +8,6 @@ import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
-import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
@@ -97,61 +95,97 @@ class _SignedOutMineView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
-        children: [
-          Positioned.fill(
-            child: DecoratedBox(
+      backgroundColor: Colors.white,
+      body: CustomScrollView(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
-                    Color(0xFFF7F3EE),
-                    Color(0xFFE9E1D6),
+                    Color(0xFFFCFCFD),
+                    Color(0xFFF7F7F8),
                   ],
+                ),
+                border: Border(
+                  bottom: BorderSide(color: Color(0xFFF1F1F2)),
+                ),
+              ),
+              child: SafeArea(
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const _SignedOutTopBar(),
+                      const SizedBox(height: 18),
+                      _SignedOutSheet(
+                        isAuthorizing: isAuthorizing,
+                        errorMessage: errorMessage,
+                        onSignIn: onSignIn,
+                      ),
+                      const SizedBox(height: 14),
+                      const Row(
+                        children: [
+                          Expanded(
+                            child: _MetricCard(value: '0', label: 'Photos'),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: _MetricCard(
+                              value: '0',
+                              label: 'Collections',
+                            ),
+                          ),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: _MetricCard(value: '0', label: 'Likes'),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           ),
-          Positioned.fill(
-            child: const Padding(
-              padding: EdgeInsets.only(top: 84),
-              child: Align(
-                alignment: Alignment.topCenter,
-                child: _SignedOutBackdrop(),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.white.withValues(alpha: 0.04),
-                    Colors.black.withValues(alpha: 0.16),
-                    Colors.black.withValues(alpha: 0.42),
-                  ],
-                  stops: const [0, 0.46, 1],
-                ),
-              ),
-            ),
-          ),
-          Positioned.fill(
-            child: SafeArea(
+          const SliverToBoxAdapter(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(12, 18, 12, 28),
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(18, 10, 18, 0),
-                    child: _SignedOutTopBar(),
+                  Text(
+                    'Why sign in',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF18181B),
+                    ),
                   ),
-                  const Spacer(),
-                  _SignedOutSheet(
-                    isAuthorizing: isAuthorizing,
-                    errorMessage: errorMessage,
-                    onSignIn: onSignIn,
+                  SizedBox(height: 12),
+                  _BenefitCard(
+                    title: 'Liked photos',
+                    body:
+                        'Revisit favorites you save and keep your archive in sync with Unsplash.',
                   ),
+                  SizedBox(height: 10),
+                  _BenefitCard(
+                    title: 'Saved collections',
+                    body:
+                        'Keep inspiration grouped in the same workspace you already browse from.',
+                  ),
+                  SizedBox(height: 10),
+                  _BenefitCard(
+                    title: 'Personal space',
+                    body:
+                        'Unlock a calmer home for your uploads, preferences, and future tools.',
+                  ),
+                  SizedBox(height: 20),
+                  _SignedOutGuestCard(),
                 ],
               ),
             ),
@@ -167,9 +201,9 @@ class _SignedOutTopBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return const Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: const [
+      children: [
         Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -200,146 +234,6 @@ class _SignedOutTopBar extends StatelessWidget {
   }
 }
 
-class _SignedOutBackdrop extends StatelessWidget {
-  const _SignedOutBackdrop();
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 18),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: const [
-          Expanded(
-            child: _BackdropCard(
-              imageUrl:
-                  'https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=1080&fit=crop',
-              avatarUrl:
-                  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=80&h=80&fit=crop&crop=face',
-              name: 'John Doe',
-              likes: '2.3k',
-              topPadding: 16,
-            ),
-          ),
-          SizedBox(width: 14),
-          Expanded(
-            child: _BackdropCard(
-              imageUrl:
-                  'https://images.unsplash.com/photo-1682687221038-404cb8830901?w=1080&fit=crop',
-              avatarUrl:
-                  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face',
-              name: 'Jane Smith',
-              likes: '6.4k',
-              topPadding: 68,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _BackdropCard extends StatelessWidget {
-  const _BackdropCard({
-    required this.imageUrl,
-    required this.avatarUrl,
-    required this.name,
-    required this.likes,
-    required this.topPadding,
-  });
-
-  final String imageUrl;
-  final String avatarUrl;
-  final String name;
-  final String likes;
-  final double topPadding;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(top: topPadding),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(24),
-        child: AspectRatio(
-          aspectRatio: 0.75,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.cover,
-                errorWidget: (context, url, error) => Container(
-                  color: AppColors.gray200,
-                ),
-              ),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.transparent,
-                      Colors.black.withValues(alpha: 0.12),
-                      Colors.black.withValues(alpha: 0.50),
-                    ],
-                  ),
-                ),
-              ),
-              Positioned(
-                left: 12,
-                right: 12,
-                bottom: 12,
-                child: Row(
-                  children: [
-                    CircleAvatar(
-                      radius: 13,
-                      backgroundImage: CachedNetworkImageProvider(avatarUrl),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        name,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    _GlassPill(
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const Icon(
-                            Icons.favorite_border,
-                            size: 14,
-                            color: Colors.white,
-                          ),
-                          const SizedBox(width: 3),
-                          Text(
-                            likes,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 class _SignedOutSheet extends StatelessWidget {
   const _SignedOutSheet({
     required this.isAuthorizing,
@@ -353,159 +247,166 @@ class _SignedOutSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final maxSheetHeight = MediaQuery.of(context).size.height * 0.72;
     return Container(
-      constraints: BoxConstraints(maxHeight: maxSheetHeight),
       decoration: BoxDecoration(
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(30)),
+        borderRadius: BorderRadius.circular(24),
         gradient: const LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            Color(0xFFFFFDFC),
             Color(0xFFFFFFFF),
-            Color(0xFFFBFBFB),
+            Color(0xFFFFFFFF),
+            Color(0xFFFCFBF9),
           ],
         ),
+        border: Border.all(color: const Color(0xFFF1ECE5)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.18),
-            blurRadius: 46,
-            offset: const Offset(0, -18),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 32,
+            offset: const Offset(0, 14),
           ),
         ],
       ),
-      child: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 10, 20, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 54,
-                  height: 5,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD4D4D8),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 18),
-              const Row(
-                children: [
-                  _BrandOrb(),
-                  SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      'Sign in to shape your visual workspace',
-                      style: TextStyle(
-                        fontSize: 28,
-                        height: 1.04,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: -1.1,
-                        color: Color(0xFF18181B),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _BrandOrb(),
+                SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Sign in',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 1.6,
+                          color: Color(0xFF71717A),
+                        ),
                       ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Connect your Unsplash account once to bring likes, collections, and your personal flow into Musea without losing your browsing rhythm.',
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.5,
-                  color: Color(0xFF52525B),
-                ),
-              ),
-              const SizedBox(height: 20),
-              const Text(
-                'What you unlock',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: Color(0xFF18181B),
-                ),
-              ),
-              const SizedBox(height: 12),
-              const _BenefitCard(
-                title: 'Liked photos',
-                body: 'Revisit favorites and turn quick taps into a lasting archive.',
-              ),
-              const SizedBox(height: 10),
-              const _BenefitCard(
-                title: 'Saved collections',
-                body: 'Keep inspiration grouped in the same workspace you browse from.',
-              ),
-              const SizedBox(height: 10),
-              const _BenefitCard(
-                title: 'Personal space',
-                body: 'See your profile, uploads, and sync status in one calm surface.',
-              ),
-              if (errorMessage != null) ...[
-                const SizedBox(height: 14),
-                Text(
-                  errorMessage!,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFFB91C1C),
+                      SizedBox(height: 8),
+                      Text(
+                        'Your visual archive, synced with Unsplash',
+                        style: TextStyle(
+                          fontSize: 28,
+                          height: 1.04,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -1.1,
+                          color: Color(0xFF18181B),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
-              const SizedBox(height: 18),
-              SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: isAuthorizing ? null : onSignIn,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: const Color(0xFF18181B),
-                    foregroundColor: Colors.white,
-                    minimumSize: const Size.fromHeight(52),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
-                    ),
-                  ),
-                  child: isAuthorizing
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Text(
-                          'Continue with Unsplash',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                ),
+            ),
+            const SizedBox(height: 14),
+            const Text(
+              'Keep every like, save, and future personal surface connected to the photos you care about.',
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.5,
+                color: Color(0xFF52525B),
               ),
-              const SizedBox(height: 16),
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(color: const Color(0xFFEAE7E2)),
-                ),
-                child: const Text(
-                  'You can still explore as a guest. The full-page sign-in only appears when you intentionally open Mine, while quick actions like likes stay lightweight.',
-                  style: TextStyle(
-                    fontSize: 13,
-                    height: 1.5,
-                    color: Color(0xFF71717A),
-                  ),
+            ),
+            if (errorMessage != null) ...[
+              const SizedBox(height: 14),
+              Text(
+                errorMessage!,
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFFB91C1C),
                 ),
               ),
             ],
-          ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton(
+                onPressed: isAuthorizing ? null : onSignIn,
+                style: FilledButton.styleFrom(
+                  backgroundColor: const Color(0xFF18181B),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size.fromHeight(54),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(18),
+                  ),
+                ),
+                child: isAuthorizing
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      )
+                    : const Text(
+                        'Continue with Unsplash',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            const Text(
+              'We use your Unsplash account to sync likes, saves, and your personal archive.',
+              style: TextStyle(
+                fontSize: 12,
+                height: 1.5,
+                color: Color(0xFF71717A),
+              ),
+            ),
+          ],
         ),
+      ),
+    );
+  }
+}
+
+class _SignedOutGuestCard extends StatelessWidget {
+  const _SignedOutGuestCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: const Color(0xFFFBFBFA),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFF0F0EE)),
+      ),
+      child: const Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'You can keep exploring as a guest',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w700,
+              color: Color(0xFF18181B),
+            ),
+          ),
+          SizedBox(height: 8),
+          Text(
+            'Discover, search, browse collections, and open public profiles without signing in. Mine becomes your personal home when you are ready.',
+            style: TextStyle(
+              fontSize: 13,
+              height: 1.5,
+              color: Color(0xFF71717A),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -978,7 +879,10 @@ class _MinePhotoSection extends StatelessWidget {
           );
         }
 
-        return PhotoGrid(photos: photos, showLikes: showLikes);
+        return PhotoGrid(
+          photos: photos,
+          showLikes: showLikes,
+        );
       },
       loading: () => const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
@@ -1307,25 +1211,6 @@ class _SectionEmptyCard extends StatelessWidget {
   }
 }
 
-class _GlassPill extends StatelessWidget {
-  const _GlassPill({required this.child});
-
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 28,
-      padding: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-      ),
-      child: Center(child: child),
-    );
-  }
-}
 
 String _formatCount(int count) {
   if (count >= 1000000) {

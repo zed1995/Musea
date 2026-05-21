@@ -7,7 +7,7 @@ import 'package:musea/features/auth/domain/entities/auth_user.dart';
 
 abstract class AuthRemoteDataSource {
   Future<OAuthToken> exchangeCodeForToken(String code);
-  Future<AuthUser> getCurrentUser(String accessToken);
+  Future<AuthUser> getCurrentUser();
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -61,16 +61,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthUser> getCurrentUser(String accessToken) async {
-    final response = await _dioClient.get(
-      ApiConstants.me,
-      options: Options(
-        headers: {
-          'Authorization': 'Bearer $accessToken',
-          'Accept-Version': 'v1',
-        },
-      ),
-    );
+  Future<AuthUser> getCurrentUser() async {
+    final response = await _dioClient.get(ApiConstants.me);
 
     final data = Map<String, dynamic>.from(response as Map);
     final firstName = data['first_name'] as String?;

@@ -76,7 +76,7 @@ void main() {
     tokenType: 'bearer',
     scope: 'public read_user write_likes',
     createdAt: 1,
-    user: AuthUser(
+    user: const AuthUser(
       id: 'me',
       username: 'musea',
       displayName: 'Musea User',
@@ -117,6 +117,15 @@ void main() {
 
     expect(find.text('Save this to your Musea flow'), findsOneWidget);
     expect(find.text('Continue with Unsplash'), findsOneWidget);
+
+    final containers = tester.widgetList<Container>(find.byType(Container));
+    expect(
+      containers.any(
+        (container) =>
+            container.margin == const EdgeInsets.fromLTRB(12, 0, 12, 12),
+      ),
+      isFalse,
+    );
   });
 
   testWidgets('authenticated like tap calls Unsplash API and toggles state',
@@ -131,16 +140,10 @@ void main() {
     final unlikedPhoto = buildPhoto(likedByUser: false, likes: 80);
 
     when(
-      () => repository.likePhoto(
-        'photo-1',
-        accessToken: 'access-token',
-      ),
+      () => repository.likePhoto('photo-1'),
     ).thenAnswer((_) async => Right(likedPhoto));
     when(
-      () => repository.unlikePhoto(
-        'photo-1',
-        accessToken: 'access-token',
-      ),
+      () => repository.unlikePhoto('photo-1'),
     ).thenAnswer((_) async => Right(unlikedPhoto));
 
     await tester.pumpWidget(
@@ -170,10 +173,7 @@ void main() {
     await tester.pump();
 
     verify(
-      () => repository.likePhoto(
-        'photo-1',
-        accessToken: 'access-token',
-      ),
+      () => repository.likePhoto('photo-1'),
     ).called(1);
     expect(find.byIcon(Icons.favorite), findsOneWidget);
     expect(find.text('81'), findsOneWidget);
@@ -182,10 +182,7 @@ void main() {
     await tester.pump();
 
     verify(
-      () => repository.unlikePhoto(
-        'photo-1',
-        accessToken: 'access-token',
-      ),
+      () => repository.unlikePhoto('photo-1'),
     ).called(1);
     expect(find.byIcon(Icons.favorite_border), findsOneWidget);
     expect(find.text('80'), findsOneWidget);

@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:app_links/app_links.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:musea/core/network/auth_token_store.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:musea/core/constants/api_constants.dart';
 import 'package:musea/core/network/providers.dart';
@@ -150,7 +151,9 @@ class AuthController extends StateNotifier<AuthState> {
         _launcher = launcher,
         _now = now,
         _expectedRedirectUri = expectedRedirectUri,
-        super(AuthState(session: initialSession));
+        super(AuthState(session: initialSession)) {
+    _syncAccessToken(initialSession?.accessToken);
+  }
 
   static const Duration refreshThrottle = Duration(minutes: 10);
 
@@ -223,7 +226,8 @@ class AuthController extends StateNotifier<AuthState> {
       }
 
       final token = await _repository.exchangeCodeForToken(code);
-      final user = await _repository.fetchCurrentUser(token.accessToken);
+      _syncAccessToken(token.accessToken);
+      final user = await _repository.fetchCurrentUser();
       final session = AuthSession(
         accessToken: token.accessToken,
         tokenType: token.tokenType,
@@ -235,6 +239,7 @@ class AuthController extends StateNotifier<AuthState> {
       await _repository.saveSession(session);
       await _repository.savePendingOAuthState(null);
       _completedCallbackFingerprints.add(fingerprint);
+      _syncAccessToken(session.accessToken);
       state = AuthState(session: session);
     } catch (error) {
       state = state.copyWith(
@@ -264,12 +269,14 @@ class AuthController extends StateNotifier<AuthState> {
     );
 
     try {
-      final user = await _repository.fetchCurrentUser(session.accessToken);
+      _syncAccessToken(session.accessToken);
+      final user = await _repository.fetchCurrentUser();
       final refreshedSession = session.copyWith(
         user: user,
         lastProfileRefreshAt: _now(),
       );
       await _repository.saveSession(refreshedSession);
+      _syncAccessToken(refreshedSession.accessToken);
       state = state.copyWith(
         session: refreshedSession,
         isRefreshing: false,
@@ -285,7 +292,12 @@ class AuthController extends StateNotifier<AuthState> {
   Future<void> signOut() async {
     await _repository.clearSession();
     await _repository.savePendingOAuthState(null);
+    _syncAccessToken(null);
     state = const AuthState();
+  }
+
+  void _syncAccessToken(String? accessToken) {
+    AuthTokenStore.instance.setAccessToken(accessToken);
   }
 
   String _generatePendingState() {

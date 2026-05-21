@@ -134,8 +134,7 @@ class PhotoGridTile extends ConsumerWidget {
                     Text(
                       _formatLikes(likeState.likes),
                       style: AppTextStyles.caption.copyWith(
-                        color:
-                            likeState.likedByUser ? _likedColor : Colors.white,
+                        color: Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

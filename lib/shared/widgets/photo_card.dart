@@ -7,8 +7,6 @@ import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 
 class PhotoCard extends ConsumerWidget {
-  static const Color _likedColor = Color(0xFFE11D48);
-
   const PhotoCard({
     super.key,
     required this.photo,
@@ -17,6 +15,8 @@ class PhotoCard extends ConsumerWidget {
     this.onLikeTap,
     this.onBookmarkTap,
   });
+
+  static const Color _likedColor = Color(0xFFE11D48);
 
   final Photo photo;
   final VoidCallback? onPhotoTap;
@@ -165,8 +165,7 @@ class PhotoCard extends ConsumerWidget {
                   label: _formatCount(likeState.likes),
                   onTap: onLikeTap,
                   iconColor: likeState.likedByUser ? _likedColor : Colors.white,
-                  labelColor:
-                      likeState.likedByUser ? _likedColor : Colors.white,
+                  labelColor: Colors.white,
                 ),
                 const SizedBox(width: 6),
                 _OverlayPillButton(

@@ -9,9 +9,9 @@ import 'package:musea/features/profile/data/datasources/profile_remote_datasourc
 import 'package:musea/features/search/domain/entities/search_result.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
-  final ProfileRemoteDataSource remoteDataSource;
-
   ProfileRepositoryImpl({required this.remoteDataSource});
+
+  final ProfileRemoteDataSource remoteDataSource;
 
   @override
   Future<Either<Failure, User>> getUserProfile(String username) async {
@@ -20,7 +20,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       return Right(user.toEntity());
     } on ServerException catch (e) {
       if (e.statusCode == 404) {
-        return Left(Failure.notFound(message: 'User not found'));
+        return const Left(Failure.notFound(message: 'User not found'));
       }
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
@@ -36,8 +36,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<Either<Failure, List<Photo>>> getUserPhotos(String username,
       {int page = 1, int perPage = 20}) async {
     try {
-      final photos = await remoteDataSource.getUserPhotos(username,
-          page: page, perPage: perPage);
+      final photos = await remoteDataSource.getUserPhotos(
+        username,
+        page: page,
+        perPage: perPage,
+      );
       return Right(photos.map((p) => p.toEntity()).toList());
     } on ServerException catch (e) {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));

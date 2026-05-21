@@ -43,8 +43,8 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<AuthUser> fetchCurrentUser(String accessToken) {
-    return _remoteDataSource.getCurrentUser(accessToken);
+  Future<AuthUser> fetchCurrentUser() {
+    return _remoteDataSource.getCurrentUser();
   }
 
   @override

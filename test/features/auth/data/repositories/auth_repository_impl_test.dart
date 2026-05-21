@@ -56,7 +56,7 @@ class _FakeAuthRemoteDataSource implements AuthRemoteDataSource {
   }
 
   @override
-  Future<AuthUser> getCurrentUser(String accessToken) {
+  Future<AuthUser> getCurrentUser() {
     throw UnimplementedError();
   }
 }

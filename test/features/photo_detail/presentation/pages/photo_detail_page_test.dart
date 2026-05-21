@@ -87,7 +87,7 @@ void main() {
     tokenType: 'bearer',
     scope: 'public read_user write_likes',
     createdAt: 1,
-    user: AuthUser(
+    user: const AuthUser(
       id: 'me',
       username: 'musea',
       displayName: 'Musea User',
@@ -228,6 +228,7 @@ void main() {
       name: 'Paula Poeira',
       color: '#5B7B9A',
       likedByUser: true,
+      likes: 12,
     );
 
     await tester.pumpWidget(
@@ -245,10 +246,15 @@ void main() {
     await tester.pump();
 
     final likeIcon = tester.widget<Icon>(find.byIcon(Icons.favorite));
+    final likeButton = find.byKey(const ValueKey('photo-detail-like-button'));
+    final likeCount = tester.widget<Text>(
+      find.descendant(of: likeButton, matching: find.text('12')),
+    );
 
     expect(find.byIcon(Icons.favorite), findsOneWidget);
     expect(find.byIcon(Icons.favorite_border), findsNothing);
     expect(likeIcon.color, const Color(0xFFE11D48));
+    expect(likeCount.style?.color, const Color(0xFF52525B));
   });
 
   testWidgets('PhotoDetailPage toggles like through Unsplash API',
@@ -279,16 +285,10 @@ void main() {
     );
 
     when(
-      () => repository.likePhoto(
-        'photo-toggle-like',
-        accessToken: 'access-token',
-      ),
+      () => repository.likePhoto('photo-toggle-like'),
     ).thenAnswer((_) async => Right(likedPhoto));
     when(
-      () => repository.unlikePhoto(
-        'photo-toggle-like',
-        accessToken: 'access-token',
-      ),
+      () => repository.unlikePhoto('photo-toggle-like'),
     ).thenAnswer((_) async => Right(unlikedPhoto));
 
     await tester.pumpWidget(
@@ -318,10 +318,7 @@ void main() {
     await tester.pump();
 
     verify(
-      () => repository.likePhoto(
-        'photo-toggle-like',
-        accessToken: 'access-token',
-      ),
+      () => repository.likePhoto('photo-toggle-like'),
     ).called(1);
     expect(find.text('13'), findsOneWidget);
     expect(find.byIcon(Icons.favorite), findsOneWidget);
@@ -331,10 +328,7 @@ void main() {
     await tester.pump();
 
     verify(
-      () => repository.unlikePhoto(
-        'photo-toggle-like',
-        accessToken: 'access-token',
-      ),
+      () => repository.unlikePhoto('photo-toggle-like'),
     ).called(1);
     expect(find.text('12'), findsOneWidget);
     expect(find.byIcon(Icons.favorite_border), findsOneWidget);

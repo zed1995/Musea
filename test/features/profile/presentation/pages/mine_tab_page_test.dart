@@ -30,9 +30,13 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Sign in to shape your visual workspace'), findsOneWidget);
-    expect(find.text('What you unlock'), findsOneWidget);
+    expect(
+      find.text('Your visual archive, synced with Unsplash'),
+      findsOneWidget,
+    );
+    expect(find.text('You can keep exploring as a guest'), findsOneWidget);
     expect(find.text('Continue with Unsplash'), findsAtLeastNWidgets(1));
+    expect(find.text('What you unlock'), findsNothing);
   });
 
   testWidgets('Mine tab shows cached profile content when signed in',

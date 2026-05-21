@@ -128,10 +128,7 @@ class _PhotoDetailContent extends ConsumerWidget {
 
                       final success = await ref
                           .read(photoLikeControllerProvider.notifier)
-                          .toggle(
-                            photo: photo,
-                            accessToken: authState.session!.accessToken,
-                          );
+                          .toggle(photo: photo);
                       if (!context.mounted || success) return;
 
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -496,13 +493,13 @@ class _UserRow extends StatelessWidget {
 }
 
 class _StatsStrip extends StatelessWidget {
-  static const Color _likedColor = Color(0xFFE11D48);
-
   const _StatsStrip({
     required this.photo,
     required this.likeState,
     this.onLikeTap,
   });
+
+  static const Color _likedColor = Color(0xFFE11D48);
 
   final Photo photo;
   final PhotoLikeState likeState;
@@ -528,8 +525,7 @@ class _StatsStrip extends StatelessWidget {
               label: _formatCount(likeState.likes),
               iconColor:
                   likeState.likedByUser ? _likedColor : const Color(0xFF71717A),
-              labelColor:
-                  likeState.likedByUser ? _likedColor : const Color(0xFF52525B),
+              labelColor: const Color(0xFF52525B),
               onTap: onLikeTap,
             ),
           ),

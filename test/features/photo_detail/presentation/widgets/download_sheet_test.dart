@@ -98,4 +98,73 @@ void main() {
 
     expect(find.textContaining('×'), findsNothing);
   });
+
+  testWidgets('DownloadSheet stays attached to the bottom edge', (tester) async {
+    final notifier = DownloadNotifier.noop();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadNotifierProvider.overrideWith((ref) => notifier),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: DownloadSheet(photo: buildPhoto()),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.byType(SafeArea), findsNothing);
+  });
+
+  testWidgets('DownloadSheet white surface reaches screen bottom', (tester) async {
+    final notifier = DownloadNotifier.noop();
+    final photo = buildPhoto();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadNotifierProvider.overrideWith((ref) => notifier),
+        ],
+        child: MaterialApp(
+          home: MediaQuery(
+            data: const MediaQueryData(
+              padding: EdgeInsets.only(bottom: 34),
+              viewPadding: EdgeInsets.only(bottom: 34),
+            ),
+            child: Scaffold(
+              body: Builder(
+                builder: (context) => Center(
+                  child: FilledButton(
+                    onPressed: () => DownloadSheet.show(context, photo),
+                    child: const Text('Open'),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Open'));
+    await tester.pumpAndSettle();
+
+    final sheetFinder = find.byWidgetPredicate((widget) {
+      if (widget is! DecoratedBox) return false;
+      final decoration = widget.decoration;
+      return decoration is BoxDecoration &&
+          decoration.color == Colors.white &&
+          decoration.borderRadius ==
+              const BorderRadius.vertical(top: Radius.circular(26));
+    });
+
+    expect(
+      tester.getRect(sheetFinder).bottom,
+      tester.getRect(find.byType(Scaffold).first).bottom,
+    );
+  });
 }

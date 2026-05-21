@@ -19,7 +19,6 @@ class PhotoLikeController extends StateNotifier<Map<String, PhotoLikeState>> {
 
   Future<bool> toggle({
     required Photo photo,
-    required String accessToken,
   }) async {
     final repository = _ref.read(photoRepositoryProvider);
     final current = state[photo.id] ??
@@ -29,14 +28,8 @@ class PhotoLikeController extends StateNotifier<Map<String, PhotoLikeState>> {
         );
 
     final result = current.likedByUser
-        ? await repository.unlikePhoto(
-            photo.id,
-            accessToken: accessToken,
-          )
-        : await repository.likePhoto(
-            photo.id,
-            accessToken: accessToken,
-          );
+        ? await repository.unlikePhoto(photo.id)
+        : await repository.likePhoto(photo.id);
 
     return result.fold(
       (_) => false,

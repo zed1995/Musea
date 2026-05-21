@@ -96,48 +96,47 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
 
     final notifier = ref.watch(downloadNotifierProvider);
     final showProgress = _startedDownload || !notifier.state.isIdle;
+    final viewInsets = MediaQuery.viewInsetsOf(context);
+    final viewPadding = MediaQuery.viewPaddingOf(context);
+    final bottomPadding =
+        (viewInsets.bottom > viewPadding.bottom
+                ? viewInsets.bottom
+                : viewPadding.bottom) +
+            18;
 
-    return SafeArea(
-      top: false,
+    return DecoratedBox(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
+      ),
       child: Padding(
-        padding: EdgeInsets.only(
-          bottom: MediaQuery.of(context).viewInsets.bottom,
-        ),
-        child: DecoratedBox(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(26)),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 18),
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 180),
-              child: showProgress
-                  ? _ProgressView(
-                      notifier: notifier,
-                      onClose: () => Navigator.of(context).pop(),
-                      onRetry: () {
-                        notifier.reset();
-                        setState(() => _startedDownload = false);
-                      },
-                    )
-                  : _SelectionView(
-                      options: _options,
-                      selectedIndex: _selectedIndex,
-                      onSelected: (index) {
-                        setState(() => _selectedIndex = index);
-                      },
-                      onDismiss: () => Navigator.of(context).pop(),
-                      onDownload: () {
-                        setState(() => _startedDownload = true);
-                        notifier.download(
-                          _options[_selectedIndex].url,
-                          widget.photo,
-                        );
-                      },
-                    ),
-            ),
-          ),
+        padding: EdgeInsets.fromLTRB(16, 12, 16, bottomPadding),
+        child: AnimatedSwitcher(
+          duration: const Duration(milliseconds: 180),
+          child: showProgress
+              ? _ProgressView(
+                  notifier: notifier,
+                  onClose: () => Navigator.of(context).pop(),
+                  onRetry: () {
+                    notifier.reset();
+                    setState(() => _startedDownload = false);
+                  },
+                )
+              : _SelectionView(
+                  options: _options,
+                  selectedIndex: _selectedIndex,
+                  onSelected: (index) {
+                    setState(() => _selectedIndex = index);
+                  },
+                  onDismiss: () => Navigator.of(context).pop(),
+                  onDownload: () {
+                    setState(() => _startedDownload = true);
+                    notifier.download(
+                      _options[_selectedIndex].url,
+                      widget.photo,
+                    );
+                  },
+                ),
         ),
       ),
     );

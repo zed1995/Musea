@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:musea/core/network/auth_token_store.dart';
 import 'package:musea/features/auth/domain/entities/auth_session.dart';
 import 'package:musea/features/auth/domain/entities/auth_user.dart';
 import 'package:musea/features/auth/domain/repositories/auth_repository.dart';
@@ -122,8 +123,8 @@ class _FakeAuthRepository implements AuthRepository {
   }
 
   @override
-  Future<AuthUser> fetchCurrentUser(String accessToken) async {
-    requestedMeToken = accessToken;
+  Future<AuthUser> fetchCurrentUser() async {
+    requestedMeToken = AuthTokenStore.instance.accessToken;
     return userToReturn!;
   }
 

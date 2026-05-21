@@ -20,9 +20,9 @@ abstract class ProfileRemoteDataSource {
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
-  final DioClient _dioClient;
-
   ProfileRemoteDataSourceImpl(this._dioClient);
+
+  final DioClient _dioClient;
 
   @override
   Future<UserModel> getUserProfile(String username) async {

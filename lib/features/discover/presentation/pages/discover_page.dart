@@ -254,10 +254,9 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
       return;
     }
 
-    final success = await ref.read(photoLikeControllerProvider.notifier).toggle(
-          photo: photo,
-          accessToken: authState.session!.accessToken,
-        );
+    final success = await ref
+        .read(photoLikeControllerProvider.notifier)
+        .toggle(photo: photo);
     if (!mounted || success) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
