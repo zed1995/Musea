@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musea — Save To Collection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+    <link href="https://fonts.loli.net/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        zinc: {
+                            50: '#FAFAFA', 100: '#F4F4F5', 200: '#E4E4E7', 300: '#D4D4D8',
+                            400: '#A1A1AA', 500: '#71717A', 600: '#52525B', 700: '#3F3F46',
+                            800: '#27272A', 900: '#18181B', 950: '#09090B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #fff;
+            color: #111;
+            overflow-x: hidden;
+        }
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .icon-sm { width: 16px; height: 16px; }
+        .status-bar { background: rgba(255,255,255,0.98); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .photo-hero {
+            position: relative;
+            width: 100%;
+        }
+        .photo-hero img {
+            width: 100%;
+            min-height: 340px;
+            object-fit: cover;
+            display: block;
+        }
+        .photo-topbar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 10;
+            padding: 10px 12px 52px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.34) 0%, rgba(0,0,0,0.10) 74%, transparent 100%);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .photo-topbar button {
+            width: 36px;
+            height: 36px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.12);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #fff;
+        }
+        .overlay-layer {
+            position: absolute;
+            inset: 0;
+            z-index: 60;
+            pointer-events: none;
+        }
+        .overlay-hit {
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(9,9,11,0.14) 48%, rgba(9,9,11,0.30) 100%);
+            backdrop-filter: blur(3px);
+            -webkit-backdrop-filter: blur(3px);
+            pointer-events: auto;
+        }
+        .sheet {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 28px 28px 0 0;
+            background:
+                radial-gradient(circle at top right, rgba(244,244,245,0.92), transparent 30%),
+                linear-gradient(180deg, #FFFDFC 0%, #FFFFFF 22%, #FBFBFB 100%);
+            box-shadow: 0 -18px 46px rgba(9,9,11,0.18);
+            border-top: 1px solid rgba(255,255,255,0.92);
+            pointer-events: auto;
+        }
+        .sheet-pill {
+            width: 54px;
+            height: 5px;
+            border-radius: 999px;
+            background: #D4D4D8;
+            margin: 10px auto 0;
+        }
+        .create-row {
+            min-height: 74px;
+            border-radius: 22px;
+            border: 1px solid #ECECF0;
+            background:
+                linear-gradient(180deg, rgba(255,255,255,0.96), rgba(250,250,250,0.96)),
+                #fff;
+            box-shadow: 0 8px 20px rgba(24,24,27,0.04);
+        }
+        .create-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 15px;
+            background: #18181B;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .collection-item {
+            position: relative;
+            min-height: 82px;
+            border-radius: 22px;
+            border: 1px solid #F0F0F2;
+            background: rgba(255,255,255,0.94);
+            box-shadow: 0 6px 18px rgba(24,24,27,0.03);
+        }
+        .collection-cover {
+            width: 54px;
+            height: 54px;
+            border-radius: 16px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #F4F4F5;
+        }
+        .collection-cover img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .collection-badge {
+            height: 24px;
+            padding: 0 10px;
+            border-radius: 999px;
+            background: #F4F4F5;
+            color: #52525B;
+            font-size: 10px;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+        .toast {
+            position: absolute;
+            left: 16px;
+            right: 16px;
+            bottom: 328px;
+            z-index: 70;
+            border-radius: 20px;
+            background: rgba(17,24,39,0.92);
+            color: #fff;
+            box-shadow: 0 16px 30px rgba(9,9,11,0.22);
+        }
+    </style>
+</head>
+<body>
+<div class="w-[412px] h-[915px] mx-auto relative overflow-hidden bg-white">
+    <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
+        <span class="text-sm font-semibold text-zinc-900">12:30</span>
+        <div class="flex items-center gap-2">
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v4"/><path d="M12 11v9"/><path d="M17 6v14"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path fill="currentColor" stroke="none" d="M8 10h7v4H8z"/></svg>
+        </div>
+    </div>
+
+    <div class="pt-[52px] h-full overflow-y-auto scrollbar-hide">
+        <div class="photo-hero">
+            <img src="https://images.unsplash.com/photo-1682687220742-aba13b6e50ba?w=1080&fit=crop" alt="Photo to save">
+            <div class="photo-topbar">
+                <button aria-label="Back"><svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg></button>
+                <div class="flex items-center gap-2">
+                    <button aria-label="Like"><svg class="icon" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></button>
+                    <button aria-label="Share"><svg class="icon" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/><path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="overlay-layer">
+        <div class="overlay-hit"></div>
+
+        <div class="toast px-4 py-3">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-2xl bg-white/12 flex items-center justify-center">
+                    <svg class="icon text-white" viewBox="0 0 24 24"><path d="m5 12 4 4L19 6"/></svg>
+                </div>
+                <div class="min-w-0 flex-1">
+                    <div class="text-sm font-semibold tracking-[-0.01em]">Saved to Kyoto Research</div>
+                    <div class="text-xs text-white/70 mt-0.5">This photo is now part of your visual archive.</div>
+                </div>
+                <div class="text-[11px] font-semibold text-white/72">View</div>
+            </div>
+        </div>
+
+        <div class="sheet">
+            <div class="sheet-pill"></div>
+            <div class="px-4 pt-4 pb-5">
+                <div class="flex items-start justify-between gap-3 mb-4">
+                    <div>
+                        <h2 class="text-[23px] leading-none tracking-[-0.05em] font-bold text-zinc-950">Select collection</h2>
+                        <p class="mt-2 text-sm leading-relaxed text-zinc-500 pr-4">Save this photo to one of your collections.</p>
+                    </div>
+                    <button class="w-9 h-9 rounded-full bg-zinc-100 flex items-center justify-center text-zinc-500 text-sm font-bold">x</button>
+                </div>
+
+                <button class="create-row w-full px-4 flex items-center gap-3 mb-4 text-left">
+                    <div class="create-icon">
+                        <svg class="icon text-white" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-semibold text-zinc-950">Create new collection</div>
+                        <div class="mt-1 text-xs text-zinc-500">No perfect fit yet? Make a new one without leaving this sheet.</div>
+                    </div>
+                    <svg class="icon text-zinc-400" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+                </button>
+
+                <div class="flex items-center justify-between px-1 mb-3">
+                    <div class="text-[11px] font-bold uppercase tracking-[0.18em] text-zinc-400">My Collections</div>
+                    <div class="text-xs font-semibold text-zinc-400">4 collections</div>
+                </div>
+
+                <div class="space-y-3">
+                    <button class="collection-item w-full px-3 py-3 flex items-center gap-3 text-left">
+                        <div class="collection-cover">
+                            <img src="https://images.unsplash.com/photo-1545239351-1141bd82e8a6?w=160&h=160&fit=crop" alt="Kyoto Research cover">
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-sm font-semibold text-zinc-950">Kyoto Research</div>
+                            <div class="mt-1 text-xs text-zinc-500">24 photos · Recently updated</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="collection-badge">Private</span>
+                            <svg class="icon text-zinc-400" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+                        </div>
+                    </button>
+
+                    <button class="collection-item w-full px-3 py-3 flex items-center gap-3 text-left">
+                        <div class="collection-cover">
+                            <img src="https://images.unsplash.com/photo-1499856871958-5b9627545d1a?w=160&h=160&fit=crop" alt="Quiet Interiors cover">
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-sm font-semibold text-zinc-950">Quiet Interiors</div>
+                            <div class="mt-1 text-xs text-zinc-500">12 photos · Clean references</div>
+                        </div>
+                        <svg class="icon text-zinc-400" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+                    </button>
+
+                    <button class="collection-item w-full px-3 py-3 flex items-center gap-3 text-left">
+                        <div class="collection-cover">
+                            <img src="https://images.unsplash.com/photo-1511818966892-d7d671e672a2?w=160&h=160&fit=crop" alt="Motion Frames cover">
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-sm font-semibold text-zinc-950">Motion Frames</div>
+                            <div class="mt-1 text-xs text-zinc-500">38 photos · Editorial energy</div>
+                        </div>
+                        <svg class="icon text-zinc-400" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+                    </button>
+
+                    <button class="collection-item w-full px-3 py-3 flex items-center gap-3 text-left">
+                        <div class="collection-cover">
+                            <img src="https://images.unsplash.com/photo-1482192596544-9eb780fc7f66?w=160&h=160&fit=crop" alt="Open Air cover">
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="text-sm font-semibold text-zinc-950">Open Air</div>
+                            <div class="mt-1 text-xs text-zinc-500">8 photos · Outdoor references</div>
+                        </div>
+                        <svg class="icon text-zinc-400" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
