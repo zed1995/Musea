@@ -217,6 +217,24 @@ void main() {
     await tester.pumpAndSettle();
 
     await tester.enterText(find.byType(TextField), 'desert');
+    await tester.tap(find.byKey(const Key('search-submit-button')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('No matching photos'), findsOneWidget);
+  });
+
+  testWidgets('SearchPage does not search until submit is triggered',
+      (tester) async {
+    await tester.pumpWidget(buildApp());
+    await tester.pumpAndSettle();
+
+    await tester.enterText(find.byType(TextField), 'desert');
+    await tester.pumpAndSettle();
+
+    expect(find.text('Forest Archive'), findsOneWidget);
+    expect(find.text('No matching photos'), findsNothing);
+
+    await tester.tap(find.byKey(const Key('search-submit-button')));
     await tester.pumpAndSettle();
 
     expect(find.text('No matching photos'), findsOneWidget);

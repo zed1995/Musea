@@ -35,6 +35,7 @@ class SearchPage extends ConsumerStatefulWidget {
 class _SearchPageState extends ConsumerState<SearchPage> {
   static const double _photoFilterPanelHeight = 210;
   late final TextEditingController _controller;
+  late String _submittedQuery;
   SearchSegment _segment = SearchSegment.photos;
   bool _isFilterPanelVisible = false;
   PhotoSortOption _sortOption = PhotoSortOption.relevant;
@@ -46,6 +47,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialQuery);
+    _submittedQuery = widget.initialQuery.trim();
     _controller.addListener(() => setState(() {}));
   }
 
@@ -57,10 +59,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
 
   @override
   Widget build(BuildContext context) {
-    final query = _controller.text.trim();
-    final photoParams = _photoParams(query);
-    final collectionParams = CollectionSearchParams(query: query);
-    final userParams = UserSearchParams(query: query);
+    final photoParams = _photoParams(_submittedQuery);
+    final collectionParams = CollectionSearchParams(query: _submittedQuery);
+    final userParams = UserSearchParams(query: _submittedQuery);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -74,7 +75,13 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               isFilterButtonActive:
                   _isFilterPanelVisible || _hasNonDefaultPhotoFilters,
               onBack: context.pop,
-              onClear: _controller.clear,
+              onClear: () {
+                setState(() {
+                  _controller.clear();
+                  _submittedQuery = '';
+                });
+              },
+              onSearch: _submitSearch,
               onSegmentChanged: (segment) {
                 setState(() {
                   _segment = segment;
@@ -90,7 +97,7 @@ class _SearchPageState extends ConsumerState<SearchPage> {
               },
             ),
             Expanded(
-              child: query.isEmpty
+              child: _submittedQuery.isEmpty
                   ? const _SearchIdleState()
                   : Stack(
                       children: [
@@ -202,6 +209,16 @@ class _SearchPageState extends ConsumerState<SearchPage> {
         _contentSafetyOption != PhotoContentSafetyOption.high;
   }
 
+  void _submitSearch() {
+    final query = _controller.text.trim();
+    if (query == _submittedQuery) return;
+
+    setState(() {
+      _submittedQuery = query;
+      _isFilterPanelVisible = false;
+    });
+  }
+
   PhotoSearchParams _photoParams(String query) {
     return PhotoSearchParams(
       query: query,
@@ -237,6 +254,7 @@ class _SearchHeader extends StatelessWidget {
     required this.isFilterButtonActive,
     required this.onBack,
     required this.onClear,
+    required this.onSearch,
     required this.onSegmentChanged,
     required this.onFilterTap,
   });
@@ -247,6 +265,7 @@ class _SearchHeader extends StatelessWidget {
   final bool isFilterButtonActive;
   final VoidCallback onBack;
   final VoidCallback onClear;
+  final VoidCallback onSearch;
   final ValueChanged<SearchSegment> onSegmentChanged;
   final VoidCallback onFilterTap;
 
@@ -302,6 +321,8 @@ class _SearchHeader extends StatelessWidget {
                         child: TextField(
                           controller: controller,
                           autofocus: true,
+                          textInputAction: TextInputAction.search,
+                          onSubmitted: (_) => onSearch(),
                           decoration: const InputDecoration(
                             isCollapsed: true,
                             border: InputBorder.none,
@@ -336,6 +357,24 @@ class _SearchHeader extends StatelessWidget {
                             ),
                           ),
                         ),
+                      const SizedBox(width: 8),
+                      GestureDetector(
+                        key: const Key('search-submit-button'),
+                        onTap: onSearch,
+                        child: Container(
+                          width: 28,
+                          height: 28,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Color(0xFF18181B),
+                          ),
+                          child: const Icon(
+                            Icons.arrow_forward_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
                     ],
                   ),
                 ),
