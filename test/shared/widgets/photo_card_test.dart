@@ -1,44 +1,50 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musea/shared/widgets/photo_card.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 
 User createTestUser() => const User(
-  id: 'user1',
-  username: 'testuser',
-  name: 'Test User',
-  profileImageSmall: '',
-  profileImageMedium: '',
-  profileImageLarge: '',
-  totalPhotos: 10,
-  totalLikes: 100,
-  totalCollections: 5,
-);
+      id: 'user1',
+      username: 'testuser',
+      name: 'Test User',
+      profileImageSmall: '',
+      profileImageMedium: '',
+      profileImageLarge: '',
+      totalPhotos: 10,
+      totalLikes: 100,
+      totalCollections: 5,
+    );
 
 Photo createTestPhoto({
   int likes = 42,
   int downloads = 10,
-}) => Photo(
-  id: 'photo1',
-  createdAt: DateTime.now(),
-  width: 4000,
-  height: 3000,
-  color: '#ABCDEF',
-  blurHash: null,
-  urlRaw: '',
-  urlFull: '',
-  urlRegular: '',
-  urlSmall: '',
-  urlThumb: '',
-  likes: likes,
-  downloads: downloads,
-  user: createTestUser(),
-);
+  bool likedByUser = false,
+}) =>
+    Photo(
+      id: 'photo1',
+      createdAt: DateTime.now(),
+      width: 4000,
+      height: 3000,
+      color: '#ABCDEF',
+      blurHash: null,
+      urlRaw: '',
+      urlFull: '',
+      urlRegular: '',
+      urlSmall: '',
+      urlThumb: '',
+      likes: likes,
+      downloads: downloads,
+      likedByUser: likedByUser,
+      user: createTestUser(),
+    );
 
-Widget wrapApp(Widget widget) => MaterialApp(
-  home: Scaffold(body: SingleChildScrollView(child: widget)),
-);
+Widget wrapApp(Widget widget) => ProviderScope(
+      child: MaterialApp(
+        home: Scaffold(body: SingleChildScrollView(child: widget)),
+      ),
+    );
 
 void main() {
   testWidgets('PhotoCard displays user name and like count', (tester) async {
@@ -57,6 +63,19 @@ void main() {
     ));
 
     expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
+  });
+
+  testWidgets('PhotoCard shows filled red like button for liked photo',
+      (tester) async {
+    final photo = createTestPhoto(likedByUser: true);
+
+    await tester.pumpWidget(wrapApp(PhotoCard(photo: photo)));
+
+    final likeIcon = tester.widget<Icon>(find.byIcon(Icons.favorite));
+
+    expect(find.byIcon(Icons.favorite), findsOneWidget);
+    expect(find.byIcon(Icons.favorite_border), findsNothing);
+    expect(likeIcon.color, const Color(0xFFE11D48));
   });
 
   testWidgets('PhotoCard triggers onPhotoTap on tap', (tester) async {

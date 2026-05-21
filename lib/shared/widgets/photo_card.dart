@@ -1,10 +1,14 @@
-import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_blurhash/flutter_blurhash.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
+import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 
-class PhotoCard extends StatelessWidget {
+class PhotoCard extends ConsumerWidget {
+  static const Color _likedColor = Color(0xFFE11D48);
+
   const PhotoCard({
     super.key,
     required this.photo,
@@ -21,7 +25,9 @@ class PhotoCard extends StatelessWidget {
   final VoidCallback? onBookmarkTap;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final likeState = ref.watch(photoLikeStateProvider(photo));
+
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
@@ -37,7 +43,7 @@ class PhotoCard extends StatelessWidget {
                 tag: photo.id,
                 child: _buildPhoto(),
               ),
-              _buildBottomOverlay(),
+              _buildBottomOverlay(likeState),
             ],
           ),
         ),
@@ -84,7 +90,7 @@ class PhotoCard extends StatelessWidget {
     );
   }
 
-  Widget _buildBottomOverlay() {
+  Widget _buildBottomOverlay(PhotoLikeState likeState) {
     return Positioned(
       bottom: 0,
       left: 0,
@@ -153,9 +159,14 @@ class PhotoCard extends StatelessWidget {
             Row(
               children: [
                 _OverlayPillButton(
-                  icon: Icons.favorite_border,
-                  label: _formatCount(photo.likes),
+                  icon: likeState.likedByUser
+                      ? Icons.favorite
+                      : Icons.favorite_border,
+                  label: _formatCount(likeState.likes),
                   onTap: onLikeTap,
+                  iconColor: likeState.likedByUser ? _likedColor : Colors.white,
+                  labelColor:
+                      likeState.likedByUser ? _likedColor : Colors.white,
                 ),
                 const SizedBox(width: 6),
                 _OverlayPillButton(
@@ -187,12 +198,16 @@ class _OverlayPillButton extends StatelessWidget {
     this.label,
     this.onTap,
     this.isIconOnly = false,
+    this.iconColor = Colors.white,
+    this.labelColor = Colors.white,
   });
 
   final IconData icon;
   final String? label;
   final VoidCallback? onTap;
   final bool isIconOnly;
+  final Color iconColor;
+  final Color labelColor;
 
   @override
   Widget build(BuildContext context) {
@@ -209,13 +224,13 @@ class _OverlayPillButton extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 14, color: Colors.white),
+          Icon(icon, size: 14, color: iconColor),
           if (!isIconOnly && label != null) ...[
             const SizedBox(width: 2),
             Text(
               label!,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: labelColor,
                 fontSize: 11,
                 fontWeight: FontWeight.w600,
               ),

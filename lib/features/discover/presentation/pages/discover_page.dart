@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/auth/presentation/widgets/auth_gate_sheet.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
+import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 import 'package:musea/features/discover/presentation/providers/topics_provider.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/topic.dart';
@@ -246,15 +247,21 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     );
   }
 
-  void _toggleLike(Photo photo) {
+  Future<void> _toggleLike(Photo photo) async {
     final authState = ref.read(authControllerProvider);
     if (!authState.isAuthenticated) {
       showAuthGateSheet(context, ref);
       return;
     }
 
+    final success = await ref.read(photoLikeControllerProvider.notifier).toggle(
+          photo: photo,
+          accessToken: authState.session!.accessToken,
+        );
+    if (!mounted || success) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Liked "${photo.user.name}"\'s photo')),
+      const SnackBar(content: Text('Could not update like right now')),
     );
   }
 

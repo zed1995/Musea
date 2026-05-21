@@ -1,5 +1,6 @@
 import 'package:musea/core/network/dio_client.dart';
 import 'package:musea/core/constants/api_constants.dart';
+import 'package:dio/dio.dart';
 import 'package:musea/features/discover/data/models/photo_model.dart';
 import 'package:musea/features/discover/data/models/topic_model.dart';
 
@@ -18,8 +19,11 @@ abstract class PhotoRemoteDataSource {
     String contentFilter = 'high',
   });
   Future<List<TopicModel>> getTopics({int page = 1, int perPage = 10});
-  Future<List<PhotoModel>> getTopicPhotos(String topicSlug, {int page = 1, int perPage = 20});
+  Future<List<PhotoModel>> getTopicPhotos(String topicSlug,
+      {int page = 1, int perPage = 20});
   Future<void> trackDownload(String photoId);
+  Future<PhotoModel> likePhoto(String photoId, {required String accessToken});
+  Future<PhotoModel> unlikePhoto(String photoId, {required String accessToken});
 }
 
 class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
@@ -38,9 +42,7 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
       },
     );
 
-    return (response as List)
-        .map((json) => PhotoModel.fromJson(json))
-        .toList();
+    return (response as List).map((json) => PhotoModel.fromJson(json)).toList();
   }
 
   @override
@@ -55,7 +57,7 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
       '${ApiConstants.photos}/random',
       queryParameters: {'count': 1},
     );
-    
+
     final photos = response as List;
     return PhotoModel.fromJson(photos.first);
   }
@@ -66,10 +68,8 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
       '${ApiConstants.photos}/random',
       queryParameters: {'count': count},
     );
-    
-    return (response as List)
-        .map((json) => PhotoModel.fromJson(json))
-        .toList();
+
+    return (response as List).map((json) => PhotoModel.fromJson(json)).toList();
   }
 
   @override
@@ -116,13 +116,12 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
       },
     );
 
-    return (response as List)
-        .map((json) => TopicModel.fromJson(json))
-        .toList();
+    return (response as List).map((json) => TopicModel.fromJson(json)).toList();
   }
 
   @override
-  Future<List<PhotoModel>> getTopicPhotos(String topicSlug, {int page = 1, int perPage = 20}) async {
+  Future<List<PhotoModel>> getTopicPhotos(String topicSlug,
+      {int page = 1, int perPage = 20}) async {
     final response = await _dioClient.get(
       ApiConstants.topicPhotos(topicSlug),
       queryParameters: {
@@ -131,13 +130,45 @@ class PhotoRemoteDataSourceImpl implements PhotoRemoteDataSource {
       },
     );
 
-    return (response as List)
-        .map((json) => PhotoModel.fromJson(json))
-        .toList();
+    return (response as List).map((json) => PhotoModel.fromJson(json)).toList();
   }
 
   @override
   Future<void> trackDownload(String photoId) async {
     await _dioClient.get(ApiConstants.photoDownload(photoId));
+  }
+
+  @override
+  Future<PhotoModel> likePhoto(
+    String photoId, {
+    required String accessToken,
+  }) async {
+    final response = await _dioClient.post(
+      ApiConstants.photoLike(photoId),
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Accept-Version': 'v1',
+        },
+      ),
+    );
+    return PhotoModel.fromJson(response['photo'] as Map<String, dynamic>);
+  }
+
+  @override
+  Future<PhotoModel> unlikePhoto(
+    String photoId, {
+    required String accessToken,
+  }) async {
+    final response = await _dioClient.delete(
+      ApiConstants.photoLike(photoId),
+      options: Options(
+        headers: {
+          'Authorization': 'Bearer $accessToken',
+          'Accept-Version': 'v1',
+        },
+      ),
+    );
+    return PhotoModel.fromJson(response['photo'] as Map<String, dynamic>);
   }
 }

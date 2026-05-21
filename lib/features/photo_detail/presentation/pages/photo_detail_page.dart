@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
+import 'package:musea/features/auth/presentation/widgets/auth_gate_sheet.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
+import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/color_palette_bar.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/download_sheet.dart';
@@ -90,6 +93,7 @@ class _PhotoDetailContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final likeState = ref.watch(photoLikeStateProvider(photo));
     final showTagSkeleton = isHydratingDeferredContent && photo.tags.isEmpty;
     final showExifSkeleton = isHydratingDeferredContent && photo.exif == null;
     final showDeferredError =
@@ -112,7 +116,31 @@ class _PhotoDetailContent extends ConsumerWidget {
                 children: [
                   _UserRow(photo: photo),
                   const SizedBox(height: 16),
-                  _StatsStrip(photo: photo),
+                  _StatsStrip(
+                    photo: photo,
+                    likeState: likeState,
+                    onLikeTap: () async {
+                      final authState = ref.read(authControllerProvider);
+                      if (!authState.isAuthenticated) {
+                        await showAuthGateSheet(context, ref);
+                        return;
+                      }
+
+                      final success = await ref
+                          .read(photoLikeControllerProvider.notifier)
+                          .toggle(
+                            photo: photo,
+                            accessToken: authState.session!.accessToken,
+                          );
+                      if (!context.mounted || success) return;
+
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Could not update like right now'),
+                        ),
+                      );
+                    },
+                  ),
                   if (_description case final description?) ...[
                     const SizedBox(height: 16),
                     Text(
@@ -468,9 +496,17 @@ class _UserRow extends StatelessWidget {
 }
 
 class _StatsStrip extends StatelessWidget {
-  const _StatsStrip({required this.photo});
+  static const Color _likedColor = Color(0xFFE11D48);
+
+  const _StatsStrip({
+    required this.photo,
+    required this.likeState,
+    this.onLikeTap,
+  });
 
   final Photo photo;
+  final PhotoLikeState likeState;
+  final VoidCallback? onLikeTap;
 
   @override
   Widget build(BuildContext context) {
@@ -485,8 +521,16 @@ class _StatsStrip extends StatelessWidget {
         children: [
           Expanded(
             child: _StatItem(
-              icon: Icons.favorite_border,
-              label: _formatCount(photo.likes),
+              key: const ValueKey('photo-detail-like-button'),
+              icon: likeState.likedByUser
+                  ? Icons.favorite
+                  : Icons.favorite_border,
+              label: _formatCount(likeState.likes),
+              iconColor:
+                  likeState.likedByUser ? _likedColor : const Color(0xFF71717A),
+              labelColor:
+                  likeState.likedByUser ? _likedColor : const Color(0xFF52525B),
+              onTap: onLikeTap,
             ),
           ),
           const _StatDivider(),
@@ -521,31 +565,43 @@ class _StatsStrip extends StatelessWidget {
 
 class _StatItem extends StatelessWidget {
   const _StatItem({
+    super.key,
     required this.icon,
     required this.label,
+    this.iconColor = const Color(0xFF71717A),
+    this.labelColor = const Color(0xFF52525B),
+    this.onTap,
   });
 
   final IconData icon;
   final String label;
+  final Color iconColor;
+  final Color labelColor;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 11),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(icon, size: 15, color: const Color(0xFF71717A)),
-          const SizedBox(width: 5),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: Color(0xFF52525B),
+    return GestureDetector(
+      key: key,
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, size: 15, color: iconColor),
+            const SizedBox(width: 5),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w600,
+                color: labelColor,
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

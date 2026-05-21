@@ -28,6 +28,7 @@ void main() {
     required String id,
     required String name,
     int likes = 40,
+    bool likedByUser = false,
   }) {
     return Photo(
       id: id,
@@ -42,6 +43,7 @@ void main() {
       urlThumb: 'https://example.com/$id-thumb.jpg',
       likes: likes,
       downloads: 0,
+      likedByUser: likedByUser,
       user: const User(
         id: 'photo-user',
         username: 'photo-user',
@@ -472,6 +474,49 @@ void main() {
     expect(find.byType(PhotoGridTile), findsNWidgets(3));
     expect(find.byIcon(Icons.favorite_border_rounded), findsNWidgets(3));
     expect(find.text('156'), findsOneWidget);
+  });
+
+  testWidgets(
+      'CollectionDetailPage shows filled red like chip for liked photos',
+      (tester) async {
+    const collection = Collection(
+      id: 'collection-liked-feed',
+      title: 'Liked Feed',
+      totalPhotos: 1,
+      user: curator,
+    );
+    final photos = [
+      buildPhoto(
+        id: 'photo-liked',
+        name: 'Liked',
+        likes: 40,
+        likedByUser: true,
+      ),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          collectionDetailProvider('collection-liked-feed').overrideWith(
+            (ref) => collection,
+          ),
+          collectionPhotosProvider('collection-liked-feed').overrideWith(
+            (ref) => photos,
+          ),
+        ],
+        child: const MaterialApp(
+          home: CollectionDetailPage(collectionId: 'collection-liked-feed'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    final likeIcon = tester.widget<Icon>(find.byIcon(Icons.favorite));
+
+    expect(find.byIcon(Icons.favorite), findsOneWidget);
+    expect(find.byIcon(Icons.favorite_border_rounded), findsNothing);
+    expect(likeIcon.color, const Color(0xFFE11D48));
   });
 
   testWidgets(

@@ -21,9 +21,11 @@ class PhotoRepositoryImpl implements PhotoRepository {
   });
 
   @override
-  Future<Either<Failure, List<Photo>>> getPhotos({int page = 1, int perPage = 20}) async {
+  Future<Either<Failure, List<Photo>>> getPhotos(
+      {int page = 1, int perPage = 20}) async {
     try {
-      final photos = await remoteDataSource.getPhotos(page: page, perPage: perPage);
+      final photos =
+          await remoteDataSource.getPhotos(page: page, perPage: perPage);
       return Right(photos.map((p) => p.toEntity()).toList());
     } on ServerException catch (e) {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
@@ -106,9 +108,11 @@ class PhotoRepositoryImpl implements PhotoRepository {
   }
 
   @override
-  Future<Either<Failure, List<Topic>>> getTopics({int page = 1, int perPage = 10}) async {
+  Future<Either<Failure, List<Topic>>> getTopics(
+      {int page = 1, int perPage = 10}) async {
     try {
-      final topics = await remoteDataSource.getTopics(page: page, perPage: perPage);
+      final topics =
+          await remoteDataSource.getTopics(page: page, perPage: perPage);
       await topicLocalDataSource.cacheTopics(topics);
       return Right(topics.map((t) => t.toEntity()).toList());
     } on ServerException catch (e) {
@@ -129,9 +133,11 @@ class PhotoRepositoryImpl implements PhotoRepository {
   }
 
   @override
-  Future<Either<Failure, List<Photo>>> getTopicPhotos(String topicSlug, {int page = 1, int perPage = 20}) async {
+  Future<Either<Failure, List<Photo>>> getTopicPhotos(String topicSlug,
+      {int page = 1, int perPage = 20}) async {
     try {
-      final photos = await remoteDataSource.getTopicPhotos(topicSlug, page: page, perPage: perPage);
+      final photos = await remoteDataSource.getTopicPhotos(topicSlug,
+          page: page, perPage: perPage);
       return Right(photos.map((p) => p.toEntity()).toList());
     } on ServerException catch (e) {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
@@ -151,6 +157,54 @@ class PhotoRepositoryImpl implements PhotoRepository {
       return Left(Failure.server(statusCode: e.statusCode, message: e.message));
     } on NetworkException catch (e) {
       return Left(Failure.network(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Photo>> likePhoto(
+    String photoId, {
+    required String accessToken,
+  }) async {
+    try {
+      final photo = await remoteDataSource.likePhoto(
+        photoId,
+        accessToken: accessToken,
+      );
+      return Right(photo.toEntity());
+    } on UnauthorizedException catch (e) {
+      return Left(Failure.unauthorized(message: e.message));
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
+
+  @override
+  Future<Either<Failure, Photo>> unlikePhoto(
+    String photoId, {
+    required String accessToken,
+  }) async {
+    try {
+      final photo = await remoteDataSource.unlikePhoto(
+        photoId,
+        accessToken: accessToken,
+      );
+      return Right(photo.toEntity());
+    } on UnauthorizedException catch (e) {
+      return Left(Failure.unauthorized(message: e.message));
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
     } catch (e) {
       return Left(Failure.unknown(message: e.toString()));
     }

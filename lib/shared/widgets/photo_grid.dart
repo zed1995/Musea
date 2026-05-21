@@ -1,10 +1,14 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/core/theme/text_styles.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
+import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 import 'package:musea/router/detail_route_extras.dart';
+
+const _likedColor = Color(0xFFE11D48);
 
 class PhotoGrid extends StatelessWidget {
   const PhotoGrid({
@@ -43,7 +47,7 @@ class PhotoGrid extends StatelessWidget {
   }
 }
 
-class PhotoGridTile extends StatelessWidget {
+class PhotoGridTile extends ConsumerWidget {
   const PhotoGridTile({
     super.key,
     required this.photo,
@@ -54,7 +58,9 @@ class PhotoGridTile extends StatelessWidget {
   final bool showLikes;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final likeState = ref.watch(photoLikeStateProvider(photo));
+
     return GestureDetector(
       onTap: () => context.push(
         '/photo/${photo.id}',
@@ -117,16 +123,19 @@ class PhotoGridTile extends StatelessWidget {
                   ),
                   if (showLikes) ...[
                     const SizedBox(width: 8),
-                    const Icon(
-                      Icons.favorite_border_rounded,
+                    Icon(
+                      likeState.likedByUser
+                          ? Icons.favorite
+                          : Icons.favorite_border_rounded,
                       size: 16,
-                      color: Colors.white,
+                      color: likeState.likedByUser ? _likedColor : Colors.white,
                     ),
                     const SizedBox(width: 6),
                     Text(
-                      _formatLikes(photo.likes),
+                      _formatLikes(likeState.likes),
                       style: AppTextStyles.caption.copyWith(
-                        color: Colors.white,
+                        color:
+                            likeState.likedByUser ? _likedColor : Colors.white,
                         fontWeight: FontWeight.w700,
                       ),
                     ),

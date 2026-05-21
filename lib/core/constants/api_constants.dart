@@ -16,7 +16,7 @@ class ApiConstants {
   static const String me = '/me';
   static const String oauthAuthorizePath = '/oauth/authorize';
   static const String oauthTokenPath = '/oauth/token';
-  static const List<String> authScopes = ['public', 'read_user'];
+  static const List<String> authScopes = ['public', 'read_user', 'write_likes'];
 
   static String get clientId {
     final id = dotenv.env['UNSPLASH_CLIENT_ID'];
@@ -63,6 +63,7 @@ class ApiConstants {
   static String photoStatistics(String photoId) =>
       '$photos/$photoId/statistics';
   static String photoDownload(String photoId) => '$photos/$photoId/download';
+  static String photoLike(String photoId) => '$photos/$photoId/like';
   static String topicPhotos(String topicSlug) => '$topics/$topicSlug/photos';
   static String userPhotos(String username) => '$users/$username/photos';
   static String userLikes(String username) => '$users/$username/likes';

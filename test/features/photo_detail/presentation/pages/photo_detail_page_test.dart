@@ -1,15 +1,23 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:musea/features/auth/domain/entities/auth_session.dart';
+import 'package:musea/features/auth/domain/entities/auth_user.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/discover/data/models/photo_model.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
+import 'package:musea/features/discover/domain/repositories/photo_repository.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/color_palette_bar.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/router/detail_route_extras.dart';
+
+class MockPhotoRepository extends Mock implements PhotoRepository {}
 
 void main() {
   Photo buildPhoto({
@@ -20,6 +28,8 @@ void main() {
     List<Map<String, String>> tags = const [],
     String make = 'Sony',
     String model = 'A7 III',
+    bool likedByUser = false,
+    int likes = 1284,
   }) {
     return PhotoModel.fromJson({
       'id': id,
@@ -35,7 +45,8 @@ void main() {
         'small': 'https://example.com/$id-small.jpg',
         'thumb': 'https://example.com/$id-thumb.jpg',
       },
-      'likes': 1284,
+      'likes': likes,
+      'liked_by_user': likedByUser,
       'downloads': 12000,
       'views': 52300,
       'user': {
@@ -70,6 +81,23 @@ void main() {
       'tags': tags,
     }).toEntity();
   }
+
+  final session = AuthSession(
+    accessToken: 'access-token',
+    tokenType: 'bearer',
+    scope: 'public read_user write_likes',
+    createdAt: 1,
+    user: AuthUser(
+      id: 'me',
+      username: 'musea',
+      displayName: 'Musea User',
+      profileImageMedium: 'https://example.com/me.jpg',
+      totalPhotos: 1,
+      totalLikes: 1,
+      totalCollections: 1,
+    ),
+    lastProfileRefreshAt: DateTime(2024, 1, 1),
+  );
 
   testWidgets(
       'PhotoDetailPage tolerates null numeric fields from detail payload',
@@ -192,8 +220,127 @@ void main() {
     expect(find.text('Camera'), findsAtLeastNWidgets(2));
   });
 
-  testWidgets('PhotoDetailPage hero opens photo viewer',
+  testWidgets('PhotoDetailPage shows filled red like stat for liked photo',
       (tester) async {
+    final photo = buildPhoto(
+      id: 'photo-liked',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+      likedByUser: true,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photoDetailProvider('photo-liked').overrideWith((ref) => photo),
+          userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          home: PhotoDetailPage(photoId: 'photo-liked'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    final likeIcon = tester.widget<Icon>(find.byIcon(Icons.favorite));
+
+    expect(find.byIcon(Icons.favorite), findsOneWidget);
+    expect(find.byIcon(Icons.favorite_border), findsNothing);
+    expect(likeIcon.color, const Color(0xFFE11D48));
+  });
+
+  testWidgets('PhotoDetailPage toggles like through Unsplash API',
+      (tester) async {
+    final repository = MockPhotoRepository();
+    final photo = buildPhoto(
+      id: 'photo-toggle-like',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+      likes: 12,
+    );
+    final likedPhoto = buildPhoto(
+      id: 'photo-toggle-like',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+      likes: 13,
+      likedByUser: true,
+    );
+    final unlikedPhoto = buildPhoto(
+      id: 'photo-toggle-like',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+      likes: 12,
+      likedByUser: false,
+    );
+
+    when(
+      () => repository.likePhoto(
+        'photo-toggle-like',
+        accessToken: 'access-token',
+      ),
+    ).thenAnswer((_) async => Right(likedPhoto));
+    when(
+      () => repository.unlikePhoto(
+        'photo-toggle-like',
+        accessToken: 'access-token',
+      ),
+    ).thenAnswer((_) async => Right(unlikedPhoto));
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authBootstrapSessionProvider.overrideWithValue(session),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
+          photoRepositoryProvider.overrideWithValue(repository),
+          photoDetailProvider('photo-toggle-like').overrideWith((ref) => photo),
+          userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          home: PhotoDetailPage(photoId: 'photo-toggle-like'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.text('12'), findsOneWidget);
+    expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+
+    await tester
+        .tap(find.byKey(const ValueKey('photo-detail-like-button')).first);
+    await tester.pump();
+
+    verify(
+      () => repository.likePhoto(
+        'photo-toggle-like',
+        accessToken: 'access-token',
+      ),
+    ).called(1);
+    expect(find.text('13'), findsOneWidget);
+    expect(find.byIcon(Icons.favorite), findsOneWidget);
+
+    await tester
+        .tap(find.byKey(const ValueKey('photo-detail-like-button')).first);
+    await tester.pump();
+
+    verify(
+      () => repository.unlikePhoto(
+        'photo-toggle-like',
+        accessToken: 'access-token',
+      ),
+    ).called(1);
+    expect(find.text('12'), findsOneWidget);
+    expect(find.byIcon(Icons.favorite_border), findsOneWidget);
+  });
+
+  testWidgets('PhotoDetailPage hero opens photo viewer', (tester) async {
     final photo = buildPhoto(
       id: 'photo-main',
       username: 'paula',
@@ -235,7 +382,8 @@ void main() {
 
     await tester.pump();
 
-    await tester.tap(find.byKey(const ValueKey('photo-detail-hero-tap-target')));
+    await tester
+        .tap(find.byKey(const ValueKey('photo-detail-hero-tap-target')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
