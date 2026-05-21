@@ -1,5 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:flutter/material.dart';
+import 'package:musea/features/auth/presentation/pages/auth_callback_page.dart';
 import 'package:musea/features/collections/presentation/pages/collection_detail_page.dart';
 import 'package:musea/features/collections/presentation/pages/collections_page.dart';
 import 'package:musea/features/discover/presentation/pages/discover_page.dart';
@@ -47,6 +48,13 @@ final appRouter = GoRouter(
           ),
         ),
       ],
+    ),
+    GoRoute(
+      path: '/callback',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) {
+        return AuthCallbackPage(callbackUri: state.uri);
+      },
     ),
     GoRoute(
       path: '/search',

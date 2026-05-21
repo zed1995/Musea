@@ -25,12 +25,15 @@ class AuthSession {
   });
 
   factory AuthSession.fromJson(Map<String, dynamic> json) {
+    final rawUser = json['user'];
     return AuthSession(
       accessToken: json['accessToken'] as String? ?? '',
       tokenType: json['tokenType'] as String? ?? 'bearer',
       scope: json['scope'] as String? ?? '',
       createdAt: (json['createdAt'] as num?)?.toInt() ?? 0,
-      user: AuthUser.fromJson(json['user'] as Map<String, dynamic>),
+      user: AuthUser.fromJson(
+        rawUser is Map ? Map<String, dynamic>.from(rawUser) : const {},
+      ),
       lastProfileRefreshAt: DateTime.tryParse(
             json['lastProfileRefreshAt'] as String? ?? '',
           ) ??

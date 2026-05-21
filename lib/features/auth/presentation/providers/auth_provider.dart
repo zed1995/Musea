@@ -158,6 +158,8 @@ class AuthController extends StateNotifier<AuthState> {
   final AuthLauncher _launcher;
   final DateTime Function() _now;
   final Uri _expectedRedirectUri;
+  final Set<String> _inFlightCallbackFingerprints = <String>{};
+  final Set<String> _completedCallbackFingerprints = <String>{};
 
   Future<void> beginSignIn() async {
     final pendingState = _generatePendingState();
@@ -186,30 +188,40 @@ class AuthController extends StateNotifier<AuthState> {
       return;
     }
 
-    final error = uri.queryParameters['error'];
-    if (error != null) {
-      await _repository.savePendingOAuthState(null);
-      state = state.copyWith(
-        isAuthorizing: false,
-        errorMessage: error == 'access_denied'
-            ? null
-            : (uri.queryParameters['error_description'] ?? error),
-      );
+    final fingerprint = _callbackFingerprint(uri);
+    if (_completedCallbackFingerprints.contains(fingerprint) ||
+        _inFlightCallbackFingerprints.contains(fingerprint)) {
       return;
     }
-
-    final code = uri.queryParameters['code'];
-    final callbackState = uri.queryParameters['state'];
-    final storedState = await _repository.getPendingOAuthState();
-    if (code == null || callbackState == null || storedState != callbackState) {
-      state = state.copyWith(
-        isAuthorizing: false,
-        errorMessage: 'Could not verify the Unsplash sign-in callback.',
-      );
-      return;
-    }
+    _inFlightCallbackFingerprints.add(fingerprint);
 
     try {
+      final error = uri.queryParameters['error'];
+      if (error != null) {
+        await _repository.savePendingOAuthState(null);
+        state = state.copyWith(
+          isAuthorizing: false,
+          errorMessage: error == 'access_denied'
+              ? null
+              : (uri.queryParameters['error_description'] ?? error),
+        );
+        _completedCallbackFingerprints.add(fingerprint);
+        return;
+      }
+
+      final code = uri.queryParameters['code'];
+      final callbackState = uri.queryParameters['state'];
+      final storedState = await _repository.getPendingOAuthState();
+      if (code == null ||
+          callbackState == null ||
+          storedState != callbackState) {
+        state = state.copyWith(
+          isAuthorizing: false,
+          errorMessage: 'Could not verify the Unsplash sign-in callback.',
+        );
+        return;
+      }
+
       final token = await _repository.exchangeCodeForToken(code);
       final user = await _repository.fetchCurrentUser(token.accessToken);
       final session = AuthSession(
@@ -222,12 +234,15 @@ class AuthController extends StateNotifier<AuthState> {
       );
       await _repository.saveSession(session);
       await _repository.savePendingOAuthState(null);
+      _completedCallbackFingerprints.add(fingerprint);
       state = AuthState(session: session);
     } catch (error) {
       state = state.copyWith(
         isAuthorizing: false,
         errorMessage: error.toString(),
       );
+    } finally {
+      _inFlightCallbackFingerprints.remove(fingerprint);
     }
   }
 
@@ -282,5 +297,12 @@ class AuthController extends StateNotifier<AuthState> {
     return uri.scheme == _expectedRedirectUri.scheme &&
         uri.host == _expectedRedirectUri.host &&
         uri.path == _expectedRedirectUri.path;
+  }
+
+  String _callbackFingerprint(Uri uri) {
+    final code = uri.queryParameters['code'] ?? '';
+    final state = uri.queryParameters['state'] ?? '';
+    final error = uri.queryParameters['error'] ?? '';
+    return '${uri.scheme}://${uri.host}${uri.path}?code=$code&state=$state&error=$error';
   }
 }

@@ -9,8 +9,10 @@ import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/router/detail_route_extras.dart';
+import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
+import 'package:musea/shared/widgets/photo_grid.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key, required this.username});
@@ -124,47 +126,36 @@ class _CollectionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _SectionHeader(
-          eyebrow: 'Collections',
-          title: 'Curated groupings',
-          actionLabel: 'See all',
-        ),
-        const SizedBox(height: 12),
-        collectionsAsync.when(
-          data: (collections) {
-            if (collections.isEmpty) {
-              return const _SectionEmptyCard(
-                message: 'No public collections yet',
-              );
-            }
+    return collectionsAsync.when(
+      data: (collections) {
+        if (collections.isEmpty) {
+          return const _SectionEmptyCard(
+            message: 'No public collections yet',
+          );
+        }
 
-            return Column(
-              children: collections.take(4).map((collection) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  child: _ProfileCollectionCard(collection: collection),
-                );
-              }).toList(),
+        return Column(
+          children: collections.take(4).map((collection) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: CollectionCard(collection: collection),
             );
-          },
-          loading: () => const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: LoadingIndicator(),
-            ),
-          ),
-          error: (error, stack) => Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: ErrorState(
-              message: error.toString(),
-              onRetry: () {},
-            ),
-          ),
+          }).toList(),
+        );
+      },
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: LoadingIndicator(),
         ),
-      ],
+      ),
+      error: (error, stack) => Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: ErrorState(
+          message: error.toString(),
+          onRetry: () {},
+        ),
+      ),
     );
   }
 }
@@ -176,69 +167,29 @@ class _LikesSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _SectionHeader(
-          eyebrow: 'Likes',
-          title: 'Saved inspiration',
-          actionLabel: 'See all',
-        ),
-        const SizedBox(height: 12),
-        likesAsync.when(
-          data: (photos) {
-            if (photos.isEmpty) {
-              return const _SectionEmptyCard(
-                message: 'No liked photos yet',
-              );
-            }
+    return likesAsync.when(
+      data: (photos) {
+        if (photos.isEmpty) {
+          return const _SectionEmptyCard(
+            message: 'No liked photos yet',
+          );
+        }
 
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: photos.length.clamp(0, 6),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1,
-              ),
-              itemBuilder: (context, index) {
-                final photo = photos[index];
-                return GestureDetector(
-                  onTap: () => context.push(
-                    '/photo/${photo.id}',
-                    extra: PhotoDetailExtra(photo: photo),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: CachedNetworkImage(
-                      imageUrl: photo.urlSmall,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColors.gray100,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-          loading: () => const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: LoadingIndicator(),
-            ),
-          ),
-          error: (error, stack) => Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: ErrorState(
-              message: error.toString(),
-              onRetry: () {},
-            ),
-          ),
+        return PhotoGrid(photos: photos.take(6).toList(), showLikes: true);
+      },
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: LoadingIndicator(),
         ),
-      ],
+      ),
+      error: (error, stack) => Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: ErrorState(
+          message: error.toString(),
+          onRetry: () {},
+        ),
+      ),
     );
   }
 }
@@ -405,118 +356,29 @@ class _PhotosSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _SectionHeader(
-          eyebrow: 'Public Work',
-          title: 'Latest uploads',
-          actionLabel: 'Newest first',
-        ),
-        const SizedBox(height: 12),
-        photosAsync.when(
-          data: (photos) {
-            if (photos.isEmpty) {
-              return const _SectionEmptyCard(
-                message: 'No public photos yet',
-              );
-            }
+    return photosAsync.when(
+      data: (photos) {
+        if (photos.isEmpty) {
+          return const _SectionEmptyCard(
+            message: 'No public photos yet',
+          );
+        }
 
-            return GridView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: photos.length.clamp(0, 6),
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: 2,
-                crossAxisSpacing: 8,
-                mainAxisSpacing: 8,
-                childAspectRatio: 1,
-              ),
-              itemBuilder: (context, index) {
-                final photo = photos[index];
-                return GestureDetector(
-                  onTap: () => context.push(
-                    '/photo/${photo.id}',
-                    extra: PhotoDetailExtra(photo: photo),
-                  ),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(18),
-                    child: CachedNetworkImage(
-                      imageUrl: photo.urlSmall,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColors.gray100,
-                      ),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-          loading: () => const Center(
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: 24),
-              child: LoadingIndicator(),
-            ),
-          ),
-          error: (error, stack) => Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: ErrorState(
-              message: error.toString(),
-              onRetry: () {},
-            ),
-          ),
+        return PhotoGrid(photos: photos.take(6).toList());
+      },
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.symmetric(vertical: 24),
+          child: LoadingIndicator(),
         ),
-      ],
-    );
-  }
-}
-
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader({
-    required this.eyebrow,
-    required this.title,
-    required this.actionLabel,
-  });
-
-  final String eyebrow;
-  final String title;
-  final String actionLabel;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              eyebrow,
-              style: AppTextStyles.caption.copyWith(
-                color: AppColors.gray400,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.3,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title,
-              style: AppTextStyles.bodyLarge.copyWith(
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
+      ),
+      error: (error, stack) => Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: ErrorState(
+          message: error.toString(),
+          onRetry: () {},
         ),
-        Text(
-          actionLabel,
-          style: AppTextStyles.caption.copyWith(
-            color: AppColors.gray500,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
+      ),
     );
   }
 }
@@ -540,93 +402,6 @@ class _SectionEmptyCard extends StatelessWidget {
         message,
         style: AppTextStyles.bodyMedium.copyWith(
           color: AppColors.gray600,
-        ),
-      ),
-    );
-  }
-}
-
-class _ProfileCollectionCard extends StatelessWidget {
-  const _ProfileCollectionCard({required this.collection});
-
-  final Collection collection;
-
-  @override
-  Widget build(BuildContext context) {
-    final coverUrl = collection.coverPhoto?.urlRegular ??
-        (collection.previewPhotos.isNotEmpty
-            ? collection.previewPhotos.first.smallUrl
-            : null);
-
-    return GestureDetector(
-      onTap: () => context.push(
-        '/collection/${collection.id}',
-        extra: CollectionDetailExtra(collection: collection),
-      ),
-      child: Container(
-        clipBehavior: Clip.antiAlias,
-        decoration: BoxDecoration(
-          color: AppColors.gray100,
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Stack(
-          children: [
-            SizedBox(
-              height: 176,
-              width: double.infinity,
-              child: coverUrl == null
-                  ? Container(color: AppColors.gray100)
-                  : CachedNetworkImage(
-                      imageUrl: coverUrl,
-                      fit: BoxFit.cover,
-                      errorWidget: (context, url, error) => Container(
-                        color: AppColors.gray100,
-                      ),
-                    ),
-            ),
-            Positioned.fill(
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.04),
-                      Colors.black.withValues(alpha: 0.56),
-                    ],
-                    stops: const [0.26, 1],
-                  ),
-                ),
-              ),
-            ),
-            Positioned(
-              left: 14,
-              right: 14,
-              bottom: 14,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    collection.title,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTextStyles.bodyMedium.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    '${collection.totalPhotos} ${collection.totalPhotos == 1 ? 'photo' : 'photos'}',
-                    style: AppTextStyles.caption.copyWith(
-                      color: Colors.white.withValues(alpha: 0.72),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
         ),
       ),
     );

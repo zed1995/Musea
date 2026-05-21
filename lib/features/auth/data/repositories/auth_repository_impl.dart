@@ -17,16 +17,20 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Uri buildAuthorizationUri({required String state}) {
+    final scope = ApiConstants.authScopes.map(Uri.encodeQueryComponent).join(
+      '+',
+    );
+    final query = [
+      'client_id=${Uri.encodeQueryComponent(ApiConstants.clientId)}',
+      'redirect_uri=${Uri.encodeQueryComponent(ApiConstants.redirectUri)}',
+      'response_type=code',
+      'scope=$scope',
+      'state=${Uri.encodeQueryComponent(state)}',
+    ].join('&');
+
     return Uri.parse(
-      '${ApiConstants.unsplashOAuthBaseUrl}${ApiConstants.oauthAuthorizePath}',
-    ).replace(
-      queryParameters: {
-        'client_id': ApiConstants.clientId,
-        'redirect_uri': ApiConstants.redirectUri,
-        'response_type': 'code',
-        'scope': ApiConstants.authScopes.join('+'),
-        'state': state,
-      },
+      '${ApiConstants.unsplashOAuthBaseUrl}'
+      '${ApiConstants.oauthAuthorizePath}?$query',
     );
   }
 

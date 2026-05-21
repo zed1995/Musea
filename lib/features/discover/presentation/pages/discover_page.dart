@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
+import 'package:musea/features/auth/presentation/widgets/auth_gate_sheet.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/discover/presentation/providers/topics_provider.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
@@ -148,12 +150,15 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                   children: [
                     Icon(Icons.search, color: AppColors.gray400, size: 20),
                     SizedBox(width: 10),
-                    Text(
-                      'Search photos, collections, users...',
-                      style: TextStyle(
-                        color: AppColors.gray400,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w400,
+                    Expanded(
+                      child: Text(
+                        'Search photos, collections, users...',
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          color: AppColors.gray400,
+                          fontSize: 14,
+                          fontWeight: FontWeight.w400,
+                        ),
                       ),
                     ),
                   ],
@@ -242,6 +247,12 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   }
 
   void _toggleLike(Photo photo) {
+    final authState = ref.read(authControllerProvider);
+    if (!authState.isAuthenticated) {
+      showAuthGateSheet(context, ref);
+      return;
+    }
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Liked "${photo.user.name}"\'s photo')),
     );

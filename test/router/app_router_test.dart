@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/app.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/pages/collection_detail_page.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
@@ -14,9 +15,14 @@ import 'package:musea/features/discover/presentation/providers/topics_provider.d
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/router/app_router.dart';
 import 'package:musea/router/detail_route_extras.dart';
 
 void main() {
+  setUp(() {
+    appRouter.go('/discover');
+  });
+
   const user = User(
     id: 'user-1',
     username: 'forest',
@@ -63,6 +69,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authLinkServiceProvider.overrideWithValue(_FakeAuthLinkService()),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           topicsProvider.overrideWith((ref) => <Topic>[]),
           collectionsProvider(1).overrideWith((ref) => <Collection>[]),
@@ -84,6 +94,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authLinkServiceProvider.overrideWithValue(_FakeAuthLinkService()),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           topicsProvider.overrideWith((ref) => <Topic>[]),
           collectionsProvider(1).overrideWith((ref) => <Collection>[]),
@@ -108,6 +122,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authLinkServiceProvider.overrideWithValue(_FakeAuthLinkService()),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           photoDetailProvider('photo-1').overrideWith((ref) => photo),
           topicsProvider.overrideWith((ref) => <Topic>[]),
@@ -140,7 +158,7 @@ void main() {
     );
     expect(photoPage.photoId, photo.id);
     expect(photoPage.initialPhoto, same(photo));
-    expect(find.text('Forest Archive'), findsOneWidget);
+    expect(find.text('Forest Archive'), findsWidgets);
 
     GoRouter.of(appContext).go(
       '/collection/${collection.id}',
@@ -162,6 +180,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authLinkServiceProvider.overrideWithValue(_FakeAuthLinkService()),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           photoDetailProvider('photo-1').overrideWith((ref) => photo),
           topicsProvider.overrideWith((ref) => <Topic>[]),
@@ -192,4 +214,12 @@ void main() {
     expect(viewerPage.initialPhoto, same(photo));
     expect(viewerPage.photoId, photo.id);
   });
+}
+
+class _FakeAuthLinkService implements AuthLinkService {
+  @override
+  Future<Uri?> getInitialLink() async => null;
+
+  @override
+  Stream<Uri> get uriStream => const Stream<Uri>.empty();
 }

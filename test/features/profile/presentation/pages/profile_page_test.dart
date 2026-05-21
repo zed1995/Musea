@@ -68,9 +68,11 @@ void main() {
     expect(find.text('Collections'), findsAtLeastNWidgets(1));
     expect(find.text('Likes'), findsAtLeastNWidgets(1));
     expect(find.textContaining('@spaciba'), findsOneWidget);
-    expect(find.text('Latest uploads'), findsOneWidget);
     expect(
         find.text('14 public photos · 58 curated collections'), findsNothing);
+    expect(find.text('Latest uploads'), findsNothing);
+    expect(find.text('Curated groupings'), findsNothing);
+    expect(find.text('Saved inspiration'), findsNothing);
   });
 
   testWidgets('ProfilePage omits missing optional copy safely', (tester) async {
@@ -132,7 +134,7 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Latest uploads'), findsOneWidget);
+    expect(find.text('Latest uploads'), findsNothing);
     expect(find.text('Curated groupings'), findsNothing);
     expect(find.text('Saved inspiration'), findsNothing);
 
@@ -140,7 +142,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Latest uploads'), findsNothing);
-    expect(find.text('Curated groupings'), findsOneWidget);
+    expect(find.text('Curated groupings'), findsNothing);
     expect(find.text('Venezuela'), findsOneWidget);
     expect(find.text('Saved inspiration'), findsNothing);
 
@@ -149,7 +151,7 @@ void main() {
 
     expect(find.text('Latest uploads'), findsNothing);
     expect(find.text('Curated groupings'), findsNothing);
-    expect(find.text('Saved inspiration'), findsOneWidget);
+    expect(find.text('Saved inspiration'), findsNothing);
     expect(find.text('No liked photos yet'), findsNothing);
   });
 }

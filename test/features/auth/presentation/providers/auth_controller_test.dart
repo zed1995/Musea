@@ -89,6 +89,54 @@ void main() {
       expect(state.errorMessage, isNull);
     });
 
+    test('handleCallback ignores duplicate callback for same code and state',
+        () async {
+      final repository = _FakeAuthRepository();
+      repository.pendingState = 'oauth-state';
+      repository.tokenToReturn = const OAuthToken(
+        accessToken: 'token-123',
+        tokenType: 'bearer',
+        scope: 'public read_user',
+        createdAt: 123456,
+      );
+      repository.userToReturn = const AuthUser(
+        id: 'user-1',
+        username: 'spaciba',
+        displayName: 'Paula Poeira',
+        profileImageMedium: 'https://example.com/avatar-medium.jpg',
+        totalPhotos: 12,
+        totalLikes: 34,
+        totalCollections: 56,
+      );
+
+      final container = ProviderContainer(
+        overrides: [
+          authRepositoryProvider.overrideWithValue(repository),
+          authLauncherProvider.overrideWithValue(_FakeAuthLauncher()),
+          authClockProvider.overrideWithValue(() => DateTime(2026, 5, 20, 13)),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
+        ],
+      );
+      addTearDown(container.dispose);
+
+      final callbackUri = Uri.parse(
+        'musea://auth/callback?code=abc123&state=oauth-state',
+      );
+
+      await container
+          .read(authControllerProvider.notifier)
+          .handleCallbackUri(callbackUri);
+      await container
+          .read(authControllerProvider.notifier)
+          .handleCallbackUri(callbackUri);
+
+      expect(repository.exchangedCodeCount, 1);
+      expect(repository.savedSession?.user.username, 'spaciba');
+      expect(container.read(authControllerProvider).errorMessage, isNull);
+    });
+
     test('refreshIfNeeded skips fresh cache and refreshes stale cache',
         () async {
       final freshSession = AuthSession(
@@ -179,6 +227,7 @@ class _FakeAuthRepository implements AuthRepository {
   AuthUser? userToReturn;
   String? exchangedCode;
   String? requestedMeToken;
+  int exchangedCodeCount = 0;
 
   @override
   Uri buildAuthorizationUri({required String state}) {
@@ -196,6 +245,7 @@ class _FakeAuthRepository implements AuthRepository {
   @override
   Future<OAuthToken> exchangeCodeForToken(String code) async {
     exchangedCode = code;
+    exchangedCodeCount += 1;
     return tokenToReturn!;
   }
 
