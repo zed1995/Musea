@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
+import 'package:musea/features/auth/presentation/widgets/auth_gate_sheet.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
+import 'package:musea/features/collections/presentation/widgets/create_collection_sheet.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/empty_state.dart';
 import 'package:musea/shared/widgets/error_state.dart';
@@ -12,22 +15,38 @@ class CollectionsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final collectionsAsync = ref.watch(collectionsProvider(1));
+    final authState = ref.watch(authControllerProvider);
 
     return Scaffold(
       body: collectionsAsync.when(
         data: (collections) {
           if (collections.isEmpty) {
-            return const EmptyState(
-              icon: Icons.collections_bookmark_outlined,
-              title: 'No collections',
-              subtitle: 'Check back later for curated collections',
+            return SafeArea(
+              child: Column(
+                children: [
+                  _CollectionsHeader(
+                    onAddPressed: () =>
+                        _handleAddPressed(context, ref, authState),
+                  ),
+                  const Expanded(
+                    child: EmptyState(
+                      icon: Icons.collections_bookmark_outlined,
+                      title: 'No collections',
+                      subtitle: 'Check back later for curated collections',
+                    ),
+                  ),
+                ],
+              ),
             );
           }
 
           return SafeArea(
             child: Column(
               children: [
-                const _CollectionsHeader(),
+                _CollectionsHeader(
+                  onAddPressed: () =>
+                      _handleAddPressed(context, ref, authState),
+                ),
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: () async => ref.invalidate(collectionsProvider),
@@ -39,7 +58,8 @@ class CollectionsPage extends ConsumerWidget {
                             delegate: SliverChildBuilderDelegate(
                               (context, index) => Padding(
                                 padding: const EdgeInsets.only(bottom: 12),
-                                child: CollectionCard(collection: collections[index]),
+                                child: CollectionCard(
+                                    collection: collections[index]),
                               ),
                               childCount: collections.length,
                             ),
@@ -61,10 +81,30 @@ class CollectionsPage extends ConsumerWidget {
       ),
     );
   }
+
+  void _handleAddPressed(
+    BuildContext context,
+    WidgetRef ref,
+    AuthState authState,
+  ) {
+    if (authState.isAuthenticated) {
+      showCreateCollectionSheet(context);
+    } else {
+      showAuthGateSheet(
+        context,
+        ref,
+        title: 'Sign in to create collections',
+        body:
+            'Save your favorite photos into custom collections and organize them your way.',
+      );
+    }
+  }
 }
 
 class _CollectionsHeader extends StatelessWidget {
-  const _CollectionsHeader();
+  const _CollectionsHeader({required this.onAddPressed});
+
+  final VoidCallback onAddPressed;
 
   @override
   Widget build(BuildContext context) {
@@ -83,15 +123,18 @@ class _CollectionsHeader extends StatelessWidget {
               ),
             ),
           ),
-          Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white,
-              border: Border.all(color: const Color(0xFFE5E5E5)),
+          GestureDetector(
+            onTap: onAddPressed,
+            child: Container(
+              width: 34,
+              height: 34,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.white,
+                border: Border.all(color: const Color(0xFFE5E5E5)),
+              ),
+              child: const Icon(Icons.add, size: 18, color: Color(0xFF18181B)),
             ),
-            child: const Icon(Icons.add, size: 18, color: Color(0xFF18181B)),
           ),
         ],
       ),

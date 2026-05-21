@@ -86,6 +86,15 @@ class _FakeCollectionRepository implements CollectionRepository {
   }) {
     throw UnimplementedError();
   }
+
+  @override
+  Future<Either<Failure, Collection>> createCollection({
+    required String title,
+    String? description,
+    bool? private,
+  }) {
+    throw UnimplementedError();
+  }
 }
 
 Photo _buildPhoto({

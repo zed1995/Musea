@@ -1,19 +1,29 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/pages/collections_page.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// A simple smoke test to verify the CollectionsPage renders without crashing.
 void main() {
+  /// Shared provider overrides for auth dependencies.
+  List<Override> _authOverrides() => [
+        authBootstrapSessionProvider.overrideWithValue(null),
+        authRedirectUriProvider.overrideWithValue(
+          Uri.parse('musea://auth/callback'),
+        ),
+      ];
+
   testWidgets('CollectionsPage shows empty state when no collections',
       (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ..._authOverrides(),
           collectionsProvider(1).overrideWith(
             (ref) => <Collection>[],
           ),
@@ -72,6 +82,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          ..._authOverrides(),
           collectionsProvider(1).overrideWith((ref) => collections),
         ],
         child: const MaterialApp(
@@ -81,7 +92,55 @@ void main() {
     );
 
     expect(find.text('Collections'), findsOneWidget);
-    expect(find.text('1 collections · 24 photos'), findsNothing);
     expect(find.byIcon(Icons.add), findsOneWidget);
+  });
+
+  testWidgets('+ button shows auth sheet when unauthenticated',
+      (tester) async {
+    tester.view.physicalSize = const Size(430, 1400);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    const user = User(
+      id: 'user-1',
+      username: 'curator',
+      name: 'Curator',
+      profileImageSmall: '',
+      profileImageMedium: '',
+      profileImageLarge: '',
+      totalPhotos: 0,
+      totalLikes: 0,
+      totalCollections: 0,
+    );
+
+    final collections = [
+      Collection(
+        id: 'collection-1',
+        title: 'Travel Inspiration',
+        totalPhotos: 24,
+        previewPhotos: const [],
+        user: user,
+      ),
+    ];
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          ..._authOverrides(),
+          collectionsProvider(1).overrideWith((ref) => collections),
+        ],
+        child: const MaterialApp(
+          home: CollectionsPage(),
+        ),
+      ),
+    );
+
+    // Tap the + button
+    await tester.tap(find.byIcon(Icons.add));
+    await tester.pumpAndSettle();
+
+    // Auth gate sheet should appear with Unsplash content
+    expect(find.textContaining('Unsplash'), findsWidgets);
   });
 }

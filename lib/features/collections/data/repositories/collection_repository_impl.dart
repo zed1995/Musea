@@ -117,4 +117,28 @@ class CollectionRepositoryImpl implements CollectionRepository {
       return Left(Failure.unknown(message: e.toString()));
     }
   }
+
+  @override
+  Future<Either<Failure, Collection>> createCollection({
+    required String title,
+    String? description,
+    bool? private,
+  }) async {
+    try {
+      final collection = await remoteDataSource.createCollection(
+        title: title,
+        description: description,
+        private: private,
+      );
+      return Right(collection.toEntity());
+    } on ServerException catch (e) {
+      return Left(Failure.server(statusCode: e.statusCode, message: e.message));
+    } on NetworkException catch (e) {
+      return Left(Failure.network(message: e.message));
+    } on RateLimitException catch (e) {
+      return Left(Failure.rateLimit(message: e.message));
+    } catch (e) {
+      return Left(Failure.unknown(message: e.toString()));
+    }
+  }
 }

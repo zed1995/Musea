@@ -13,6 +13,12 @@ abstract class CollectionRemoteDataSource {
     int page = 1,
     int perPage = 20,
   });
+
+  Future<CollectionModel> createCollection({
+    required String title,
+    String? description,
+    bool? private,
+  });
 }
 
 class CollectionRemoteDataSourceImpl implements CollectionRemoteDataSource {
@@ -79,5 +85,22 @@ class CollectionRemoteDataSourceImpl implements CollectionRemoteDataSource {
       totalPages: response['total_pages'] as int? ?? 0,
       results: results,
     );
+  }
+
+  @override
+  Future<CollectionModel> createCollection({
+    required String title,
+    String? description,
+    bool? private,
+  }) async {
+    final response = await _dioClient.post(
+      ApiConstants.collections,
+      data: {
+        'title': title,
+        if (description != null) 'description': description,
+        if (private != null) 'private': private,
+      },
+    );
+    return CollectionModel.fromJson(response);
   }
 }

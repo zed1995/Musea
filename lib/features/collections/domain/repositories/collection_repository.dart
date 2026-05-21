@@ -13,4 +13,10 @@ abstract class CollectionRepository {
     int page = 1,
     int perPage = 20,
   });
+
+  Future<Either<Failure, Collection>> createCollection({
+    required String title,
+    String? description,
+    bool? private,
+  });
 }

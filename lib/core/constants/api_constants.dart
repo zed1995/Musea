@@ -16,7 +16,7 @@ class ApiConstants {
   static const String me = '/me';
   static const String oauthAuthorizePath = '/oauth/authorize';
   static const String oauthTokenPath = '/oauth/token';
-  static const List<String> authScopes = ['public', 'read_user', 'write_likes'];
+  static const List<String> authScopes = ['public', 'read_user', 'write_likes', 'write_collections'];
 
   static String get clientId {
     final id = dotenv.env['UNSPLASH_CLIENT_ID'];
