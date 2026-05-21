@@ -20,8 +20,9 @@ class ApiInterceptor extends Interceptor {
   @override
   void onResponse(Response response, ResponseInterceptorHandler handler) {
     debugPrint(
-      'HTTP url=${_fullUrl(response.requestOptions)} '
-      'resp=${response.data} '
+      'HTTP method=${response.requestOptions.method} '
+      'url=${_fullUrl(response.requestOptions)} '
+      'status=${response.statusCode ?? 'unknown'} '
       'rate_limit_remaining=${_rateLimitRemaining(response.headers)}',
     );
     handler.next(response);
@@ -30,9 +31,9 @@ class ApiInterceptor extends Interceptor {
   @override
   void onError(DioException err, ErrorInterceptorHandler handler) {
     debugPrint(
-      'HTTP_ERROR url=${_fullUrl(err.requestOptions)} '
+      'HTTP_ERROR method=${err.requestOptions.method} '
+      'url=${_fullUrl(err.requestOptions)} '
       'status=${err.response?.statusCode ?? 'unknown'} '
-      'resp=${err.response?.data} '
       'rate_limit_remaining=${_rateLimitRemaining(err.response?.headers)} '
       'error=${err.message ?? err.error}',
     );

@@ -18,7 +18,7 @@ void main() {
     AuthTokenStore.instance.clear();
   });
 
-  test('logs only url response body and remaining rate limit on success', () {
+  test('logs concise success metadata without response payload or headers', () {
     final logs = <String>[];
     final previousDebugPrint = debugPrint;
     debugPrint = (message, {wrapWidth}) {
@@ -35,20 +35,25 @@ void main() {
       requestOptions: RequestOptions(
         path: '/photos',
         baseUrl: 'https://api.unsplash.com',
+        method: 'GET',
       ),
     );
 
     interceptor.onResponse(response, ResponseInterceptorHandler());
 
     expect(logs, hasLength(1));
+    expect(logs.single, contains('HTTP method=GET'));
     expect(logs.single, contains('url=https://api.unsplash.com/photos'));
-    expect(logs.single, contains('resp={id: photo-1, kind: photo}'));
+    expect(logs.single, contains('status=200'));
     expect(logs.single, contains('rate_limit_remaining=42'));
+    expect(logs.single, isNot(contains('resp=')));
+    expect(logs.single, isNot(contains('Authorization')));
+    expect(logs.single, isNot(contains('Accept-Version')));
     expect(logs.single, isNot(contains('REQUEST[')));
     expect(logs.single, isNot(contains('RESPONSE[')));
   });
 
-  test('logs extra failure details for error responses', () {
+  test('logs concise failure metadata without response payload or headers', () {
     final logs = <String>[];
     final previousDebugPrint = debugPrint;
     debugPrint = (message, {wrapWidth}) {
@@ -59,6 +64,7 @@ void main() {
     final requestOptions = RequestOptions(
       path: '/photos',
       baseUrl: 'https://api.unsplash.com',
+      method: 'GET',
     );
     final error = DioException(
       requestOptions: requestOptions,
@@ -80,11 +86,14 @@ void main() {
     );
 
     expect(logs, hasLength(1));
+    expect(logs.single, contains('method=GET'));
     expect(logs.single, contains('url=https://api.unsplash.com/photos'));
     expect(logs.single, contains('status=403'));
-    expect(logs.single, contains('resp={errors: [rate limit exceeded]}'));
     expect(logs.single, contains('rate_limit_remaining=0'));
     expect(logs.single, contains('error=Forbidden'));
+    expect(logs.single, isNot(contains('resp=')));
+    expect(logs.single, isNot(contains('Authorization')));
+    expect(logs.single, isNot(contains('Accept-Version')));
   });
 
   test('uses bearer token when auth token store has an access token', () {

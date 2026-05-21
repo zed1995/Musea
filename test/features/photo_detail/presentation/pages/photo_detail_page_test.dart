@@ -392,4 +392,40 @@ void main() {
     );
     expect(find.byType(InteractiveViewer), findsOneWidget);
   });
+
+  testWidgets('PhotoViewerPage expands image viewport to full screen',
+      (tester) async {
+    tester.view.physicalSize = const Size(1170, 2532);
+    tester.view.devicePixelRatio = 3;
+    addTearDown(tester.view.reset);
+
+    final photo = buildPhoto(
+      id: 'photo-viewer',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photoDetailProvider(photo.id).overrideWith((ref) => photo),
+        ],
+        child: MaterialApp(
+          home: PhotoViewerPage(
+            photoId: photo.id,
+            initialPhoto: photo,
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.byKey(const ValueKey('photo-viewer-viewport')), findsOneWidget);
+    expect(
+      tester.getSize(find.byKey(const ValueKey('photo-viewer-viewport'))),
+      const Size(390, 844),
+    );
+  });
 }

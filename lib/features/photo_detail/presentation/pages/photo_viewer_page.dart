@@ -82,54 +82,50 @@ class _PhotoViewerScaffold extends StatelessWidget {
                 behavior: HitTestBehavior.opaque,
                 onTap: () => _dismiss(context),
               ),
-              Center(
-                child: InteractiveViewer(
-                  minScale: 1,
-                  maxScale: 4,
-                  child: GestureDetector(
-                    key: const ValueKey('photo-viewer-image-tap-target'),
-                    behavior: HitTestBehavior.translucent,
-                    onTap: () => _dismiss(context),
-                    child: Hero(
-                      tag: heroTag,
-                      child: CachedNetworkImage(
-                        imageUrl: photo.urlRegular,
-                        fit: BoxFit.contain,
-                        placeholder: (context, url) => AspectRatio(
-                          aspectRatio: _aspectRatio,
-                          child: Container(
-                            color: _placeholderColor,
-                            child: const Center(child: LoadingIndicator()),
-                          ),
-                        ),
-                        errorWidget: (context, url, error) => AspectRatio(
-                          aspectRatio: _aspectRatio,
-                          child: Container(
-                            color: AppColors.gray200,
-                            child: const Icon(
-                              Icons.broken_image,
-                              size: 48,
-                              color: Colors.white70,
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  return InteractiveViewer(
+                    minScale: 1,
+                    maxScale: 4,
+                    child: SizedBox(
+                      key: const ValueKey('photo-viewer-viewport'),
+                      width: constraints.maxWidth,
+                      height: constraints.maxHeight,
+                      child: GestureDetector(
+                        key: const ValueKey('photo-viewer-image-tap-target'),
+                        behavior: HitTestBehavior.translucent,
+                        onTap: () => _dismiss(context),
+                        child: Hero(
+                          tag: heroTag,
+                          child: CachedNetworkImage(
+                            imageUrl: photo.urlRegular,
+                            fit: BoxFit.contain,
+                            width: constraints.maxWidth,
+                            height: constraints.maxHeight,
+                            placeholder: (context, url) => ColoredBox(
+                              color: _placeholderColor,
+                              child: const Center(child: LoadingIndicator()),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: AppColors.gray200,
+                              child: const Icon(
+                                Icons.broken_image,
+                                size: 48,
+                                color: Colors.white70,
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  double get _aspectRatio {
-    if (photo.width <= 0 || photo.height <= 0) {
-      return 1;
-    }
-    return photo.width / photo.height;
   }
 
   Color get _placeholderColor {
