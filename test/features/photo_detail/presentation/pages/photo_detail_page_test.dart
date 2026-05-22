@@ -393,6 +393,61 @@ void main() {
     expect(find.byType(InteractiveViewer), findsOneWidget);
   });
 
+  testWidgets('PhotoDetailPage tag chip navigates to search page',
+      (tester) async {
+    final photo = buildPhoto(
+      id: 'photo-tags',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+      tags: const [
+        {'title': 'Kyoto'},
+        {'title': 'Temple'},
+      ],
+    );
+
+    final router = GoRouter(
+      routes: [
+        GoRoute(
+          path: '/',
+          builder: (context, state) => PhotoDetailPage(
+            photoId: photo.id,
+            initialPhoto: photo,
+          ),
+        ),
+        GoRoute(
+          path: '/search',
+          builder: (context, state) {
+            final query = state.uri.queryParameters['q'] ?? '';
+            return Text('SearchPage: $query');
+          },
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photoDetailProvider(photo.id).overrideWith((ref) => photo),
+          userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
+        ],
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+
+    await tester.pump();
+
+    // Verify tags are rendered
+    expect(find.text('Kyoto'), findsOneWidget);
+    expect(find.text('Temple'), findsOneWidget);
+
+    await tester.tap(find.text('Kyoto'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(find.text('SearchPage: Kyoto'), findsOneWidget);
+  });
+
   testWidgets('PhotoViewerPage expands image viewport to full screen',
       (tester) async {
     tester.view.physicalSize = const Size(1170, 2532);

@@ -175,7 +175,12 @@ class _PhotoDetailContent extends ConsumerWidget {
                       spacing: 8,
                       runSpacing: 8,
                       children: photo.tags
-                          .map((tag) => _TagChip(label: tag.title))
+                          .map((tag) => _TagChip(
+                            label: tag.title,
+                            onTap: () => context.push(
+                              '/search?q=${Uri.encodeComponent(tag.title)}',
+                            ),
+                          ))
                           .toList(),
                     ),
                   ] else if (showTagSkeleton) ...[
@@ -640,24 +645,28 @@ class _StatDivider extends StatelessWidget {
 }
 
 class _TagChip extends StatelessWidget {
-  const _TagChip({required this.label});
+  const _TagChip({required this.label, this.onTap});
 
   final String label;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: const Color(0xFFF6F6F6),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label,
-        style: const TextStyle(
-          fontSize: 11,
-          fontWeight: FontWeight.w600,
-          color: Color(0xFF555555),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF6F6F6),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            fontSize: 11,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF555555),
+          ),
         ),
       ),
     );
