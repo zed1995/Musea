@@ -7,7 +7,8 @@ import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
-import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/features/profile/presentation/providers/profile_controller.dart';
+import 'package:musea/features/search/presentation/providers/search_controller.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
@@ -68,9 +69,6 @@ class _MinePageState extends ConsumerState<MinePage> {
       publicUser: publicUser,
       isRefreshing: authState.isRefreshing,
       errorMessage: authState.errorMessage,
-      photosAsync: ref.watch(userPhotosProvider(user.username)),
-      collectionsAsync: ref.watch(userCollectionsProvider(user.username)),
-      likesAsync: ref.watch(userLikesProvider(user.username)),
       onRefresh: () => ref
           .read(authControllerProvider.notifier)
           .refreshIfNeeded(force: true),
@@ -616,15 +614,12 @@ class _GuestChip extends StatelessWidget {
   }
 }
 
-class _SignedInMineView extends StatefulWidget {
+class _SignedInMineView extends ConsumerStatefulWidget {
   const _SignedInMineView({
     required this.authUser,
     required this.publicUser,
     required this.isRefreshing,
     required this.errorMessage,
-    required this.photosAsync,
-    required this.collectionsAsync,
-    required this.likesAsync,
     required this.onRefresh,
     required this.onSignOut,
   });
@@ -633,18 +628,57 @@ class _SignedInMineView extends StatefulWidget {
   final User publicUser;
   final bool isRefreshing;
   final String? errorMessage;
-  final AsyncValue<List<Photo>> photosAsync;
-  final AsyncValue<List<Collection>> collectionsAsync;
-  final AsyncValue<List<Photo>> likesAsync;
   final Future<void> Function() onRefresh;
   final VoidCallback onSignOut;
 
   @override
-  State<_SignedInMineView> createState() => _SignedInMineViewState();
+  ConsumerState<_SignedInMineView> createState() => _SignedInMineViewState();
 }
 
-class _SignedInMineViewState extends State<_SignedInMineView> {
+class _SignedInMineViewState extends ConsumerState<_SignedInMineView> {
   _MineSegment _selectedSegment = _MineSegment.photos;
+  final ScrollController _scrollController = ScrollController();
+
+  String get _username => widget.authUser.username;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(userPhotosControllerProvider(_username).notifier).loadInitial();
+      ref
+          .read(userCollectionsControllerProvider(_username).notifier)
+          .loadInitial();
+      ref.read(userLikesControllerProvider(_username).notifier).loadInitial();
+    });
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      switch (_selectedSegment) {
+        case _MineSegment.photos:
+          ref
+              .read(userPhotosControllerProvider(_username).notifier)
+              .loadMore();
+        case _MineSegment.collections:
+          ref
+              .read(userCollectionsControllerProvider(_username).notifier)
+              .loadMore();
+        case _MineSegment.likes:
+          ref
+              .read(userLikesControllerProvider(_username).notifier)
+              .loadMore();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -653,6 +687,7 @@ class _SignedInMineViewState extends State<_SignedInMineView> {
       body: RefreshIndicator(
         onRefresh: widget.onRefresh,
         child: CustomScrollView(
+          controller: _scrollController,
           slivers: [
             SliverToBoxAdapter(
               child: _MineHero(
@@ -692,7 +727,7 @@ class _SignedInMineViewState extends State<_SignedInMineView> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.fromLTRB(12, 8, 12, 28),
-                child: _buildSelectedSection(context),
+                child: _buildSelectedSection(),
               ),
             ),
           ],
@@ -701,23 +736,18 @@ class _SignedInMineViewState extends State<_SignedInMineView> {
     );
   }
 
-  Widget _buildSelectedSection(BuildContext context) {
+  Widget _buildSelectedSection() {
     switch (_selectedSegment) {
       case _MineSegment.photos:
-        return _MinePhotoSection(
-          title: 'Latest uploads',
-          photosAsync: widget.photosAsync,
-        );
+        final state = ref.watch(userPhotosControllerProvider(_username));
+        return _MinePhotoSection(state: state);
       case _MineSegment.collections:
-        return _MineCollectionsSection(
-          collectionsAsync: widget.collectionsAsync,
-        );
+        final state =
+            ref.watch(userCollectionsControllerProvider(_username));
+        return _MineCollectionsSection(state: state);
       case _MineSegment.likes:
-        return _MinePhotoSection(
-          title: 'Liked photos',
-          photosAsync: widget.likesAsync,
-          showLikes: true,
-        );
+        final state = ref.watch(userLikesControllerProvider(_username));
+        return _MinePhotoSection(state: state, showLikes: true);
     }
   }
 }
@@ -963,68 +993,77 @@ class _MineHero extends StatelessWidget {
 
 class _MinePhotoSection extends StatelessWidget {
   const _MinePhotoSection({
-    required this.title,
-    required this.photosAsync,
+    required this.state,
     this.showLikes = false,
   });
 
-  final String title;
-  final AsyncValue<List<Photo>> photosAsync;
+  final PaginatedState<Photo> state;
   final bool showLikes;
 
   @override
   Widget build(BuildContext context) {
-    return photosAsync.when(
-      data: (photos) {
-        if (photos.isEmpty) {
-          return _SectionEmptyCard(
-            message: showLikes ? 'No liked photos yet.' : 'Nothing here yet.',
-          );
-        }
-
-        return PhotoGrid(
-          photos: photos,
-          showLikes: showLikes,
-        );
-      },
-      loading: () => const Padding(
+    if (state.isLoading) {
+      return const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
         child: Center(child: LoadingIndicator()),
-      ),
-      error: (error, stack) => ErrorState(message: error.toString()),
+      );
+    }
+    if (state.items.isEmpty && state.error != null) {
+      return ErrorState(message: state.error.toString());
+    }
+    if (state.items.isEmpty && state.error == null) {
+      return _SectionEmptyCard(
+        message: showLikes ? 'No liked photos yet.' : 'Nothing here yet.',
+      );
+    }
+
+    return Column(
+      children: [
+        PhotoGrid(photos: state.items, showLikes: showLikes),
+        if (state.isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: LoadingIndicator(),
+          ),
+      ],
     );
   }
 }
 
 class _MineCollectionsSection extends StatelessWidget {
   const _MineCollectionsSection({
-    required this.collectionsAsync,
+    required this.state,
   });
 
-  final AsyncValue<List<Collection>> collectionsAsync;
+  final PaginatedState<Collection> state;
 
   @override
   Widget build(BuildContext context) {
-    return collectionsAsync.when(
-      data: (collections) {
-        if (collections.isEmpty) {
-          return const _SectionEmptyCard(message: 'No collections yet.');
-        }
-
-        return Column(
-          children: collections.map((collection) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: CollectionCard(collection: collection),
-            );
-          }).toList(),
-        );
-      },
-      loading: () => const Padding(
+    if (state.isLoading) {
+      return const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
         child: Center(child: LoadingIndicator()),
-      ),
-      error: (error, stack) => ErrorState(message: error.toString()),
+      );
+    }
+    if (state.items.isEmpty && state.error != null) {
+      return ErrorState(message: state.error.toString());
+    }
+    if (state.items.isEmpty && state.error == null) {
+      return const _SectionEmptyCard(message: 'No collections yet.');
+    }
+
+    return Column(
+      children: [
+        ...state.items.map((collection) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: CollectionCard(collection: collection),
+            )),
+        if (state.isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: LoadingIndicator(),
+          ),
+      ],
     );
   }
 }

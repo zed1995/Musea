@@ -1,16 +1,25 @@
 import 'dart:async';
 
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:musea/core/errors/failures.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 
+class MockProfileRepository extends Mock implements ProfileRepository {}
+
 void main() {
+  late MockProfileRepository mockProfileRepository;
+
   const user = User(
     id: 'user-1',
     username: 'spaciba',
@@ -47,19 +56,61 @@ void main() {
     user: user,
   );
 
+  setUp(() {
+    mockProfileRepository = MockProfileRepository();
+
+    when(() => mockProfileRepository.getUserPhotos(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+        )).thenAnswer((_) async => const Right(<Photo>[]));
+    when(() => mockProfileRepository.getUserCollections(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+        )).thenAnswer((_) async => const Right(<Collection>[]));
+    when(() => mockProfileRepository.getUserLikes(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+        )).thenAnswer((_) async => const Right(<Photo>[]));
+  });
+
+  Widget buildApp({
+    required String username,
+    User? initialUser,
+    Object? profileValue,
+  }) {
+    final overrides = <Override>[
+      profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+    ];
+
+    if (profileValue is User) {
+      overrides.add(
+        userProfileProvider(username).overrideWith((ref) => profileValue),
+      );
+    } else if (profileValue is Future<User>) {
+      overrides.add(
+        userProfileProvider(username).overrideWith((ref) => profileValue),
+      );
+    }
+
+    return ProviderScope(
+      overrides: overrides,
+      child: MaterialApp(
+        home: ProfilePage(
+          username: username,
+          initialUser: initialUser,
+        ),
+      ),
+    );
+  }
+
   testWidgets('ProfilePage renders prototype detail structure', (tester) async {
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          userProfileProvider('spaciba').overrideWith((ref) => user),
-          userPhotosProvider('spaciba').overrideWith((ref) => <Photo>[]),
-          userCollectionsProvider('spaciba')
-              .overrideWith((ref) => <Collection>[]),
-          userLikesProvider('spaciba').overrideWith((ref) => <Photo>[]),
-        ],
-        child: const MaterialApp(
-          home: ProfilePage(username: 'spaciba'),
-        ),
+      buildApp(
+        username: 'spaciba',
+        profileValue: user,
       ),
     );
 
@@ -72,7 +123,9 @@ void main() {
     expect(find.text('Likes'), findsAtLeastNWidgets(1));
     expect(find.textContaining('@spaciba'), findsOneWidget);
     expect(
-        find.text('14 public photos · 58 curated collections'), findsNothing);
+      find.text('14 public photos · 58 curated collections'),
+      findsNothing,
+    );
     expect(find.text('Latest uploads'), findsNothing);
     expect(find.text('Curated groupings'), findsNothing);
     expect(find.text('Saved inspiration'), findsNothing);
@@ -92,17 +145,9 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          userProfileProvider('blank').overrideWith((ref) => blankUser),
-          userPhotosProvider('blank').overrideWith((ref) => <Photo>[]),
-          userCollectionsProvider('blank')
-              .overrideWith((ref) => <Collection>[]),
-          userLikesProvider('blank').overrideWith((ref) => <Photo>[]),
-        ],
-        child: const MaterialApp(
-          home: ProfilePage(username: 'blank'),
-        ),
+      buildApp(
+        username: 'blank',
+        profileValue: blankUser,
       ),
     );
 
@@ -117,24 +162,25 @@ void main() {
 
   testWidgets('ProfilePage shows only the selected segment content',
       (tester) async {
+    when(() => mockProfileRepository.getUserCollections(
+          'spaciba',
+          page: 1,
+          perPage: 20,
+        )).thenAnswer((_) async => const Right(<Collection>[collection]));
+    when(() => mockProfileRepository.getUserLikes(
+          'spaciba',
+          page: 1,
+          perPage: 20,
+        )).thenAnswer((_) async => Right(<Photo>[likedPhoto]));
+
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          userProfileProvider('spaciba').overrideWith((ref) => user),
-          userPhotosProvider('spaciba').overrideWith((ref) => <Photo>[]),
-          userCollectionsProvider('spaciba').overrideWith(
-            (ref) => <Collection>[collection],
-          ),
-          userLikesProvider('spaciba').overrideWith(
-            (ref) => <Photo>[likedPhoto],
-          ),
-        ],
-        child: const MaterialApp(
-          home: ProfilePage(username: 'spaciba'),
-        ),
+      buildApp(
+        username: 'spaciba',
+        profileValue: user,
       ),
     );
 
+    await tester.pump();
     await tester.pump();
 
     expect(find.text('Latest uploads'), findsNothing);
@@ -176,19 +222,10 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          userProfileProvider('preview').overrideWith((ref) => pendingUser.future),
-          userPhotosProvider('preview').overrideWith((ref) => <Photo>[]),
-          userCollectionsProvider('preview').overrideWith((ref) => <Collection>[]),
-          userLikesProvider('preview').overrideWith((ref) => <Photo>[]),
-        ],
-        child: const MaterialApp(
-          home: ProfilePage(
-            username: 'preview',
-            initialUser: initialUser,
-          ),
-        ),
+      buildApp(
+        username: 'preview',
+        initialUser: initialUser,
+        profileValue: pendingUser.future,
       ),
     );
 
@@ -201,6 +238,7 @@ void main() {
 
   testWidgets('ProfilePage keeps initialUser when fetch fails',
       (tester) async {
+    final failingUser = Completer<User>();
     const initialUser = User(
       id: 'user-4',
       username: 'offline',
@@ -214,24 +252,15 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          userProfileProvider('offline').overrideWith(
-            (ref) => Future<User>.error(Exception('network error')),
-          ),
-          userPhotosProvider('offline').overrideWith((ref) => <Photo>[]),
-          userCollectionsProvider('offline').overrideWith((ref) => <Collection>[]),
-          userLikesProvider('offline').overrideWith((ref) => <Photo>[]),
-        ],
-        child: const MaterialApp(
-          home: ProfilePage(
-            username: 'offline',
-            initialUser: initialUser,
-          ),
-        ),
+      buildApp(
+        username: 'offline',
+        initialUser: initialUser,
+        profileValue: failingUser.future,
       ),
     );
 
+    await tester.pump();
+    failingUser.completeError(Exception('network error'));
     await tester.pump();
 
     expect(find.text('Offline User'), findsOneWidget);
@@ -244,16 +273,9 @@ void main() {
     final pendingUser = Completer<User>();
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          userProfileProvider('pending').overrideWith((ref) => pendingUser.future),
-          userPhotosProvider('pending').overrideWith((ref) => <Photo>[]),
-          userCollectionsProvider('pending').overrideWith((ref) => <Collection>[]),
-          userLikesProvider('pending').overrideWith((ref) => <Photo>[]),
-        ],
-        child: const MaterialApp(
-          home: ProfilePage(username: 'pending'),
-        ),
+      buildApp(
+        username: 'pending',
+        profileValue: pendingUser.future,
       ),
     );
 
@@ -289,19 +311,10 @@ void main() {
     );
 
     await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          userProfileProvider('replace').overrideWith((ref) => pendingUser.future),
-          userPhotosProvider('replace').overrideWith((ref) => <Photo>[]),
-          userCollectionsProvider('replace').overrideWith((ref) => <Collection>[]),
-          userLikesProvider('replace').overrideWith((ref) => <Photo>[]),
-        ],
-        child: const MaterialApp(
-          home: ProfilePage(
-            username: 'replace',
-            initialUser: initialUser,
-          ),
-        ),
+      buildApp(
+        username: 'replace',
+        initialUser: initialUser,
+        profileValue: pendingUser.future,
       ),
     );
 
@@ -314,5 +327,30 @@ void main() {
     expect(find.text('Hydrated Name'), findsOneWidget);
     expect(find.text('Fresh bio from API'), findsOneWidget);
     expect(find.text('Placeholder'), findsNothing);
+  });
+
+  testWidgets('ProfilePage shows error state for empty photo section errors',
+      (tester) async {
+    when(() => mockProfileRepository.getUserPhotos(
+          'spaciba',
+          page: 1,
+          perPage: 20,
+        )).thenAnswer(
+      (_) async => const Left(Failure.unknown(message: 'photo failure')),
+    );
+
+    await tester.pumpWidget(
+      buildApp(
+        username: 'spaciba',
+        profileValue: user,
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.byType(ErrorState), findsOneWidget);
+    expect(find.text('Oops! Something went wrong'), findsOneWidget);
+    expect(find.textContaining('photo failure'), findsOneWidget);
   });
 }

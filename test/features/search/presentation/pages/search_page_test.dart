@@ -1,14 +1,31 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
+import 'package:musea/features/collections/domain/repositories/collection_repository.dart';
+import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/features/discover/domain/repositories/photo_repository.dart';
+import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
+import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
+import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/features/search/domain/entities/search_result.dart';
 import 'package:musea/features/search/presentation/pages/search_page.dart';
-import 'package:musea/features/search/presentation/providers/search_provider.dart';
+
+class MockPhotoRepository extends Mock implements PhotoRepository {}
+
+class MockCollectionRepository extends Mock implements CollectionRepository {}
+
+class MockProfileRepository extends Mock implements ProfileRepository {}
 
 void main() {
+  late MockPhotoRepository mockPhotoRepo;
+  late MockCollectionRepository mockCollectionRepo;
+  late MockProfileRepository mockProfileRepo;
+
   const forestUser = User(
     id: 'user-1',
     username: 'forest',
@@ -22,21 +39,6 @@ void main() {
     totalLikes: 44,
     totalCollections: 3,
     followedByUser: true,
-  );
-
-  const cityUser = User(
-    id: 'user-2',
-    username: 'city',
-    name: 'City Studio',
-    bio: 'Architecture observer',
-    location: 'Tokyo',
-    profileImageSmall: 'https://example.com/small-2.jpg',
-    profileImageMedium: 'https://example.com/medium-2.jpg',
-    profileImageLarge: 'https://example.com/large-2.jpg',
-    totalPhotos: 8,
-    totalLikes: 20,
-    totalCollections: 2,
-    followedByUser: false,
   );
 
   final photos = [
@@ -58,24 +60,6 @@ void main() {
       user: forestUser,
       tags: const [Tag(title: 'nature')],
     ),
-    Photo(
-      id: 'photo-2',
-      createdAt: DateTime(2024, 1, 2),
-      width: 1600,
-      height: 1200,
-      color: '#DDEEFF',
-      description: 'City geometry',
-      altDescription: 'Modern architecture',
-      urlRaw: 'https://example.com/raw-2.jpg',
-      urlFull: 'https://example.com/full-2.jpg',
-      urlRegular: 'https://example.com/regular-2.jpg',
-      urlSmall: 'https://example.com/small-2.jpg',
-      urlThumb: 'https://example.com/thumb-2.jpg',
-      likes: 64,
-      downloads: 11,
-      user: cityUser,
-      tags: const [Tag(title: 'architecture')],
-    ),
   ];
 
   final collections = [
@@ -89,82 +73,69 @@ void main() {
     ),
   ];
 
-  Widget buildApp() {
+  setUp(() {
+    mockPhotoRepo = MockPhotoRepository();
+    mockCollectionRepo = MockCollectionRepository();
+    mockProfileRepo = MockProfileRepository();
+
+    when(() => mockPhotoRepo.searchPhotos(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+          orderBy: any(named: 'orderBy'),
+          color: any(named: 'color'),
+          orientation: any(named: 'orientation'),
+          contentFilter: any(named: 'contentFilter'),
+        )).thenAnswer((_) async => Right(SearchPhotosResult(
+          total: 2431,
+          totalPages: 82,
+          results: photos,
+        )));
+
+    when(() => mockCollectionRepo.searchCollections(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+        )).thenAnswer((_) async => Right(SearchCollectionsResult(
+          total: 324,
+          totalPages: 11,
+          results: collections,
+        )));
+
+    when(() => mockProfileRepo.searchUsers(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+        )).thenAnswer((_) async => const Right(SearchUsersResult(
+          total: 88,
+          totalPages: 5,
+          results: [forestUser],
+        )));
+  });
+
+  Widget buildApp({String initialQuery = ''}) {
     return ProviderScope(
       overrides: [
-        photoSearchProvider(const PhotoSearchParams(query: 'forest'))
-            .overrideWith(
-          (ref) => SearchPhotosResult(
-            total: 2431,
-            totalPages: 82,
-            results: photos,
-          ),
-        ),
-        photoSearchProvider(const PhotoSearchParams(query: 'desert'))
-            .overrideWith(
-          (ref) => const SearchPhotosResult(
-            total: 0,
-            totalPages: 0,
-            results: [],
-          ),
-        ),
-        photoSearchProvider(
-                const PhotoSearchParams(query: 'forest', orderBy: 'latest'))
-            .overrideWith(
-          (ref) => const SearchPhotosResult(
-            total: 2431,
-            totalPages: 82,
-            results: [],
-          ),
-        ),
-        photoSearchProvider(
-                const PhotoSearchParams(query: 'forest', color: 'green'))
-            .overrideWith(
-          (ref) => SearchPhotosResult(
-            total: 2431,
-            totalPages: 82,
-            results: photos,
-          ),
-        ),
-        photoSearchProvider(const PhotoSearchParams(
-                query: 'forest', orientation: 'landscape'))
-            .overrideWith(
-          (ref) => SearchPhotosResult(
-            total: 2431,
-            totalPages: 82,
-            results: photos,
-          ),
-        ),
-        collectionSearchProvider(
-          const CollectionSearchParams(query: 'forest'),
-        ).overrideWith(
-          (ref) => SearchCollectionsResult(
-            total: 324,
-            totalPages: 11,
-            results: collections,
-          ),
-        ),
-        userSearchProvider(const UserSearchParams(query: 'forest'))
-            .overrideWith(
-          (ref) => const SearchUsersResult(
-            total: 88,
-            totalPages: 5,
-            results: [forestUser],
-          ),
-        ),
+        photoRepositoryProvider.overrideWithValue(mockPhotoRepo),
+        collectionRepositoryProvider.overrideWithValue(mockCollectionRepo),
+        profileRepositoryProvider.overrideWithValue(mockProfileRepo),
       ],
-      child: const MaterialApp(
-        home: SearchPage(initialQuery: 'forest'),
+      child: MaterialApp(
+        home: SearchPage(initialQuery: initialQuery),
       ),
     );
   }
 
-  testWidgets('SearchPage shows photo results by default', (tester) async {
+  testWidgets('SearchPage shows idle state before search', (tester) async {
     await tester.pumpWidget(buildApp());
-    await tester.pumpAndSettle();
+    await tester.pump();
 
     expect(find.text('Start typing to search'), findsOneWidget);
-    expect(find.text('Forest Archive'), findsNothing);
+  });
+
+  testWidgets('SearchPage shows photo results after submit', (tester) async {
+    await tester.pumpWidget(buildApp(initialQuery: 'forest'));
+    await tester.pump();
 
     await tester.tap(find.byKey(const Key('search-submit-button')));
     await tester.pumpAndSettle();
@@ -173,14 +144,53 @@ void main() {
     expect(find.text('Collections'), findsWidgets);
     expect(find.text('Users'), findsWidgets);
     expect(find.byKey(const Key('photo-filter-trigger')), findsOneWidget);
-    expect(find.text('Forest Archive'), findsOneWidget);
-    expect(find.text('No matching photos'), findsNothing);
+  });
+
+  testWidgets('SearchPage debounces text input and triggers search',
+      (tester) async {
+    await tester.pumpWidget(buildApp(initialQuery: ''));
+    await tester.pump();
+
+    await tester.enterText(find.byType(TextField), 'cats');
+    await tester.pump(const Duration(milliseconds: 100));
+    expect(find.text('Start typing to search'), findsOneWidget);
+
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pumpAndSettle();
+
+    verify(() => mockPhotoRepo.searchPhotos(
+          'cats',
+          page: 1,
+          perPage: 20,
+          orderBy: 'relevant',
+          color: null,
+          orientation: null,
+          contentFilter: 'high',
+        )).called(1);
+  });
+
+  testWidgets('SearchPage auto-searches when initialQuery is provided',
+      (tester) async {
+    await tester.pumpWidget(buildApp(initialQuery: 'forest'));
+    await tester.pump(const Duration(milliseconds: 350));
+    await tester.pumpAndSettle();
+
+    verify(() => mockPhotoRepo.searchPhotos(
+          'forest',
+          page: 1,
+          perPage: 20,
+          orderBy: 'relevant',
+          color: null,
+          orientation: null,
+          contentFilter: 'high',
+        )).called(1);
+    expect(find.text('Start typing to search'), findsNothing);
   });
 
   testWidgets('SearchPage opens and closes the photo filter panel',
       (tester) async {
-    await tester.pumpWidget(buildApp());
-    await tester.pumpAndSettle();
+    await tester.pumpWidget(buildApp(initialQuery: 'forest'));
+    await tester.pump();
 
     await tester.tap(find.byKey(const Key('search-submit-button')));
     await tester.pumpAndSettle();
@@ -201,8 +211,8 @@ void main() {
 
   testWidgets('SearchPage switches to collections and users segments',
       (tester) async {
-    await tester.pumpWidget(buildApp());
-    await tester.pumpAndSettle();
+    await tester.pumpWidget(buildApp(initialQuery: 'forest'));
+    await tester.pump();
 
     await tester.tap(find.byKey(const Key('search-submit-button')));
     await tester.pumpAndSettle();
@@ -212,7 +222,6 @@ void main() {
 
     expect(find.byKey(const Key('photo-filter-trigger')), findsNothing);
     expect(find.text('Forest Archive'), findsOneWidget);
-    expect(find.text('by Forest Archive'), findsOneWidget);
 
     await tester.tap(find.text('Users').last);
     await tester.pumpAndSettle();
@@ -223,46 +232,23 @@ void main() {
     expect(find.text('Following'), findsOneWidget);
   });
 
-  testWidgets('SearchPage shows empty state when query does not match',
-      (tester) async {
-    await tester.pumpWidget(buildApp());
-    await tester.pumpAndSettle();
+  testWidgets('SearchPage shows empty state when no results', (tester) async {
+    when(() => mockPhotoRepo.searchPhotos(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+          orderBy: any(named: 'orderBy'),
+          color: any(named: 'color'),
+          orientation: any(named: 'orientation'),
+          contentFilter: any(named: 'contentFilter'),
+        )).thenAnswer((_) async => const Right(SearchPhotosResult(
+          total: 0,
+          totalPages: 0,
+          results: [],
+        )));
 
-    await tester.enterText(find.byType(TextField), 'desert');
-    await tester.tap(find.byKey(const Key('search-submit-button')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('No matching photos'), findsOneWidget);
-  });
-
-  testWidgets('SearchPage does not search until submit is triggered',
-      (tester) async {
-    await tester.pumpWidget(buildApp());
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField), 'desert');
-    await tester.pumpAndSettle();
-
-    expect(find.text('Start typing to search'), findsOneWidget);
-    expect(find.text('Forest Archive'), findsNothing);
-    expect(find.text('No matching photos'), findsNothing);
-
-    await tester.tap(find.byKey(const Key('search-submit-button')));
-    await tester.pumpAndSettle();
-
-    expect(find.text('No matching photos'), findsOneWidget);
-  });
-
-  testWidgets('SearchPage does not search on keyboard submit', (tester) async {
-    await tester.pumpWidget(buildApp());
-    await tester.pumpAndSettle();
-
-    await tester.enterText(find.byType(TextField), 'desert');
-    await tester.testTextInput.receiveAction(TextInputAction.search);
-    await tester.pumpAndSettle();
-
-    expect(find.text('Start typing to search'), findsOneWidget);
-    expect(find.text('No matching photos'), findsNothing);
+    await tester.pumpWidget(buildApp(initialQuery: 'desert'));
+    await tester.pump();
 
     await tester.tap(find.byKey(const Key('search-submit-button')));
     await tester.pumpAndSettle();

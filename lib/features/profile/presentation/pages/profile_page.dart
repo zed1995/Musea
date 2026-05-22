@@ -7,13 +7,15 @@ import 'package:musea/core/theme/text_styles.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/features/profile/presentation/providers/profile_controller.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/features/search/presentation/providers/search_controller.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
 
-class ProfilePage extends ConsumerWidget {
+class ProfilePage extends ConsumerStatefulWidget {
   const ProfilePage({
     super.key,
     required this.username,
@@ -24,20 +26,35 @@ class ProfilePage extends ConsumerWidget {
   final User? initialUser;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final userAsync = ref.watch(userProfileProvider(username));
-    final photosAsync = ref.watch(userPhotosProvider(username));
-    final collectionsAsync = ref.watch(userCollectionsProvider(username));
-    final likesAsync = ref.watch(userLikesProvider(username));
+  ConsumerState<ProfilePage> createState() => _ProfilePageState();
+}
 
-    final resolvedUser = userAsync.valueOrNull ?? initialUser;
+class _ProfilePageState extends ConsumerState<ProfilePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref
+          .read(userPhotosControllerProvider(widget.username).notifier)
+          .loadInitial();
+      ref
+          .read(userCollectionsControllerProvider(widget.username).notifier)
+          .loadInitial();
+      ref
+          .read(userLikesControllerProvider(widget.username).notifier)
+          .loadInitial();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final userAsync = ref.watch(userProfileProvider(widget.username));
+    final resolvedUser = userAsync.valueOrNull ?? widget.initialUser;
 
     if (resolvedUser != null) {
       return _ProfileContent(
+        username: widget.username,
         user: resolvedUser,
-        photosAsync: photosAsync,
-        collectionsAsync: collectionsAsync,
-        likesAsync: likesAsync,
       );
     }
 
@@ -50,32 +67,62 @@ class ProfilePage extends ConsumerWidget {
         appBar: AppBar(),
         body: ErrorState(
           message: error.toString(),
-          onRetry: () => ref.invalidate(userProfileProvider(username)),
+          onRetry: () => ref.invalidate(userProfileProvider(widget.username)),
         ),
       ),
     );
   }
 }
 
-class _ProfileContent extends StatefulWidget {
+class _ProfileContent extends ConsumerStatefulWidget {
   const _ProfileContent({
+    required this.username,
     required this.user,
-    required this.photosAsync,
-    required this.collectionsAsync,
-    required this.likesAsync,
   });
 
+  final String username;
   final User user;
-  final AsyncValue<List<Photo>> photosAsync;
-  final AsyncValue<List<Collection>> collectionsAsync;
-  final AsyncValue<List<Photo>> likesAsync;
 
   @override
-  State<_ProfileContent> createState() => _ProfileContentState();
+  ConsumerState<_ProfileContent> createState() => _ProfileContentState();
 }
 
-class _ProfileContentState extends State<_ProfileContent> {
+class _ProfileContentState extends ConsumerState<_ProfileContent> {
   _ProfileSegment _selectedSegment = _ProfileSegment.photos;
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      switch (_selectedSegment) {
+        case _ProfileSegment.photos:
+          ref
+              .read(userPhotosControllerProvider(widget.username).notifier)
+              .loadMore();
+        case _ProfileSegment.collections:
+          ref
+              .read(
+                  userCollectionsControllerProvider(widget.username).notifier)
+              .loadMore();
+        case _ProfileSegment.likes:
+          ref
+              .read(userLikesControllerProvider(widget.username).notifier)
+              .loadMore();
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -84,6 +131,7 @@ class _ProfileContentState extends State<_ProfileContent> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: CustomScrollView(
+        controller: _scrollController,
         slivers: [
           SliverToBoxAdapter(
             child: _ProfileHero(
@@ -120,86 +168,91 @@ class _ProfileContentState extends State<_ProfileContent> {
   Widget _buildSelectedSection() {
     switch (_selectedSegment) {
       case _ProfileSegment.photos:
-        return _PhotosSection(photosAsync: widget.photosAsync);
+        final state =
+            ref.watch(userPhotosControllerProvider(widget.username));
+        return _PaginatedPhotoSection(state: state);
       case _ProfileSegment.collections:
-        return _CollectionsSection(collectionsAsync: widget.collectionsAsync);
+        final state =
+            ref.watch(userCollectionsControllerProvider(widget.username));
+        return _PaginatedCollectionSection(state: state);
       case _ProfileSegment.likes:
-        return _LikesSection(likesAsync: widget.likesAsync);
+        final state =
+            ref.watch(userLikesControllerProvider(widget.username));
+        return _PaginatedPhotoSection(state: state, showLikes: true);
     }
   }
 }
 
-class _CollectionsSection extends StatelessWidget {
-  const _CollectionsSection({required this.collectionsAsync});
+class _PaginatedPhotoSection extends StatelessWidget {
+  const _PaginatedPhotoSection({required this.state, this.showLikes = false});
 
-  final AsyncValue<List<Collection>> collectionsAsync;
+  final PaginatedState<Photo> state;
+  final bool showLikes;
 
   @override
   Widget build(BuildContext context) {
-    return collectionsAsync.when(
-      data: (collections) {
-        if (collections.isEmpty) {
-          return const _SectionEmptyCard(
-            message: 'No public collections yet',
-          );
-        }
+    if (state.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(child: LoadingIndicator()),
+      );
+    }
+    if (state.items.isEmpty && state.error != null) {
+      return ErrorState(
+        message: state.error.toString(),
+      );
+    }
+    if (state.items.isEmpty && state.error == null) {
+      return const _SectionEmptyCard(message: 'No public photos yet');
+    }
 
-        return Column(
-          children: collections.take(4).map((collection) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: CollectionCard(collection: collection),
-            );
-          }).toList(),
-        );
-      },
-      loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 24),
-          child: LoadingIndicator(),
-        ),
-      ),
-      error: (error, stack) => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: ErrorState(
-          message: error.toString(),
-          onRetry: () {},
-        ),
-      ),
+    return Column(
+      children: [
+        PhotoGrid(photos: state.items, showLikes: showLikes),
+        if (state.isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: LoadingIndicator(),
+          ),
+      ],
     );
   }
 }
 
-class _LikesSection extends StatelessWidget {
-  const _LikesSection({required this.likesAsync});
+class _PaginatedCollectionSection extends StatelessWidget {
+  const _PaginatedCollectionSection({required this.state});
 
-  final AsyncValue<List<Photo>> likesAsync;
+  final PaginatedState<Collection> state;
 
   @override
   Widget build(BuildContext context) {
-    return likesAsync.when(
-      data: (photos) {
-        if (photos.isEmpty) {
-          return const _SectionEmptyCard(
-            message: 'No liked photos yet',
-          );
-        }
+    if (state.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 24),
+        child: Center(child: LoadingIndicator()),
+      );
+    }
+    if (state.items.isEmpty && state.error != null) {
+      return ErrorState(
+        message: state.error.toString(),
+      );
+    }
+    if (state.items.isEmpty && state.error == null) {
+      return const _SectionEmptyCard(message: 'No public collections yet');
+    }
 
-        return PhotoGrid(photos: photos.take(6).toList(), showLikes: true);
-      },
-      loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 24),
-          child: LoadingIndicator(),
-        ),
-      ),
-      error: (error, stack) => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: ErrorState(
-          message: error.toString(),
-          onRetry: () {},
-        ),
-      ),
+    return Column(
+      children: [
+        ...state.items.map((collection) => Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: CollectionCard(collection: collection),
+            )),
+        if (state.isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: LoadingIndicator(),
+          ),
+      ],
     );
   }
 }
@@ -353,40 +406,6 @@ class _ProfileHero extends StatelessWidget {
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PhotosSection extends StatelessWidget {
-  const _PhotosSection({required this.photosAsync});
-
-  final AsyncValue<List<Photo>> photosAsync;
-
-  @override
-  Widget build(BuildContext context) {
-    return photosAsync.when(
-      data: (photos) {
-        if (photos.isEmpty) {
-          return const _SectionEmptyCard(
-            message: 'No public photos yet',
-          );
-        }
-
-        return PhotoGrid(photos: photos.take(6).toList());
-      },
-      loading: () => const Center(
-        child: Padding(
-          padding: EdgeInsets.symmetric(vertical: 24),
-          child: LoadingIndicator(),
-        ),
-      ),
-      error: (error, stack) => Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: ErrorState(
-          message: error.toString(),
-          onRetry: () {},
         ),
       ),
     );

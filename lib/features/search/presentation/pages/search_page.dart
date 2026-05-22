@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +9,7 @@ import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/router/detail_route_extras.dart';
-import 'package:musea/features/search/presentation/providers/search_provider.dart';
+import 'package:musea/features/search/presentation/providers/search_controller.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
@@ -35,11 +37,10 @@ class SearchPage extends ConsumerStatefulWidget {
 class _SearchPageState extends ConsumerState<SearchPage> {
   static const double _photoFilterPanelHeight = 210;
   late final TextEditingController _controller;
-  late String _submittedQuery;
-  late PhotoSortOption _submittedSortOption;
-  late PhotoColorOption _submittedColorOption;
-  late PhotoOrientationOption _submittedOrientationOption;
-  late PhotoContentSafetyOption _submittedContentSafetyOption;
+  final ScrollController _scrollController = ScrollController();
+  Timer? _debounceTimer;
+  String _submittedQuery = '';
+  bool _ignoreInitialTextChange = false;
   SearchSegment _segment = SearchSegment.photos;
   bool _isFilterPanelVisible = false;
   PhotoSortOption _sortOption = PhotoSortOption.relevant;
@@ -51,25 +52,90 @@ class _SearchPageState extends ConsumerState<SearchPage> {
   void initState() {
     super.initState();
     _controller = TextEditingController(text: widget.initialQuery);
-    _submittedQuery = '';
-    _submittedSortOption = _sortOption;
-    _submittedColorOption = _colorOption;
-    _submittedOrientationOption = _orientationOption;
-    _submittedContentSafetyOption = _contentSafetyOption;
-    _controller.addListener(() => setState(() {}));
+    _ignoreInitialTextChange = widget.initialQuery.trim().isNotEmpty;
+    _controller.addListener(_onTextChanged);
+    _scrollController.addListener(_onScroll);
+    final initialQuery = widget.initialQuery.trim();
+    if (initialQuery.isNotEmpty) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _performSearch(initialQuery);
+      });
+    }
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _controller.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  void _onTextChanged() {
+    if (_ignoreInitialTextChange &&
+        _controller.text.trim() == widget.initialQuery.trim()) {
+      _ignoreInitialTextChange = false;
+      setState(() {});
+      return;
+    }
+    setState(() {});
+    _debounceTimer?.cancel();
+    final query = _controller.text.trim();
+    if (query.isEmpty) {
+      setState(() => _submittedQuery = '');
+      return;
+    }
+    _debounceTimer = Timer(const Duration(milliseconds: 300), () {
+      _performSearch(query);
+    });
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 200) {
+      _loadMore();
+    }
+  }
+
+  void _loadMore() {
+    switch (_segment) {
+      case SearchSegment.photos:
+        ref.read(searchPhotosControllerProvider.notifier).loadMore();
+      case SearchSegment.collections:
+        ref.read(searchCollectionsControllerProvider.notifier).loadMore();
+      case SearchSegment.users:
+        ref.read(searchUsersControllerProvider.notifier).loadMore();
+    }
+  }
+
+  void _performSearch(String query) {
+    setState(() => _submittedQuery = query);
+    ref.read(searchPhotosControllerProvider.notifier).search(
+          query,
+          orderBy: _sortOption == PhotoSortOption.latest ? 'latest' : 'relevant',
+          color: _colorOption == PhotoColorOption.any
+              ? null
+              : _colorOption == PhotoColorOption.green
+                  ? 'green'
+                  : _colorOption == PhotoColorOption.blue
+                      ? 'blue'
+                      : 'black_and_white',
+          orientation: _orientationOption == PhotoOrientationOption.any
+              ? null
+              : _orientationOption.name,
+          contentFilter:
+              _contentSafetyOption == PhotoContentSafetyOption.low ? 'low' : 'high',
+        );
+    ref.read(searchCollectionsControllerProvider.notifier).search(query);
+    ref.read(searchUsersControllerProvider.notifier).search(query);
   }
 
   @override
   Widget build(BuildContext context) {
-    final photoParams = _photoParams(_submittedQuery);
-    final collectionParams = CollectionSearchParams(query: _submittedQuery);
-    final userParams = UserSearchParams(query: _submittedQuery);
+    final photosState = ref.watch(searchPhotosControllerProvider);
+    final collectionsState = ref.watch(searchCollectionsControllerProvider);
+    final usersState = ref.watch(searchUsersControllerProvider);
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -89,7 +155,11 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                   _submittedQuery = '';
                 });
               },
-              onSearch: _submitSearch,
+              onSearch: () {
+                _debounceTimer?.cancel();
+                final query = _controller.text.trim();
+                if (query.isNotEmpty) _performSearch(query);
+              },
               onSegmentChanged: (segment) {
                 setState(() {
                   _segment = segment;
@@ -111,50 +181,19 @@ class _SearchPageState extends ConsumerState<SearchPage> {
                       children: [
                         Positioned.fill(
                           child: switch (_segment) {
-                            SearchSegment.photos =>
-                              ref.watch(photoSearchProvider(photoParams)).when(
-                                    data: (result) => _PhotoResultsSection(
-                                      photos: result.results,
-                                    ),
-                                    loading: () =>
-                                        const Center(child: LoadingIndicator()),
-                                    error: (error, stack) => ErrorState(
-                                      message: error.toString(),
-                                      onRetry: () => ref.invalidate(
-                                        photoSearchProvider(photoParams),
-                                      ),
-                                    ),
-                                  ),
-                            SearchSegment.collections => ref
-                                .watch(
-                                    collectionSearchProvider(collectionParams))
-                                .when(
-                                  data: (result) => _CollectionResultsSection(
-                                    collections: result.results,
-                                  ),
-                                  loading: () =>
-                                      const Center(child: LoadingIndicator()),
-                                  error: (error, stack) => ErrorState(
-                                    message: error.toString(),
-                                    onRetry: () => ref.invalidate(
-                                      collectionSearchProvider(
-                                          collectionParams),
-                                    ),
-                                  ),
-                                ),
-                            SearchSegment.users =>
-                              ref.watch(userSearchProvider(userParams)).when(
-                                    data: (result) => _UserResultsSection(
-                                        users: result.results),
-                                    loading: () =>
-                                        const Center(child: LoadingIndicator()),
-                                    error: (error, stack) => ErrorState(
-                                      message: error.toString(),
-                                      onRetry: () => ref.invalidate(
-                                        userSearchProvider(userParams),
-                                      ),
-                                    ),
-                                  ),
+                            SearchSegment.photos => _PaginatedPhotoResults(
+                                state: photosState,
+                                scrollController: _scrollController,
+                              ),
+                            SearchSegment.collections =>
+                              _PaginatedCollectionResults(
+                                state: collectionsState,
+                                scrollController: _scrollController,
+                              ),
+                            SearchSegment.users => _PaginatedUserResults(
+                                state: usersState,
+                                scrollController: _scrollController,
+                              ),
                           },
                         ),
                         if (_segment == SearchSegment.photos &&
@@ -215,51 +254,6 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     return _colorOption != PhotoColorOption.any ||
         _orientationOption != PhotoOrientationOption.any ||
         _contentSafetyOption != PhotoContentSafetyOption.high;
-  }
-
-  void _submitSearch() {
-    final query = _controller.text.trim();
-    final hasQueryChanged = query != _submittedQuery;
-    final haveFiltersChanged = _sortOption != _submittedSortOption ||
-        _colorOption != _submittedColorOption ||
-        _orientationOption != _submittedOrientationOption ||
-        _contentSafetyOption != _submittedContentSafetyOption;
-    if (!hasQueryChanged && !haveFiltersChanged) return;
-
-    setState(() {
-      _submittedQuery = query;
-      _submittedSortOption = _sortOption;
-      _submittedColorOption = _colorOption;
-      _submittedOrientationOption = _orientationOption;
-      _submittedContentSafetyOption = _contentSafetyOption;
-      _isFilterPanelVisible = false;
-    });
-  }
-
-  PhotoSearchParams _photoParams(String query) {
-    return PhotoSearchParams(
-      query: query,
-      orderBy: switch (_submittedSortOption) {
-        PhotoSortOption.relevant => 'relevant',
-        PhotoSortOption.latest => 'latest',
-      },
-      color: switch (_submittedColorOption) {
-        PhotoColorOption.any => null,
-        PhotoColorOption.green => 'green',
-        PhotoColorOption.blue => 'blue',
-        PhotoColorOption.blackAndWhite => 'black_and_white',
-      },
-      orientation: switch (_submittedOrientationOption) {
-        PhotoOrientationOption.any => null,
-        PhotoOrientationOption.landscape => 'landscape',
-        PhotoOrientationOption.portrait => 'portrait',
-        PhotoOrientationOption.squarish => 'squarish',
-      },
-      contentFilter: switch (_submittedContentSafetyOption) {
-        PhotoContentSafetyOption.low => 'low',
-        PhotoContentSafetyOption.high => 'high',
-      },
-    );
   }
 }
 
@@ -700,14 +694,24 @@ class _FilterOption<T> {
   final T value;
 }
 
-class _PhotoResultsSection extends StatelessWidget {
-  const _PhotoResultsSection({required this.photos});
+class _PaginatedPhotoResults extends StatelessWidget {
+  const _PaginatedPhotoResults({
+    required this.state,
+    required this.scrollController,
+  });
 
-  final List<Photo> photos;
+  final PaginatedState<Photo> state;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
-    if (photos.isEmpty) {
+    if (state.isLoading) {
+      return const Center(child: LoadingIndicator());
+    }
+    if (state.error != null && state.items.isEmpty) {
+      return ErrorState(message: state.error.toString());
+    }
+    if (state.items.isEmpty) {
       return const _SearchEmptyState(
         title: 'No matching photos',
         subtitle: 'Try a different keyword or broaden the query.',
@@ -715,23 +719,40 @@ class _PhotoResultsSection extends StatelessWidget {
     }
 
     return SingleChildScrollView(
+      controller: scrollController,
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
-      child: PhotoGrid(
-        photos: photos,
-        showLikes: true,
+      child: Column(
+        children: [
+          PhotoGrid(photos: state.items, showLikes: true),
+          if (state.isLoadingMore)
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 16),
+              child: LoadingIndicator(),
+            ),
+        ],
       ),
     );
   }
 }
 
-class _CollectionResultsSection extends StatelessWidget {
-  const _CollectionResultsSection({required this.collections});
+class _PaginatedCollectionResults extends StatelessWidget {
+  const _PaginatedCollectionResults({
+    required this.state,
+    required this.scrollController,
+  });
 
-  final List<Collection> collections;
+  final PaginatedState<Collection> state;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
-    if (collections.isEmpty) {
+    if (state.isLoading) {
+      return const Center(child: LoadingIndicator());
+    }
+    if (state.error != null && state.items.isEmpty) {
+      return ErrorState(message: state.error.toString());
+    }
+    if (state.items.isEmpty) {
       return const _SearchEmptyState(
         title: 'No matching collections',
         subtitle: 'Try another phrase to find curated sets.',
@@ -739,26 +760,43 @@ class _CollectionResultsSection extends StatelessWidget {
     }
 
     return ListView.builder(
+      controller: scrollController,
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
-      itemCount: collections.length,
+      itemCount: state.items.length + (state.isLoadingMore ? 1 : 0),
       itemBuilder: (context, index) {
+        if (index == state.items.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: LoadingIndicator(),
+          );
+        }
         return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: CollectionCard(collection: collections[index]),
+          child: CollectionCard(collection: state.items[index]),
         );
       },
     );
   }
 }
 
-class _UserResultsSection extends StatelessWidget {
-  const _UserResultsSection({required this.users});
+class _PaginatedUserResults extends StatelessWidget {
+  const _PaginatedUserResults({
+    required this.state,
+    required this.scrollController,
+  });
 
-  final List<User> users;
+  final PaginatedState<User> state;
+  final ScrollController scrollController;
 
   @override
   Widget build(BuildContext context) {
-    if (users.isEmpty) {
+    if (state.isLoading) {
+      return const Center(child: LoadingIndicator());
+    }
+    if (state.error != null && state.items.isEmpty) {
+      return ErrorState(message: state.error.toString());
+    }
+    if (state.items.isEmpty) {
       return const _SearchEmptyState(
         title: 'No matching users',
         subtitle: 'Try a creator name, username, or location.',
@@ -766,6 +804,7 @@ class _UserResultsSection extends StatelessWidget {
     }
 
     return ListView(
+      controller: scrollController,
       padding: const EdgeInsets.fromLTRB(12, 16, 12, 24),
       children: [
         Container(
@@ -775,125 +814,150 @@ class _UserResultsSection extends StatelessWidget {
             border: Border.all(color: const Color(0xFFF4F4F5)),
           ),
           child: Column(
-            children: List.generate(users.length, (index) {
-              final user = users[index];
+            children: List.generate(state.items.length, (index) {
+              final user = state.items[index];
               final isFollowing = user.followedByUser == true;
-              return GestureDetector(
-                onTap: () => context.push(
-                  '/profile/${user.username}',
-                  extra: ProfileDetailExtra(user: user),
-                ),
-                child: Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    border: Border(
-                      top: BorderSide(
-                        color: index == 0
-                            ? Colors.transparent
-                            : const Color(0xFFF4F4F5),
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      ClipOval(
-                        child: CachedNetworkImage(
-                          imageUrl: user.profileImageMedium,
-                          width: 52,
-                          height: 52,
-                          fit: BoxFit.cover,
-                          errorWidget: (context, url, error) => Container(
-                            width: 52,
-                            height: 52,
-                            color: AppColors.gray100,
-                            alignment: Alignment.center,
-                            child: Text(
-                              user.name.isNotEmpty ? user.name[0] : '?',
-                              style: const TextStyle(
-                                color: Color(0xFF71717A),
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user.name,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w600,
-                                color: Color(0xFF18181B),
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '@${user.username} · ${user.totalPhotos} photos · ${user.totalCollections} collections',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                fontSize: 12,
-                                color: Color(0xFF71717A),
-                              ),
-                            ),
-                            if ((user.bio ?? '').isNotEmpty) ...[
-                              const SizedBox(height: 4),
-                              Text(
-                                user.bio!,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 11,
-                                  color: Color(0xFFA1A1AA),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Container(
-                        constraints: const BoxConstraints(minWidth: 82),
-                        height: 34,
-                        padding: const EdgeInsets.symmetric(horizontal: 14),
-                        decoration: BoxDecoration(
-                          color: isFollowing
-                              ? const Color(0xFFFAFAFA)
-                              : const Color(0xFF18181B),
-                          borderRadius: BorderRadius.circular(999),
-                          border: Border.all(
-                            color: isFollowing
-                                ? const Color(0xFFE4E4E7)
-                                : const Color(0xFF18181B),
-                          ),
-                        ),
-                        alignment: Alignment.center,
-                        child: Text(
-                          isFollowing ? 'Following' : 'Follow',
-                          style: TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: isFollowing
-                                ? const Color(0xFF71717A)
-                                : Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              return _UserResultTile(
+                user: user,
+                isFollowing: isFollowing,
+                showTopBorder: index > 0,
               );
             }),
           ),
         ),
+        if (state.isLoadingMore)
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: LoadingIndicator(),
+          ),
       ],
     );
   }
+}
 
+class _UserResultTile extends StatelessWidget {
+  const _UserResultTile({
+    required this.user,
+    required this.isFollowing,
+    required this.showTopBorder,
+  });
+
+  final User user;
+  final bool isFollowing;
+  final bool showTopBorder;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => context.push(
+        '/profile/${user.username}',
+        extra: ProfileDetailExtra(user: user),
+      ),
+      child: Container(
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          border: Border(
+            top: BorderSide(
+              color: showTopBorder
+                  ? const Color(0xFFF4F4F5)
+                  : Colors.transparent,
+            ),
+          ),
+        ),
+        child: Row(
+          children: [
+            ClipOval(
+              child: CachedNetworkImage(
+                imageUrl: user.profileImageMedium,
+                width: 52,
+                height: 52,
+                fit: BoxFit.cover,
+                errorWidget: (context, url, error) => Container(
+                  width: 52,
+                  height: 52,
+                  color: AppColors.gray100,
+                  alignment: Alignment.center,
+                  child: Text(
+                    user.name.isNotEmpty ? user.name[0] : '?',
+                    style: const TextStyle(
+                      color: Color(0xFF71717A),
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    user.name,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: Color(0xFF18181B),
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '@${user.username} · ${user.totalPhotos} photos · ${user.totalCollections} collections',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF71717A),
+                    ),
+                  ),
+                  if ((user.bio ?? '').isNotEmpty) ...[
+                    const SizedBox(height: 4),
+                    Text(
+                      user.bio!,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFFA1A1AA),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              constraints: const BoxConstraints(minWidth: 82),
+              height: 34,
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              decoration: BoxDecoration(
+                color: isFollowing
+                    ? const Color(0xFFFAFAFA)
+                    : const Color(0xFF18181B),
+                borderRadius: BorderRadius.circular(999),
+                border: Border.all(
+                  color: isFollowing
+                      ? const Color(0xFFE4E4E7)
+                      : const Color(0xFF18181B),
+                ),
+              ),
+              alignment: Alignment.center,
+              child: Text(
+                isFollowing ? 'Following' : 'Follow',
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w700,
+                  color: isFollowing
+                      ? const Color(0xFF71717A)
+                      : Colors.white,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
 class _SearchIdleState extends StatelessWidget {

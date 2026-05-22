@@ -1,17 +1,44 @@
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:musea/features/auth/domain/entities/auth_session.dart';
 import 'package:musea/features/auth/domain/entities/auth_user.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/router/app_router.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 
+class MockProfileRepository extends Mock implements ProfileRepository {}
+
 void main() {
+  late MockProfileRepository mockProfileRepository;
+
+  setUp(() {
+    mockProfileRepository = MockProfileRepository();
+
+    when(() => mockProfileRepository.getUserPhotos(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+        )).thenAnswer((_) async => const Right(<Photo>[]));
+    when(() => mockProfileRepository.getUserCollections(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+        )).thenAnswer((_) async => const Right(<Collection>[]));
+    when(() => mockProfileRepository.getUserLikes(
+          any(),
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'),
+        )).thenAnswer((_) async => const Right(<Photo>[]));
+  });
+
   testWidgets('Mine tab shows sign-in surface when signed out', (tester) async {
     tester.view.physicalSize = const Size(393, 852);
     tester.view.devicePixelRatio = 1.0;
@@ -21,6 +48,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          profileRepositoryProvider.overrideWithValue(mockProfileRepository),
           authBootstrapSessionProvider.overrideWithValue(null),
           authClockProvider.overrideWithValue(() => DateTime(2026, 5, 20, 10)),
           authRedirectUriProvider.overrideWithValue(
@@ -40,7 +68,9 @@ void main() {
       findsOneWidget,
     );
     expect(
-        find.text('You can keep exploring without signing in'), findsOneWidget);
+      find.text('You can keep exploring without signing in'),
+      findsOneWidget,
+    );
     expect(find.text('Continue with Unsplash'), findsAtLeastNWidgets(1));
     expect(find.text('What you unlock'), findsNothing);
 
@@ -50,7 +80,8 @@ void main() {
     final scrollPadding = scrollView.padding as EdgeInsets? ?? EdgeInsets.zero;
     expect(scrollPadding.bottom, greaterThan(0));
 
-    final topBarPadding = tester.widgetList<Padding>(find.byType(Padding)).firstWhere(
+    final topBarPadding =
+        tester.widgetList<Padding>(find.byType(Padding)).firstWhere(
       (widget) {
         final padding = widget.padding;
         return padding is EdgeInsets &&
@@ -98,6 +129,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          profileRepositoryProvider.overrideWithValue(mockProfileRepository),
           authBootstrapSessionProvider.overrideWithValue(
             AuthSession(
               accessToken: 'token-1',
@@ -115,10 +147,6 @@ void main() {
             Uri.parse('musea://auth/callback'),
           ),
           userProfileProvider('spaciba').overrideWith((ref) => publicUser),
-          userPhotosProvider('spaciba').overrideWith((ref) => <Photo>[]),
-          userCollectionsProvider('spaciba')
-              .overrideWith((ref) => <Collection>[]),
-          userLikesProvider('spaciba').overrideWith((ref) => <Photo>[]),
         ],
         child: const MaterialApp(
           home: ProfileTabPage(),
@@ -189,9 +217,26 @@ void main() {
       user: publicUser,
     );
 
+    when(() => mockProfileRepository.getUserPhotos(
+          'spaciba',
+          page: 1,
+          perPage: 20,
+        )).thenAnswer((_) async => Right(<Photo>[photo]));
+    when(() => mockProfileRepository.getUserCollections(
+          'spaciba',
+          page: 1,
+          perPage: 20,
+        )).thenAnswer((_) async => const Right(<Collection>[collection]));
+    when(() => mockProfileRepository.getUserLikes(
+          'spaciba',
+          page: 1,
+          perPage: 20,
+        )).thenAnswer((_) async => Right(<Photo>[photo]));
+
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          profileRepositoryProvider.overrideWithValue(mockProfileRepository),
           authBootstrapSessionProvider.overrideWithValue(
             AuthSession(
               accessToken: 'token-1',
@@ -209,10 +254,6 @@ void main() {
             Uri.parse('musea://auth/callback'),
           ),
           userProfileProvider('spaciba').overrideWith((ref) => publicUser),
-          userPhotosProvider('spaciba').overrideWith((ref) => <Photo>[photo]),
-          userCollectionsProvider('spaciba')
-              .overrideWith((ref) => <Collection>[collection]),
-          userLikesProvider('spaciba').overrideWith((ref) => <Photo>[photo]),
         ],
         child: const MaterialApp(
           home: ProfileTabPage(),
@@ -220,6 +261,7 @@ void main() {
       ),
     );
 
+    await tester.pump();
     await tester.pump();
 
     expect(find.text('Forest Archive'), findsNothing);
