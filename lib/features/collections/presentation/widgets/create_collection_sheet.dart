@@ -102,19 +102,16 @@ class _CreateCollectionSheetState
                 GestureDetector(
                   onTap: () => Navigator.of(context).pop(),
                   child: Container(
-                    width: 32,
-                    height: 32,
+                    width: 40,
+                    height: 40,
                     decoration: BoxDecoration(
-                      color: const Color(0xFFF4F4F5),
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(20),
                     ),
                     child: const Center(
-                      child: Text(
-                        '✕',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF71717A),
-                        ),
+                      child: Icon(
+                        Icons.close_rounded,
+                        size: 20,
+                        color: Color(0xFF71717A),
                       ),
                     ),
                   ),

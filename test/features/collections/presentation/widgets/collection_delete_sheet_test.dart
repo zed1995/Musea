@@ -52,6 +52,7 @@ void main() {
   testWidgets('renders title and warning', (tester) async {
     await showSheet(tester);
     expect(find.text('Delete collection?'), findsOneWidget);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
 
   testWidgets('delete button disabled until correct name typed', (tester) async {

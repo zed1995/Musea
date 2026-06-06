@@ -90,14 +90,13 @@ class CollectionManageSheet extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 SizedBox(
-                  width: 36,
-                  height: 36,
+                  width: 40,
+                  height: 40,
                   child: IconButton(
                     onPressed: () => Navigator.of(context).pop(),
                     padding: EdgeInsets.zero,
-                    icon: const Icon(Icons.close, size: 18),
+                    icon: const Icon(Icons.close_rounded, size: 20),
                     style: IconButton.styleFrom(
-                      backgroundColor: const Color(0xFFF4F4F5),
                       foregroundColor: const Color(0xFF71717A),
                     ),
                   ),

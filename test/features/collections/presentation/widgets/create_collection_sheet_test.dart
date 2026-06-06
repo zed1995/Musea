@@ -49,6 +49,7 @@ void main() {
     expect(find.text('Private collection'), findsOneWidget);
     expect(find.text('Public collection'), findsOneWidget);
     expect(find.text('Create collection'), findsOneWidget);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
 
   testWidgets('create button is disabled when title is empty', (tester) async {

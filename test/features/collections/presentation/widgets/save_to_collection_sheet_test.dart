@@ -97,6 +97,7 @@ void main() {
     expect(find.text('Test Collection'), findsOneWidget);
     expect(find.text('5 photos'), findsOneWidget);
     expect(find.text('Create new collection'), findsOneWidget);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
 
   testWidgets('tapping create new collection switches to create view',
@@ -117,6 +118,8 @@ void main() {
 
     expect(find.text('New collection'), findsOneWidget);
     expect(find.text('Back to collections'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
 
   testWidgets('selecting a collection calls addPhotoToCollection',

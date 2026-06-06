@@ -60,6 +60,7 @@ void main() {
     expect(find.text('Kyoto Research'), findsOneWidget);
     expect(find.text('Street glow'), findsOneWidget);
     expect(find.text('Save changes'), findsOneWidget);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
 
   testWidgets('save calls repository with current values', (tester) async {

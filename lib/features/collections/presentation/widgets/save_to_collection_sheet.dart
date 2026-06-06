@@ -298,20 +298,15 @@ class _SaveToCollectionSheetState
             GestureDetector(
               onTap: () => Navigator.of(context).pop(),
               child: Container(
-                width: 32,
-                height: 32,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF4F4F5),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Center(
-                  child: Text(
-                    '✕',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF71717A),
-                    ),
-                  ),
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 20,
+                  color: Color(0xFF71717A),
                 ),
               ),
             ),
@@ -450,7 +445,11 @@ class _SaveToCollectionSheetState
             padding: const EdgeInsets.only(bottom: 8),
             child: Row(
               children: [
-                Icon(Icons.arrow_back_ios, size: 12, color: Colors.grey[500]),
+                Icon(
+                  Icons.arrow_back_rounded,
+                  size: 16,
+                  color: Colors.grey[500],
+                ),
                 const SizedBox(width: 4),
                 Text(
                   l10n.backToCollections,
@@ -495,20 +494,15 @@ class _SaveToCollectionSheetState
             GestureDetector(
               onTap: () => Navigator.of(context).pop(),
               child: Container(
-                width: 32,
-                height: 32,
+                width: 40,
+                height: 40,
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF4F4F5),
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(20),
                 ),
-                child: const Center(
-                  child: Text(
-                    '✕',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: Color(0xFF71717A),
-                    ),
-                  ),
+                child: const Icon(
+                  Icons.close_rounded,
+                  size: 20,
+                  color: Color(0xFF71717A),
                 ),
               ),
             ),

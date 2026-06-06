@@ -40,6 +40,7 @@ void main() {
     expect(find.text('Edit details'), findsOneWidget);
     expect(find.text('Remove photos'), findsOneWidget);
     expect(find.text('Delete collection'), findsOneWidget);
+    expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
 
   testWidgets('tapping Edit details calls onEdit', (tester) async {
