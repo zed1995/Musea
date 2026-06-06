@@ -115,32 +115,29 @@ class _SignedOutMineView extends StatelessWidget {
               padding: EdgeInsets.only(bottom: bottomScrollPadding),
               child: Column(
                 children: [
-                  _buildHeroContent(),
-                  const Padding(
-                    padding: EdgeInsets.fromLTRB(12, 16, 12, 28),
+                  _buildHeroContent(context),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 28),
                     child: Column(
                       children: [
                         _FeatureCard(
                           icon: Icons.favorite_border_rounded,
-                          title: 'Liked photos',
-                          description:
-                              'Revisit favorites you loved without hunting through the feed again.',
+                          title: l10n.likedPhotos,
+                          description: l10n.likedPhotosDesc,
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         _FeatureCard(
                           icon: Icons.bookmark_border_rounded,
-                          title: 'Saved collections',
-                          description:
-                              'Build a shelf of references, moods, and places you want to return to.',
+                          title: l10n.savedCollections,
+                          description: l10n.savedCollectionsDesc,
                         ),
-                        SizedBox(height: 12),
+                        const SizedBox(height: 12),
                         _FeatureCard(
                           icon: Icons.article_outlined,
-                          title: 'Personal space',
-                          description:
-                              'A home for your archive now, with room for preferences and history later.',
+                          title: l10n.personalSpace,
+                          description: l10n.personalSpaceDesc,
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         _GuestModeSection(),
                       ],
                     ),
@@ -154,7 +151,8 @@ class _SignedOutMineView extends StatelessWidget {
     );
   }
 
-  Widget _buildHeroContent() {
+  Widget _buildHeroContent(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: const BoxDecoration(
         gradient: LinearGradient(
@@ -181,18 +179,18 @@ class _SignedOutMineView extends StatelessWidget {
                 onSignIn: onSignIn,
               ),
               const SizedBox(height: 16),
-              const Row(
+              Row(
                 children: [
                   Expanded(
-                    child: _MetricCard(value: '0', label: 'Photos'),
+                    child: _MetricCard(value: '0', label: l10n.photos),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: _MetricCard(value: '0', label: 'Collections'),
+                    child: _MetricCard(value: '0', label: l10n.collections),
                   ),
-                  SizedBox(width: 8),
+                  const SizedBox(width: 8),
                   Expanded(
-                    child: _MetricCard(value: '0', label: 'Likes'),
+                    child: _MetricCard(value: '0', label: l10n.likes),
                   ),
                 ],
               ),
@@ -202,7 +200,7 @@ class _SignedOutMineView extends StatelessWidget {
                   Expanded(
                     child: _QuickActionChip(
                       icon: Icons.home_outlined,
-                      label: 'Browse as guest',
+                      label: l10n.browseAsGuest,
                       onTap: () {},
                     ),
                   ),
@@ -210,7 +208,7 @@ class _SignedOutMineView extends StatelessWidget {
                   Expanded(
                     child: _QuickActionChip(
                       icon: Icons.visibility_outlined,
-                      label: 'Browse profiles',
+                      label: l10n.browseProfiles,
                       onTap: () {},
                     ),
                   ),
@@ -287,6 +285,7 @@ class _SignInCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
@@ -312,9 +311,9 @@ class _SignInCard extends StatelessWidget {
           children: [
             const _BrandMark(),
             const SizedBox(height: 16),
-            const Text(
-              'Sign in',
-              style: TextStyle(
+            Text(
+              l10n.signIn,
+              style: const TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 letterSpacing: 1.8,
@@ -322,10 +321,10 @@ class _SignInCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 8),
-            const Text(
-              'Your visual archive, synced with Unsplash',
+            Text(
+              l10n.yourArchiveSynced,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 24,
                 height: 1.02,
                 fontWeight: FontWeight.w800,
@@ -334,12 +333,12 @@ class _SignInCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
               child: Text(
-                'Keep likes, saves, and your personal archive connected in one calm workspace.',
+                l10n.keepLikesSaves,
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: const TextStyle(
                   fontSize: 13,
                   height: 1.5,
                   color: Color(0xFF71717A),
@@ -381,18 +380,18 @@ class _SignInCard extends StatelessWidget {
                           color: Colors.white,
                         ),
                       )
-                    : const Row(
+                    : Row(
                         mainAxisSize: MainAxisSize.max,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.chevron_right_rounded, size: 20),
-                          SizedBox(width: 8),
+                          const Icon(Icons.chevron_right_rounded, size: 20),
+                          const SizedBox(width: 8),
                           Flexible(
                             child: Text(
-                              'Continue with Unsplash',
+                              l10n.continueWithUnsplash,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -403,10 +402,10 @@ class _SignInCard extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'We use your Unsplash account to sync likes, saves, and your personal archive.',
+            Text(
+              l10n.weUseUnsplashAccount,
               textAlign: TextAlign.center,
-              style: TextStyle(
+              style: const TextStyle(
                 fontSize: 12,
                 height: 1.25,
                 color: Color(0xFF71717A),
@@ -529,6 +528,7 @@ class _GuestModeSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
@@ -537,47 +537,47 @@ class _GuestModeSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFF0F0EE)),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Guest mode',
-            style: TextStyle(
+            l10n.guestMode,
+            style: const TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.6,
               color: Color(0xFFA1A1AA),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'You can keep exploring without signing in',
-            style: TextStyle(
+            l10n.guestModeDesc,
+            style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w700,
               letterSpacing: -0.54,
               color: Color(0xFF18181B),
             ),
           ),
-          SizedBox(height: 8),
+          const SizedBox(height: 8),
           Text(
-            'Discover, search, browse collections, and open public photographer profiles anytime. Sign in only when you want your activity to stay with you.',
-            style: TextStyle(
+            l10n.guestModeBody,
+            style: const TextStyle(
               fontSize: 13,
               height: 1.5,
               color: Color(0xFF71717A),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _GuestChip(label: 'Discover')),
-              SizedBox(width: 8),
-              Expanded(child: _GuestChip(label: 'Search')),
-              SizedBox(width: 8),
-              Expanded(child: _GuestChip(label: 'Collections')),
-              SizedBox(width: 8),
-              Expanded(child: _GuestChip(label: 'Profiles')),
+              Expanded(child: _GuestChip(label: l10n.guestChipDiscover)),
+              const SizedBox(width: 8),
+              Expanded(child: _GuestChip(label: l10n.guestChipSearch)),
+              const SizedBox(width: 8),
+              Expanded(child: _GuestChip(label: l10n.guestChipCollections)),
+              const SizedBox(width: 8),
+              Expanded(child: _GuestChip(label: l10n.guestChipProfiles)),
             ],
           ),
         ],
@@ -762,7 +762,7 @@ class _MineHero extends StatelessWidget {
     final l10n = AppLocalizations.of(context)!;
     final subtitleParts = [
       if ((user.location ?? '').trim().isNotEmpty) user.location!.trim(),
-      'Personal workspace for photos, collections, and saved inspiration.',
+      l10n.personalWorkspaceSubtitle,
     ];
 
     return Container(
@@ -792,9 +792,9 @@ class _MineHero extends StatelessWidget {
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Workspace',
-                        style: TextStyle(
+                      Text(
+                        l10n.workspace,
+                        style: const TextStyle(
                           fontSize: 11,
                           height: 1,
                           letterSpacing: 1.3,
@@ -873,21 +873,21 @@ class _MineHero extends StatelessWidget {
                   Expanded(
                     child: _MetricCard(
                       value: '${user.totalPhotos}',
-                      label: 'Photos',
+                      label: l10n.photos,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _MetricCard(
                       value: '${user.totalCollections}',
-                      label: 'Collections',
+                      label: l10n.collections,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _MetricCard(
                       value: _formatCount(user.totalLikes),
-                      label: 'Likes',
+                      label: l10n.likes,
                     ),
                   ),
                 ],
@@ -899,13 +899,13 @@ class _MineHero extends StatelessWidget {
                   children: [
                     _QuickActionChip(
                       icon: Icons.edit_outlined,
-                      label: 'Edit profile',
+                      label: l10n.editProfile,
                       onTap: () {},
                     ),
                     const SizedBox(width: 8),
                     _QuickActionChip(
                       icon: Icons.bookmark_border_rounded,
-                      label: 'Saved',
+                      label: l10n.saved,
                       onTap: () {
                         DefaultTabController.of(context);
                       },
@@ -913,7 +913,7 @@ class _MineHero extends StatelessWidget {
                     const SizedBox(width: 8),
                     _QuickActionChip(
                       icon: Icons.download_outlined,
-                      label: 'Downloads',
+                      label: l10n.downloads,
                       onTap: () {},
                     ),
                   ],
@@ -939,8 +939,8 @@ class _MineHero extends StatelessWidget {
               const SizedBox(height: 12),
               Text(
                 isRefreshing
-                    ? 'Syncing latest profile...'
-                    : 'Showing your cached profile first.',
+                    ? l10n.syncingLatestProfile
+                    : l10n.showingCachedProfile,
                 style: const TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -966,6 +966,7 @@ class _MinePhotoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
@@ -977,7 +978,7 @@ class _MinePhotoSection extends StatelessWidget {
     }
     if (state.items.isEmpty && state.error == null) {
       return _SectionEmptyCard(
-        message: showLikes ? 'No liked photos yet.' : 'Nothing here yet.',
+        message: showLikes ? l10n.noLikedPhotosYet : l10n.nothingHereYet,
       );
     }
 
@@ -1003,6 +1004,7 @@ class _MineCollectionsSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 32),
@@ -1013,7 +1015,7 @@ class _MineCollectionsSection extends StatelessWidget {
       return ErrorState(message: state.error.toString());
     }
     if (state.items.isEmpty && state.error == null) {
-      return const _SectionEmptyCard(message: 'No collections yet.');
+      return _SectionEmptyCard(message: l10n.noCollectionsYet);
     }
 
     return Column(
@@ -1186,6 +1188,7 @@ class _MineSegmentBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFFF3F4F6),
@@ -1195,21 +1198,21 @@ class _MineSegmentBar extends StatelessWidget {
         children: [
           Expanded(
             child: _SegmentButton(
-              label: 'Photos',
+              label: l10n.photos,
               selected: selectedSegment == _MineSegment.photos,
               onTap: () => onSelected(_MineSegment.photos),
             ),
           ),
           Expanded(
             child: _SegmentButton(
-              label: 'Collections',
+              label: l10n.collections,
               selected: selectedSegment == _MineSegment.collections,
               onTap: () => onSelected(_MineSegment.collections),
             ),
           ),
           Expanded(
             child: _SegmentButton(
-              label: 'Likes',
+              label: l10n.likes,
               selected: selectedSegment == _MineSegment.likes,
               onTap: () => onSelected(_MineSegment.likes),
             ),

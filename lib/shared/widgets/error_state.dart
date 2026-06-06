@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musea/core/theme/text_styles.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class ErrorState extends StatelessWidget {
   final String message;
@@ -13,6 +14,7 @@ class ErrorState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(32),
@@ -26,7 +28,7 @@ class ErrorState extends StatelessWidget {
             ),
             const SizedBox(height: 16),
             Text(
-              'Oops! Something went wrong',
+              l10n.genericError,
               style: AppTextStyles.heading3,
               textAlign: TextAlign.center,
             ),
@@ -42,7 +44,7 @@ class ErrorState extends StatelessWidget {
               const SizedBox(height: 24),
               ElevatedButton(
                 onPressed: onRetry,
-                child: const Text('Try Again'),
+                child: Text(l10n.tryAgain),
               ),
             ],
           ],

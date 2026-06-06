@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 Future<void> showSaveToCollectionSheet(
   BuildContext context, {
@@ -57,6 +58,7 @@ class _SaveToCollectionSheetState
   }
 
   Future<void> _loadCollections() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -68,7 +70,7 @@ class _SaveToCollectionSheetState
       if (username == null || username.isEmpty) {
         setState(() {
           _isLoading = false;
-          _errorMessage = 'Could not identify user. Please sign in again.';
+          _errorMessage = '${l10n.couldNotIdentifyUser} ${l10n.signInAgain}';
         });
         return;
       }
@@ -84,12 +86,12 @@ class _SaveToCollectionSheetState
           setState(() {
             _isLoading = false;
             _errorMessage = failure.when(
-              network: (m) => 'Network error: $m',
-              server: (_, m) => 'Server error: $m',
+              network: (m) => l10n.networkError(m),
+              server: (_, m) => l10n.serverError(m),
               cache: (m) => 'Error: $m',
               notFound: (m) => 'Error: $m',
-              unauthorized: (_) => 'Please sign in again.',
-              rateLimit: (_) => 'Too many requests.',
+              unauthorized: (_) => l10n.signInAgain,
+              rateLimit: (_) => l10n.tooManyRequests,
               unknown: (m) => 'Error: $m',
             );
           });
@@ -110,6 +112,7 @@ class _SaveToCollectionSheetState
   }
 
   Future<void> _addPhotoToCollection(Collection collection) async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isSubmitting = true;
       _saveErrorMessage = null;
@@ -125,14 +128,14 @@ class _SaveToCollectionSheetState
       result.fold(
         (failure) {
           final message = failure.when(
-            network: (m) => 'Network error: $m',
+            network: (m) => l10n.networkError(m),
             server: (code, m) => code == 409
-                ? 'Photo already in this collection.'
-                : 'Server error: $m',
+                ? l10n.photoAlreadyInCollection
+                : l10n.serverError(m),
             cache: (m) => 'Error: $m',
             notFound: (m) => 'Error: $m',
-            unauthorized: (_) => 'Please sign in again.',
-            rateLimit: (_) => 'Too many requests.',
+            unauthorized: (_) => l10n.signInAgain,
+            rateLimit: (_) => l10n.tooManyRequests,
             unknown: (m) => 'Error: $m',
           );
           setState(() {
@@ -147,10 +150,10 @@ class _SaveToCollectionSheetState
 
           messenger.showSnackBar(
             SnackBar(
-              content: Text('Saved to ${collection.title}'),
+              content: Text(l10n.savedTo(collection.title)),
               duration: const Duration(seconds: 3),
               action: SnackBarAction(
-                label: 'View',
+                label: l10n.view,
                 onPressed: () =>
                     router.push('/collection/${collection.id}'),
               ),
@@ -167,6 +170,7 @@ class _SaveToCollectionSheetState
   }
 
   Future<void> _handleCreateCollection() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isSubmitting = true;
       _createErrorMessage = null;
@@ -187,12 +191,12 @@ class _SaveToCollectionSheetState
           setState(() {
             _isSubmitting = false;
             _createErrorMessage = failure.when(
-              network: (m) => 'Network error: $m',
-              server: (_, m) => 'Server error: $m',
+              network: (m) => l10n.networkError(m),
+              server: (_, m) => l10n.serverError(m),
               cache: (m) => 'Error: $m',
               notFound: (m) => 'Error: $m',
-              unauthorized: (_) => 'Please sign in again.',
-              rateLimit: (_) => 'Too many requests.',
+              unauthorized: (_) => l10n.signInAgain,
+              rateLimit: (_) => l10n.tooManyRequests,
               unknown: (m) => 'Error: $m',
             );
           });
@@ -218,6 +222,7 @@ class _SaveToCollectionSheetState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -257,6 +262,7 @@ class _SaveToCollectionSheetState
   }
 
   Widget _buildSelectView() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -268,8 +274,8 @@ class _SaveToCollectionSheetState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Select collection',
+                  Text(
+                    l10n.selectCollection,
                     style: TextStyle(
                       fontSize: 23,
                       fontWeight: FontWeight.w700,
@@ -279,7 +285,7 @@ class _SaveToCollectionSheetState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Save this photo to one of your collections.',
+                    l10n.savePhotoToCollection,
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.4,
@@ -338,8 +344,8 @@ class _SaveToCollectionSheetState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Create new collection',
+                      Text(
+                        l10n.createNewCollection,
                         style: TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w600,
@@ -348,7 +354,7 @@ class _SaveToCollectionSheetState
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        'No perfect fit yet? Make a new one.',
+                        l10n.noPerfectFitYet,
                         style: TextStyle(
                           fontSize: 11,
                           color: Colors.grey[500],
@@ -367,7 +373,7 @@ class _SaveToCollectionSheetState
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              'MY COLLECTIONS',
+              l10n.myCollections,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -398,7 +404,7 @@ class _SaveToCollectionSheetState
             padding: const EdgeInsets.symmetric(vertical: 24),
             child: Center(
               child: Text(
-                'No collections yet.',
+                l10n.noCollectionsYet,
                 style: TextStyle(fontSize: 13, color: Colors.grey[500]),
               ),
             ),
@@ -433,6 +439,7 @@ class _SaveToCollectionSheetState
   }
 
   Widget _buildCreateView() {
+    final l10n = AppLocalizations.of(context)!;
     return Column(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -446,7 +453,7 @@ class _SaveToCollectionSheetState
                 Icon(Icons.arrow_back_ios, size: 12, color: Colors.grey[500]),
                 const SizedBox(width: 4),
                 Text(
-                  'Back to collections',
+                  l10n.backToCollections,
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -464,8 +471,8 @@ class _SaveToCollectionSheetState
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'New collection',
+                  Text(
+                    l10n.newCollection,
                     style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w700,
@@ -475,7 +482,7 @@ class _SaveToCollectionSheetState
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Name it, add an optional note, and choose visibility.',
+                    l10n.newCollectionDesc,
                     style: TextStyle(
                       fontSize: 12,
                       height: 1.4,
@@ -508,8 +515,8 @@ class _SaveToCollectionSheetState
           ],
         ),
         const SizedBox(height: 16),
-        const Text(
-          'Collection Name',
+        Text(
+          l10n.collectionName,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -523,7 +530,7 @@ class _SaveToCollectionSheetState
           maxLength: 60,
           onChanged: (_) => setState(() {}),
           decoration: InputDecoration(
-            hintText: 'Enter a name',
+            hintText: l10n.enterName,
             hintStyle: TextStyle(color: Colors.grey[400]),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -550,8 +557,8 @@ class _SaveToCollectionSheetState
           style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
         ),
         const SizedBox(height: 14),
-        const Text(
-          'Description Optional',
+        Text(
+          l10n.descriptionOptional,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -564,7 +571,7 @@ class _SaveToCollectionSheetState
           controller: _descriptionController,
           maxLines: 3,
           decoration: InputDecoration(
-            hintText: 'Add a description...',
+            hintText: l10n.addDescription,
             hintStyle: TextStyle(color: Colors.grey[400]),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
@@ -586,8 +593,8 @@ class _SaveToCollectionSheetState
           style: const TextStyle(fontSize: 14),
         ),
         const SizedBox(height: 14),
-        const Text(
-          'Visibility',
+        Text(
+          l10n.visibility,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -600,8 +607,8 @@ class _SaveToCollectionSheetState
           children: [
             Expanded(
               child: _VisibilityOption(
-                label: 'Private collection',
-                description: 'Only you can see it.',
+                label: l10n.privateCollection,
+                description: l10n.onlyYouCanSee,
                 isSelected: _isPrivate,
                 onTap: () => setState(() => _isPrivate = true),
               ),
@@ -609,8 +616,8 @@ class _SaveToCollectionSheetState
             const SizedBox(width: 8),
             Expanded(
               child: _VisibilityOption(
-                label: 'Public collection',
-                description: 'Visible on your profile.',
+                label: l10n.publicCollection,
+                description: l10n.visibleOnProfile,
                 isSelected: !_isPrivate,
                 onTap: () => setState(() => _isPrivate = false),
               ),
@@ -648,8 +655,8 @@ class _SaveToCollectionSheetState
                       color: Colors.white,
                     ),
                   )
-                : const Text(
-                    'Create collection',
+                : Text(
+                    l10n.createCollection,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -673,6 +680,7 @@ class _CollectionItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -721,7 +729,7 @@ class _CollectionItem extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${collection.totalPhotos} photos',
+                    l10n.photoCount(collection.totalPhotos),
                     style: const TextStyle(
                       fontSize: 11,
                       color: Color(0xFF71717A),
@@ -739,9 +747,9 @@ class _CollectionItem extends StatelessWidget {
                   color: const Color(0xFFF4F4F5),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'Private',
+                    l10n.private,
                     style: TextStyle(
                       fontSize: 10,
                       fontWeight: FontWeight.w700,
@@ -863,6 +871,7 @@ class _ErrorRetry extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
       child: Column(
@@ -877,7 +886,7 @@ class _ErrorRetry extends StatelessWidget {
           const SizedBox(height: 8),
           TextButton(
             onPressed: onRetry,
-            child: const Text('Retry'),
+            child: Text(l10n.retry),
           ),
         ],
       ),

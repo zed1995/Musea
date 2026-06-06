@@ -206,6 +206,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   }
 
   Widget _buildFilterTabs(List<Topic> topics) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       height: 45,
       alignment: Alignment.bottomLeft,
@@ -219,7 +220,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.fromLTRB(12, 2, 12, 0),
         children: [
-          _tabItem('All', _selectedTopicSlug == null, () {
+          _tabItem(l10n.filterAll, _selectedTopicSlug == null, () {
             _onTopicTap(null);
           }),
           ...topics.map((topic) => _tabItem(
@@ -268,6 +269,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
 
   Future<void> _toggleLike(Photo photo) async {
     final authState = ref.read(authControllerProvider);
+    final l10n = AppLocalizations.of(context)!;
     if (!authState.isAuthenticated) {
       showAuthGateSheet(context, ref);
       return;
@@ -279,19 +281,19 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
     if (!mounted || success) return;
 
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Could not update like right now')),
+      SnackBar(content: Text(l10n.likeError)),
     );
   }
 
   Future<void> _handleBookmark(Photo photo) async {
     final authState = ref.read(authControllerProvider);
+    final l10n = AppLocalizations.of(context)!;
     if (!authState.isAuthenticated) {
       await showAuthGateSheet(
         context,
         ref,
-        title: 'Sign in to save photos',
-        body:
-            'Build collections of what inspires you and keep them in sync with your Unsplash account.',
+        title: l10n.signInToSavePhotos,
+        body: l10n.signInToSavePhotosBody,
       );
     }
     if (!mounted) return;

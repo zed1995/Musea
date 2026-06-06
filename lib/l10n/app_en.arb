@@ -1,5 +1,7 @@
 {
   "@@locale": "en",
+
+  "@@_PAGE_SETTINGS": "Settings",
   "settingsTitle": "Settings",
   "preferencesTitle": "Preferences",
   "languageSetting": "Language",
@@ -35,10 +37,311 @@
   "doneStatus": "Done",
   "failedStatus": "Failed",
   "noDownloadsYet": "No downloads yet",
+  "english": "English",
+  "simplifiedChinese": "简体中文",
+  "github": "GitHub",
+
+  "@@_PAGE_NAV": "Navigation",
   "discoverNavLabel": "Discover",
   "collectionsNavLabel": "Collections",
   "mineNavLabel": "Mine",
+
+  "@@_PAGE_SEARCH": "Search",
   "searchPlaceholder": "Search photos, collections, users...",
+  "segmentPhotos": "Photos",
+  "segmentCollections": "Collections",
+  "segmentLikes": "Likes",
+  "segmentUsers": "Users",
+  "sortBy": "Sort by",
+  "colorLabel": "Color",
+  "orientationLabel": "Orientation",
+  "contentSafety": "Content safety",
+  "filterRelevant": "Relevant",
+  "filterLatest": "Latest",
+  "filterAny": "Any",
+  "filterGreen": "Green",
+  "filterBlue": "Blue",
+  "filterBlackAndWhite": "Black & White",
+  "filterLandscape": "Landscape",
+  "filterPortrait": "Portrait",
+  "filterSquarish": "Squarish",
+  "filterLow": "Low",
+  "filterHigh": "High",
+  "noMatchingPhotos": "No matching photos",
+  "noMatchingPhotosSubtitle": "Try a different keyword or broaden the query.",
+  "noMatchingCollections": "No matching collections",
+  "noMatchingCollectionsSubtitle": "Try another phrase to find curated sets.",
+  "noMatchingUsers": "No matching users",
+  "noMatchingUsersSubtitle": "Try a creator name, username, or location.",
+  "startTypingToSearch": "Start typing to search",
+  "searchIdleSubtitle": "We will query photos, collections, and creators using the live search endpoints.",
+
+  "@@_PAGE_DISCOVER": "Discover",
+  "filterAll": "All",
+  "likeError": "Could not update like right now",
+  "signInToSavePhotos": "Sign in to save photos",
+  "signInToSavePhotosBody": "Build collections of what inspires you and keep them in sync with your Unsplash account.",
+
+  "@@_PAGE_MINE": "Mine (Profile)",
+  "collectionsPageTitle": "Collections",
   "minePageTitle": "Mine",
-  "collectionsPageTitle": "Collections"
+  "likedPhotos": "Liked photos",
+  "savedCollections": "Saved collections",
+  "personalSpace": "Personal space",
+  "likedPhotosDesc": "Revisit favorites you loved without hunting through the feed again.",
+  "savedCollectionsDesc": "Build a shelf of references, moods, and places you want to return to.",
+  "personalSpaceDesc": "A home for your archive now, with room for preferences and history later.",
+  "signIn": "Sign in",
+  "yourArchiveSynced": "Your visual archive, synced with Unsplash",
+  "keepLikesSaves": "Keep likes, saves, and your personal archive connected in one calm workspace.",
+  "weUseUnsplashAccount": "We use your Unsplash account to sync likes, saves, and your personal archive.",
+  "continueWithUnsplash": "Continue with Unsplash",
+  "guestMode": "Guest mode",
+  "guestModeDesc": "You can keep exploring without signing in",
+  "guestModeBody": "Discover, search, browse collections, and open public photographer profiles anytime. Sign in only when you want your activity to stay with you.",
+  "guestChipDiscover": "Discover",
+  "guestChipSearch": "Search",
+  "guestChipCollections": "Collections",
+  "guestChipProfiles": "Profiles",
+  "browseAsGuest": "Browse as guest",
+  "browseProfiles": "Browse profiles",
+  "workspace": "Workspace",
+  "personalWorkspaceSubtitle": "Personal workspace for photos, collections, and saved inspiration.",
+  "editProfile": "Edit profile",
+  "saved": "Saved",
+  "downloads": "Downloads",
+  "syncingLatestProfile": "Syncing latest profile...",
+  "showingCachedProfile": "Showing your cached profile first.",
+  "noLikedPhotosYet": "No liked photos yet.",
+  "nothingHereYet": "Nothing here yet.",
+  "noCollectionsYet": "No collections yet.",
+  "photos": "Photos",
+  "collections": "Collections",
+  "likes": "Likes",
+
+  "@@_PAGE_PROFILE": "Other User Profile",
+  "noPublicPhotosYet": "No public photos yet",
+  "noPublicCollectionsYet": "No public collections yet",
+  "likesReceived": "{count} likes received",
+  "@likesReceived": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "follow": "Follow",
+  "following": "Following",
+
+  "@@_PAGE_PHOTO_DETAIL": "Photo Detail",
+  "cameraInfo": "CAMERA INFO",
+  "exifCamera": "Camera",
+  "exifAperture": "Aperture",
+  "exifShutter": "Shutter",
+  "exifIso": "ISO",
+  "exifFocal": "Focal",
+  "exifLocation": "Location",
+  "exifSize": "Size",
+  "downloadFree": "Download Free",
+  "moreFromPhotographer": "More from photographer",
+  "seeAll": "See all",
+  "tags": "TAGS",
+  "tagsUnavailable": "Tags unavailable until details finish loading.",
+  "cameraDetailsUnavailable": "Camera details unavailable until hydration succeeds.",
+  "detailSectionsFailed": "Some detail sections could not be loaded yet.",
+  "retryLoadingDetails": "Retry loading details",
+
+  "@@_PAGE_AUTH_GATE": "Auth Gate Sheet",
+  "authTitleDefault": "Sign in to like photos",
+  "authBodyDefault": "Save what moves you, keep your visual trail together, and sync every like with your Unsplash account.",
+  "authLikedPhotos": "Liked photos",
+  "authLikedPhotosDesc": "Revisit favorites across devices without losing your place.",
+  "authSaveForLater": "Save for later",
+  "authSaveForLaterDesc": "Build a private inspiration shelf that stays with you.",
+  "authTrustTitle": "Continue with Unsplash",
+  "authTrustBody": "We use your Unsplash account to connect likes, saves, and your personal archive.",
+  "notNow": "Not now",
+
+  "@@_PAGE_DOWNLOAD": "Download Sheet",
+  "sizeSmall": "Small",
+  "sizeRegular": "Regular",
+  "sizeFull": "Full",
+  "sizeOriginal": "Original",
+  "downloadSmall": "Download Small",
+  "downloadRegular": "Download Regular",
+  "downloadFull": "Download Full",
+  "downloadOriginal": "Download Original",
+  "downloadDescSmall": "Fast to save and easy to share.",
+  "downloadDescRegular": "A balanced choice for most screens and posts.",
+  "downloadDescFull": "Sharper and more detailed for larger displays.",
+  "downloadDescOriginal": "The largest available version with the most flexibility.",
+  "chooseSizeHint": "Choose the size that works best for where you want to use this photo.",
+  "downloadProgress": "Download Progress",
+  "downloadProgressCompleted": "Your photo has been saved and is ready in the gallery.",
+  "downloadProgressFailed": "Something went wrong while saving this image.",
+  "downloadProgressSaving": "Almost there. We are moving the file into your gallery now.",
+  "downloadProgressDownloading": "You can keep browsing while the download continues in the background.",
+  "doneAction": "Done",
+  "backToSizes": "Back to Sizes",
+  "downloadInBackground": "Download in Background",
+  "imageSavedToGallery": "Image saved to gallery",
+  "downloadFailed": "Download failed",
+
+  "@@_PAGE_COLLECTION": "Collection",
+  "collectionSummary": "Collection Summary",
+  "preview": "Preview",
+  "firstFourPhotos": "First four photos",
+  "openGrid": "Open grid",
+  "collectionFacts": "Collection Facts",
+  "continueExploring": "Continue Exploring",
+  "exploreNearbyThemes": "Explore nearby themes first",
+  "photoCollection": "Photo collection",
+  "private": "Private",
+  "public": "Public",
+  "unknownCurator": "Unknown curator",
+  "published": "Published",
+  "updated": "Updated",
+  "lastCollected": "Last collected",
+  "visibility": "Visibility",
+  "privateCollection": "Private collection",
+  "publicCollection": "Public collection",
+  "insideTheCollection": "Inside the collection",
+  "noPhotosInCollection": "No photos in this collection yet",
+  "previewUnavailable": "Preview unavailable until details finish loading.",
+  "previewWillAppear": "Preview will appear when photos are added",
+  "collectionDetailsUnavailable": "Some collection details are still unavailable.",
+  "retryLoadingDetails": "Retry loading details",
+  "factsWillAppear": "Additional collection facts will appear after details finish loading.",
+  "jumpToFeed": "Jump to feed",
+  "noDescriptionFallback": "No curator description has been added for this collection yet. The layout stays intact and shifts emphasis to the curator and photo stream.",
+  "curatedSets": "Curated sets",
+  "photoCount": "{count} photos",
+  "@photoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionsCount": "{count} collections",
+  "@collectionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "publishedDate": "Published {date}",
+  "@publishedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "updatedDate": "Updated {date}",
+  "@updatedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "lastCollectedDate": "Last collected {date}",
+  "@lastCollectedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "@@_PAGE_COLLECTION_CREATE": "Create Collection Sheet",
+  "newCollection": "New collection",
+  "newCollectionDesc": "Name it, add an optional note, and choose visibility.",
+  "collectionName": "Collection Name",
+  "enterName": "Enter a name",
+  "descriptionOptional": "Description Optional",
+  "addDescription": "Add a description...",
+  "onlyYouCanSee": "Only you can see it.",
+  "visibleOnProfile": "Visible on your profile.",
+  "visibleOnYourProfile": "Visible on your profile",
+  "onlyForYourArchive": "Only for your own archive",
+  "createCollection": "Create collection",
+
+  "@@_PAGE_COLLECTION_SAVE": "Save to Collection Sheet",
+  "selectCollection": "Select collection",
+  "savePhotoToCollection": "Save this photo to one of your collections.",
+  "createNewCollection": "Create new collection",
+  "noPerfectFitYet": "No perfect fit yet? Make a new one.",
+  "myCollections": "MY COLLECTIONS",
+  "backToCollections": "Back to collections",
+  "view": "View",
+  "retry": "Retry",
+  "savedTo": "Saved to {title}",
+  "@savedTo": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+
+  "@@_PAGE_COLLECTION_DELETE": "Delete Collection Sheet",
+  "deleteCollection": "Delete collection?",
+  "deleteCollectionDesc": "This permanently removes the collection and its saved links.",
+  "willBeDeleted": "{title} will be deleted",
+  "@willBeDeleted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "photosRemainUnsplash": "The photos remain on Unsplash, but this collection cannot be restored once removed.",
+  "typeToConfirm": "Type to confirm",
+  "deleteCollectionAction": "Delete collection",
+
+  "@@_PAGE_COLLECTION_EDIT": "Edit Collection Sheet",
+  "editCollection": "Edit collection",
+  "editCollectionDesc": "Only the fields supported by the API are editable.",
+  "description": "Description",
+  "saveChanges": "Save changes",
+
+  "@@_PAGE_COLLECTION_MANAGE": "Manage Collection Sheet",
+  "manageCollection": "Manage collection",
+  "manageCollectionDesc": "Update the collection, clean up saved photos, or delete it safely.",
+  "editDetails": "Edit details",
+  "editDetailsSubtitle": "Title, description, and visibility",
+  "removePhotos": "Remove photos",
+  "removePhotosSubtitle": "Enter multi-select mode for this collection",
+  "deleteCollectionAction2": "Delete collection",
+  "deleteCollectionSubtitle": "Permanent action with confirmation",
+
+  "@@_PAGE_ERRORS": "Error Messages",
+  "genericError": "Oops! Something went wrong",
+  "tryAgain": "Try Again",
+
+  "@@_PAGE_ERROR_MESSAGES": "Error Messages (Collections)",
+  "networkError": "Network error: {message}",
+  "@networkError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "serverError": "Server error: {message}",
+  "@serverError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInAgain": "Please sign in again.",
+  "tooManyRequests": "Too many requests. Please try again later.",
+  "photoAlreadyInCollection": "Photo already in this collection.",
+  "couldNotIdentifyUser": "Could not identify user. Please sign in again.",
+  "signInAgainToCreate": "Please sign in again to create collections."
 }

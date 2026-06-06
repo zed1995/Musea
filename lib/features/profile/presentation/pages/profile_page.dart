@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/core/theme/text_styles.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
@@ -191,6 +192,7 @@ class _PaginatedPhotoSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
@@ -203,7 +205,7 @@ class _PaginatedPhotoSection extends StatelessWidget {
       );
     }
     if (state.items.isEmpty && state.error == null) {
-      return const _SectionEmptyCard(message: 'No public photos yet');
+      return _SectionEmptyCard(message: l10n.noPublicPhotosYet);
     }
 
     return Column(
@@ -226,6 +228,7 @@ class _PaginatedCollectionSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Padding(
         padding: EdgeInsets.symmetric(vertical: 24),
@@ -238,7 +241,7 @@ class _PaginatedCollectionSection extends StatelessWidget {
       );
     }
     if (state.items.isEmpty && state.error == null) {
-      return const _SectionEmptyCard(message: 'No public collections yet');
+      return _SectionEmptyCard(message: l10n.noPublicCollectionsYet);
     }
 
     return Column(
@@ -270,6 +273,7 @@ class _ProfileHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final locationLine = [user.username, user.location]
         .where((value) => value != null && value.trim().isNotEmpty)
         .map((value) => value == user.username ? '@$value' : value!)
@@ -362,7 +366,7 @@ class _ProfileHero extends StatelessWidget {
                     ),
                   ),
                   child: Text(
-                    'Follow',
+                    l10n.follow,
                     style: AppTextStyles.button.copyWith(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
@@ -376,28 +380,28 @@ class _ProfileHero extends StatelessWidget {
                   Expanded(
                     child: _MetricCard(
                       value: '${user.totalPhotos}',
-                      label: 'Photos',
+                      label: l10n.photos,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _MetricCard(
                       value: '${user.totalCollections}',
-                      label: 'Collections',
+                      label: l10n.collections,
                     ),
                   ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: _MetricCard(
                       value: _formatCount(user.totalLikes),
-                      label: 'Likes',
+                      label: l10n.likes,
                     ),
                   ),
                 ],
               ),
               const SizedBox(height: 12),
               Text(
-                '${_formatCount(user.totalLikes)} likes received',
+                l10n.likesReceived(user.totalLikes),
                 textAlign: TextAlign.center,
                 style: AppTextStyles.caption.copyWith(
                   color: AppColors.gray500,
@@ -448,6 +452,7 @@ class _ProfileSegmentBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFFF3F4F6),
@@ -457,21 +462,21 @@ class _ProfileSegmentBar extends StatelessWidget {
         children: [
           Expanded(
             child: _SegmentButton(
-              label: 'Photos',
+              label: l10n.photos,
               selected: selectedSegment == _ProfileSegment.photos,
               onTap: () => onSelected(_ProfileSegment.photos),
             ),
           ),
           Expanded(
             child: _SegmentButton(
-              label: 'Collections',
+              label: l10n.collections,
               selected: selectedSegment == _ProfileSegment.collections,
               onTap: () => onSelected(_ProfileSegment.collections),
             ),
           ),
           Expanded(
             child: _SegmentButton(
-              label: 'Likes',
+              label: l10n.likes,
               selected: selectedSegment == _ProfileSegment.likes,
               onTap: () => onSelected(_ProfileSegment.likes),
             ),

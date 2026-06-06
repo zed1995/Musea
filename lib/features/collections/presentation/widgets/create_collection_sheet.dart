@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 Future<void> showCreateCollectionSheet(BuildContext context) {
   return showModalBottomSheet<void>(
@@ -38,6 +39,7 @@ class _CreateCollectionSheetState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
 
     return Padding(
@@ -76,8 +78,8 @@ class _CreateCollectionSheetState
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'New collection',
+                      Text(
+                        l10n.newCollection,
                         style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w700,
@@ -87,7 +89,7 @@ class _CreateCollectionSheetState
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Name it, add an optional note, and choose visibility.',
+                        l10n.newCollectionDesc,
                         style: TextStyle(
                           fontSize: 12,
                           height: 1.4,
@@ -123,7 +125,7 @@ class _CreateCollectionSheetState
 
             // Collection Name
             Text(
-              'Collection Name',
+              l10n.collectionName,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -137,7 +139,7 @@ class _CreateCollectionSheetState
               maxLength: 60,
               onChanged: (_) => setState(() {}),
               decoration: InputDecoration(
-                hintText: 'Enter a name',
+                hintText: l10n.enterName,
                 hintStyle: TextStyle(color: Colors.grey[400]),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -168,7 +170,7 @@ class _CreateCollectionSheetState
 
             // Description
             Text(
-              'Description Optional',
+              l10n.descriptionOptional,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -181,7 +183,7 @@ class _CreateCollectionSheetState
               controller: _descriptionController,
               maxLines: 3,
               decoration: InputDecoration(
-                hintText: 'Add a description...',
+                hintText: l10n.addDescription,
                 hintStyle: TextStyle(color: Colors.grey[400]),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
@@ -204,7 +206,7 @@ class _CreateCollectionSheetState
 
             // Visibility
             Text(
-              'Visibility',
+              l10n.visibility,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -217,8 +219,8 @@ class _CreateCollectionSheetState
               children: [
                 Expanded(
                   child: _VisibilityOption(
-                    label: 'Private collection',
-                    description: 'Only you can see it.',
+                    label: l10n.privateCollection,
+                    description: l10n.onlyYouCanSee,
                     isSelected: _isPrivate,
                     onTap: () => setState(() => _isPrivate = true),
                   ),
@@ -226,8 +228,8 @@ class _CreateCollectionSheetState
                 const SizedBox(width: 8),
                 Expanded(
                   child: _VisibilityOption(
-                    label: 'Public collection',
-                    description: 'Visible on your profile.',
+                    label: l10n.publicCollection,
+                    description: l10n.visibleOnProfile,
                     isSelected: !_isPrivate,
                     onTap: () => setState(() => _isPrivate = false),
                   ),
@@ -271,8 +273,8 @@ class _CreateCollectionSheetState
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Create collection',
+                    : Text(
+                        l10n.createCollection,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -287,6 +289,7 @@ class _CreateCollectionSheetState
   }
 
   Future<void> _handleCreate() async {
+    final l10n = AppLocalizations.of(context)!;
     setState(() {
       _isSubmitting = true;
       _errorMessage = null;
@@ -307,14 +310,14 @@ class _CreateCollectionSheetState
           setState(() {
             _isSubmitting = false;
             _errorMessage = failure.when(
-              network: (message) => 'Network error: $message',
-              server: (_, message) => 'Server error: $message',
+              network: (message) => l10n.networkError(message),
+              server: (_, message) => l10n.serverError(message),
               cache: (message) => 'Error: $message',
               notFound: (message) => 'Error: $message',
               unauthorized: (_) =>
-                  'Please sign in again to create collections.',
+                  l10n.signInAgainToCreate,
               rateLimit: (_) =>
-                  'Too many requests. Please try again later.',
+                  l10n.tooManyRequests,
               unknown: (message) => 'Error: $message',
             );
           });

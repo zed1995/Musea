@@ -1,5 +1,7 @@
 {
   "@@locale": "zh",
+
+  "@@_PAGE_SETTINGS": "设置",
   "settingsTitle": "设置",
   "preferencesTitle": "偏好设置",
   "languageSetting": "语言",
@@ -35,10 +37,311 @@
   "doneStatus": "完成",
   "failedStatus": "失败",
   "noDownloadsYet": "还没有下载任务",
+  "english": "English",
+  "simplifiedChinese": "简体中文",
+  "github": "GitHub",
+
+  "@@_PAGE_NAV": "导航",
   "discoverNavLabel": "发现",
   "collectionsNavLabel": "合集",
   "mineNavLabel": "我的",
+
+  "@@_PAGE_SEARCH": "搜索",
   "searchPlaceholder": "搜索图片、合集、用户...",
+  "segmentPhotos": "图片",
+  "segmentCollections": "合集",
+  "segmentLikes": "喜欢",
+  "segmentUsers": "用户",
+  "sortBy": "排序",
+  "colorLabel": "颜色",
+  "orientationLabel": "方向",
+  "contentSafety": "内容安全",
+  "filterRelevant": "相关",
+  "filterLatest": "最新",
+  "filterAny": "不限",
+  "filterGreen": "绿色",
+  "filterBlue": "蓝色",
+  "filterBlackAndWhite": "黑白",
+  "filterLandscape": "横屏",
+  "filterPortrait": "竖屏",
+  "filterSquarish": "方形",
+  "filterLow": "低",
+  "filterHigh": "高",
+  "noMatchingPhotos": "没有匹配的图片",
+  "noMatchingPhotosSubtitle": "换个关键词或放宽搜索条件试试。",
+  "noMatchingCollections": "没有匹配的合集",
+  "noMatchingCollectionsSubtitle": "换个词组试试，看看有没有精选合集。",
+  "noMatchingUsers": "没有匹配的用户",
+  "noMatchingUsersSubtitle": "试试搜索创作者名称、用户名或所在地。",
+  "startTypingToSearch": "输入关键词开始搜索",
+  "searchIdleSubtitle": "我们将通过实时搜索接口查询图片、合集和创作者。",
+
+  "@@_PAGE_DISCOVER": "发现页",
+  "filterAll": "全部",
+  "likeError": "暂时无法更新点赞",
+  "signInToSavePhotos": "登录以保存图片",
+  "signInToSavePhotosBody": "创建灵感合集，并与 Unsplash 账号同步。",
+
+  "@@_PAGE_MINE": "我的",
+  "collectionsPageTitle": "合集",
   "minePageTitle": "我的",
-  "collectionsPageTitle": "合集"
+  "likedPhotos": "喜欢的图片",
+  "savedCollections": "保存的合集",
+  "personalSpace": "个人空间",
+  "likedPhotosDesc": "回看你曾经喜欢的图片，无需在信息流中重新翻找。",
+  "savedCollectionsDesc": "打造一个属于你的参考书签、心情和想去的地方。",
+  "personalSpaceDesc": "你的个人档案空间，未来还将容纳偏好设置和历史记录。",
+  "signIn": "登录",
+  "yourArchiveSynced": "你的视觉档案，与 Unsplash 同步",
+  "keepLikesSaves": "在统一的工作区中管理喜欢、收藏和个人档案。",
+  "weUseUnsplashAccount": "我们使用你的 Unsplash 账号来同步喜欢、收藏和个人档案。",
+  "continueWithUnsplash": "使用 Unsplash 继续",
+  "guestMode": "游客模式",
+  "guestModeDesc": "无需登录即可继续探索",
+  "guestModeBody": "随时浏览、搜索、查看合集和摄影师的公开主页。只有当你希望保存活动记录时才需要登录。",
+  "guestChipDiscover": "发现",
+  "guestChipSearch": "搜索",
+  "guestChipCollections": "合集",
+  "guestChipProfiles": "主页",
+  "browseAsGuest": "游客浏览",
+  "browseProfiles": "浏览主页",
+  "workspace": "工作区",
+  "personalWorkspaceSubtitle": "用于管理图片、合集和收藏灵感的个人工作空间。",
+  "editProfile": "编辑资料",
+  "saved": "已收藏",
+  "downloads": "下载",
+  "syncingLatestProfile": "正在同步最新资料...",
+  "showingCachedProfile": "当前显示的是缓存的个人资料。",
+  "noLikedPhotosYet": "还没有喜欢的图片。",
+  "nothingHereYet": "这里还没有内容。",
+  "noCollectionsYet": "还没有合集。",
+  "photos": "图片",
+  "collections": "合集",
+  "likes": "喜欢",
+
+  "@@_PAGE_PROFILE": "用户主页",
+  "noPublicPhotosYet": "暂无公开图片",
+  "noPublicCollectionsYet": "暂无公开合集",
+  "likesReceived": "获得 {count} 次喜欢",
+  "@likesReceived": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "follow": "关注",
+  "following": "已关注",
+
+  "@@_PAGE_PHOTO_DETAIL": "图片详情",
+  "cameraInfo": "相机信息",
+  "exifCamera": "相机",
+  "exifAperture": "光圈",
+  "exifShutter": "快门",
+  "exifIso": "ISO",
+  "exifFocal": "焦距",
+  "exifLocation": "位置",
+  "exifSize": "尺寸",
+  "downloadFree": "免费下载",
+  "moreFromPhotographer": "摄影师更多作品",
+  "seeAll": "查看全部",
+  "tags": "标签",
+  "tagsUnavailable": "标签详情加载中，请稍候。",
+  "cameraDetailsUnavailable": "相机信息加载中，完成后方可显示。",
+  "detailSectionsFailed": "部分详情段落暂时无法加载。",
+  "retryLoadingDetails": "重试加载详情",
+
+  "@@_PAGE_AUTH_GATE": "登录弹窗",
+  "authTitleDefault": "登录以喜欢图片",
+  "authBodyDefault": "保存你喜欢的作品，记录你的视觉足迹，并同步每次喜欢到 Unsplash 账号。",
+  "authLikedPhotos": "喜欢的图片",
+  "authLikedPhotosDesc": "跨设备回顾你的喜好，轻松找回你的位置。",
+  "authSaveForLater": "稍后收藏",
+  "authSaveForLaterDesc": "打造一个专属灵感书架，随时翻阅。",
+  "authTrustTitle": "使用 Unsplash 继续",
+  "authTrustBody": "我们使用你的 Unsplash 账号关联喜欢、收藏和个人档案。",
+  "notNow": "稍后再说",
+
+  "@@_PAGE_DOWNLOAD": "下载弹窗",
+  "sizeSmall": "小",
+  "sizeRegular": "中",
+  "sizeFull": "大",
+  "sizeOriginal": "原图",
+  "downloadSmall": "下载小尺寸",
+  "downloadRegular": "下载中尺寸",
+  "downloadFull": "下载大尺寸",
+  "downloadOriginal": "下载原图",
+  "downloadDescSmall": "保存快速，方便分享。",
+  "downloadDescRegular": "适合大多数屏幕和帖子的平衡选择。",
+  "downloadDescFull": "更清晰、更细致，适合大屏显示。",
+  "downloadDescOriginal": "最大可用版本，灵活性最高。",
+  "chooseSizeHint": "选择最适合你使用场景的图片尺寸。",
+  "downloadProgress": "下载进度",
+  "downloadProgressCompleted": "图片已保存到相册。",
+  "downloadProgressFailed": "保存图片时出现了问题。",
+  "downloadProgressSaving": "即将完成，正在将文件移至相册。",
+  "downloadProgressDownloading": "你可以继续浏览，下载将在后台进行。",
+  "doneAction": "完成",
+  "backToSizes": "返回尺寸选择",
+  "downloadInBackground": "后台下载",
+  "imageSavedToGallery": "图片已保存到相册",
+  "downloadFailed": "下载失败",
+
+  "@@_PAGE_COLLECTION": "合集",
+  "collectionSummary": "合集摘要",
+  "preview": "预览",
+  "firstFourPhotos": "前四张图片",
+  "openGrid": "打开网格",
+  "collectionFacts": "合集信息",
+  "continueExploring": "继续探索",
+  "exploreNearbyThemes": "先从相近主题开始探索",
+  "photoCollection": "图片合集",
+  "private": "私密",
+  "public": "公开",
+  "unknownCurator": "未知创建者",
+  "published": "发布",
+  "updated": "更新",
+  "lastCollected": "最后收藏",
+  "visibility": "可见性",
+  "privateCollection": "私密合集",
+  "publicCollection": "公开合集",
+  "insideTheCollection": "合集中内容",
+  "noPhotosInCollection": "这个合集中还没有图片",
+  "previewUnavailable": "详情加载中，预览暂时不可用。",
+  "previewWillAppear": "添加图片后预览将会出现",
+  "collectionDetailsUnavailable": "部分合集详情暂时不可用。",
+  "retryLoadingDetails": "重试加载详情",
+  "factsWillAppear": "更多合集信息将在详情加载完成后显示。",
+  "jumpToFeed": "跳转至信息流",
+  "noDescriptionFallback": "创建者尚未为该合集添加描述。布局保持不变，重点移至创建者和图片流。",
+  "curatedSets": "精选合集",
+  "photoCount": "{count} 张图片",
+  "@photoCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "collectionsCount": "{count} 个合集",
+  "@collectionsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "publishedDate": "发布于 {date}",
+  "@publishedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "updatedDate": "更新于 {date}",
+  "@updatedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+  "lastCollectedDate": "最后收藏于 {date}",
+  "@lastCollectedDate": {
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
+  },
+
+  "@@_PAGE_COLLECTION_CREATE": "创建合集",
+  "newCollection": "新建合集",
+  "newCollectionDesc": "起个名字，添加可选备注，并选择可见性。",
+  "collectionName": "合集名称",
+  "enterName": "输入名称",
+  "descriptionOptional": "描述（可选）",
+  "addDescription": "添加描述...",
+  "onlyYouCanSee": "只有你能看到。",
+  "visibleOnProfile": "个人主页上可见。",
+  "visibleOnYourProfile": "个人主页上可见",
+  "onlyForYourArchive": "仅限个人存档",
+  "createCollection": "创建合集",
+
+  "@@_PAGE_COLLECTION_SAVE": "保存到合集",
+  "selectCollection": "选择合集",
+  "savePhotoToCollection": "将这张图片保存到你的某个合集。",
+  "createNewCollection": "新建合集",
+  "noPerfectFitYet": "没有合适的？新建一个。",
+  "myCollections": "我的合集",
+  "backToCollections": "返回合集列表",
+  "view": "查看",
+  "retry": "重试",
+  "savedTo": "已保存到「{title}」",
+  "@savedTo": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+
+  "@@_PAGE_COLLECTION_DELETE": "删除合集",
+  "deleteCollection": "删除合集？",
+  "deleteCollectionDesc": "这将永久移除该合集及其保存的链接。",
+  "willBeDeleted": "「{title}」将被删除",
+  "@willBeDeleted": {
+    "placeholders": {
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "photosRemainUnsplash": "图片仍保留在 Unsplash 上，但该合集一旦删除无法恢复。",
+  "typeToConfirm": "输入以确认",
+  "deleteCollectionAction": "删除合集",
+
+  "@@_PAGE_COLLECTION_EDIT": "编辑合集",
+  "editCollection": "编辑合集",
+  "editCollectionDesc": "仅 API 支持的字段可编辑。",
+  "description": "描述",
+  "saveChanges": "保存更改",
+
+  "@@_PAGE_COLLECTION_MANAGE": "管理合集",
+  "manageCollection": "管理合集",
+  "manageCollectionDesc": "更新合集信息、清理已保存的图片或安全删除合集。",
+  "editDetails": "编辑详情",
+  "editDetailsSubtitle": "标题、描述和可见性",
+  "removePhotos": "移除图片",
+  "removePhotosSubtitle": "进入该合集的多选模式",
+  "deleteCollectionAction2": "删除合集",
+  "deleteCollectionSubtitle": "需要确认的永久性操作",
+
+  "@@_PAGE_ERRORS": "错误消息",
+  "genericError": "哎呀！出了点问题",
+  "tryAgain": "重试",
+
+  "@@_PAGE_ERROR_MESSAGES": "错误消息（合集）",
+  "networkError": "网络错误：{message}",
+  "@networkError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "serverError": "服务器错误：{message}",
+  "@serverError": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInAgain": "请重新登录。",
+  "tooManyRequests": "请求过于频繁，请稍后重试。",
+  "photoAlreadyInCollection": "图片已在该合集中。",
+  "couldNotIdentifyUser": "无法识别用户，请重新登录。",
+  "signInAgainToCreate": "请重新登录以创建合集。"
 }

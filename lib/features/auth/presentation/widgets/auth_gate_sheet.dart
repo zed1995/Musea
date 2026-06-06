@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 Future<void> showAuthGateSheet(
   BuildContext context,
   WidgetRef ref, {
-  String title = 'Sign in to like photos',
-  String body =
-      'Save what moves you, keep your visual trail together, and sync every like with your Unsplash account.',
+  String title = '',
+  String body = '',
 }) {
   return showModalBottomSheet<void>(
     context: context,
@@ -17,6 +17,7 @@ Future<void> showAuthGateSheet(
     builder: (context) {
       return Consumer(
         builder: (context, ref, child) {
+          final l10n = AppLocalizations.of(context)!;
           final authState = ref.watch(authControllerProvider);
           final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
           return Container(
@@ -51,7 +52,7 @@ Future<void> showAuthGateSheet(
                 ),
                 const SizedBox(height: 16),
                 Text(
-                  title,
+                  title.isNotEmpty ? title : l10n.authTitleDefault,
                   style: const TextStyle(
                     fontSize: 30,
                     height: 1.02,
@@ -62,7 +63,7 @@ Future<void> showAuthGateSheet(
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  body,
+                  body.isNotEmpty ? body : l10n.authBodyDefault,
                   style: const TextStyle(
                     fontSize: 14,
                     height: 1.7,
@@ -70,23 +71,21 @@ Future<void> showAuthGateSheet(
                   ),
                 ),
                 const SizedBox(height: 16),
-                const Row(
+                Row(
                   children: [
                     Expanded(
                       child: _AuthBenefitCard(
                         icon: Icons.favorite_border_rounded,
-                        title: 'Liked photos',
-                        body:
-                            'Revisit favorites across devices without losing your place.',
+                        title: l10n.authLikedPhotos,
+                        body: l10n.authLikedPhotosDesc,
                       ),
                     ),
                     SizedBox(width: 12),
                     Expanded(
                       child: _AuthBenefitCard(
                         icon: Icons.bookmark_border_rounded,
-                        title: 'Save for later',
-                        body:
-                            'Build a private inspiration shelf that stays with you.',
+                        title: l10n.authSaveForLater,
+                        body: l10n.authSaveForLaterDesc,
                       ),
                     ),
                   ],
@@ -132,14 +131,14 @@ Future<void> showAuthGateSheet(
                               color: Colors.white,
                             ),
                           )
-                        : const Row(
+                        : Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.chevron_right_rounded, size: 20),
-                              SizedBox(width: 8),
+                              const Icon(Icons.chevron_right_rounded, size: 20),
+                              const SizedBox(width: 8),
                               Text(
-                                'Continue with Unsplash',
-                                style: TextStyle(
+                                l10n.continueWithUnsplash,
+                                style: const TextStyle(
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
                                 ),
@@ -160,9 +159,9 @@ Future<void> showAuthGateSheet(
                         borderRadius: BorderRadius.circular(16),
                       ),
                     ),
-                    child: const Text(
-                      'Not now',
-                      style: TextStyle(
+                    child: Text(
+                      l10n.notNow,
+                      style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                       ),
@@ -239,6 +238,7 @@ class _AuthTrustCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.fromLTRB(16, 14, 16, 14),
@@ -247,21 +247,21 @@ class _AuthTrustCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(18),
         border: Border.all(color: const Color(0xFFE4E4E7)),
       ),
-      child: const Column(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Continue with Unsplash',
-            style: TextStyle(
+            l10n.authTrustTitle,
+            style: const TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w600,
               color: Color(0xFF18181B),
             ),
           ),
-          SizedBox(height: 4),
+          const SizedBox(height: 4),
           Text(
-            'We use your Unsplash account to connect likes, saves, and your personal archive.',
-            style: TextStyle(
+            l10n.authTrustBody,
+            style: const TextStyle(
               fontSize: 12,
               height: 1.5,
               color: Color(0xFF71717A),

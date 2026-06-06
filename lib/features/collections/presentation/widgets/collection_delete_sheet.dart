@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 void showCollectionDeleteSheet(
   BuildContext context, {
@@ -43,6 +44,7 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -70,7 +72,7 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Delete collection?',
+                        l10n.deleteCollection,
                         style: TextStyle(
                           fontSize: 23,
                           fontWeight: FontWeight.w700,
@@ -80,7 +82,7 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'This permanently removes the collection and its saved links.',
+                        l10n.deleteCollectionDesc,
                         style: TextStyle(
                           fontSize: 14,
                           height: 1.4,
@@ -122,7 +124,7 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    '${widget.collection.title} will be deleted',
+                    l10n.willBeDeleted(widget.collection.title),
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
@@ -131,7 +133,7 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'The photos remain on Unsplash, but this collection cannot be restored once removed.',
+                    l10n.photosRemainUnsplash,
                     style: TextStyle(
                       fontSize: 14,
                       height: 1.4,
@@ -162,8 +164,8 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Type to confirm',
+                  Text(
+                    l10n.typeToConfirm,
                     style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
@@ -213,8 +215,8 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
                           color: Colors.white,
                         ),
                       )
-                    : const Text(
-                        'Delete collection',
+                    : Text(
+                         l10n.deleteCollectionAction,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,
@@ -238,8 +240,8 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
                   side: const BorderSide(color: Color(0xFFE4E4E7)),
                   foregroundColor: const Color(0xFF27272A),
                 ),
-                child: const Text(
-                  'Cancel',
+                child: Text(
+                  l10n.cancelAction,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,

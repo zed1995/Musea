@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 void showCollectionEditSheet(
   BuildContext context, {
@@ -52,6 +53,7 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -79,8 +81,8 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Edit collection',
+                        Text(
+                          l10n.editCollection,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w700,
@@ -90,7 +92,7 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          'Only the fields supported by the API are editable.',
+                          l10n.editCollectionDesc,
                           style: TextStyle(
                             fontSize: 14,
                             height: 1.4,
@@ -119,7 +121,7 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
             ),
             const SizedBox(height: 12),
             _buildField(
-              label: 'Collection Name',
+              label: l10n.collectionName,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -146,7 +148,7 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
             ),
             const SizedBox(height: 12),
             _buildField(
-              label: 'Description',
+              label: l10n.description,
               child: TextFormField(
                 controller: _descriptionController,
                 maxLines: 3,
@@ -155,9 +157,9 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
                   height: 1.5,
                   color: Color(0xFF3F3F46),
                 ),
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   border: InputBorder.none,
-                  hintText: 'Add a description...',
+                  hintText: l10n.addDescription,
                   hintStyle: TextStyle(color: Color(0xFFA1A1AA)),
                 ),
               ),
@@ -173,10 +175,10 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.only(left: 4, bottom: 8),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 4, bottom: 8),
                     child: Text(
-                      'Visibility',
+                      l10n.visibility,
                       style: TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -186,15 +188,15 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
                     ),
                   ),
                   _VisibilityOption(
-                    title: 'Public',
-                    subtitle: 'Visible on your profile',
+                    title: l10n.public,
+                    subtitle: l10n.visibleOnYourProfile,
                     isSelected: !_isPrivate,
                     onTap: () => setState(() => _isPrivate = false),
                   ),
                   const SizedBox(height: 8),
                   _VisibilityOption(
-                    title: 'Private',
-                    subtitle: 'Only for your own archive',
+                    title: l10n.private,
+                    subtitle: l10n.onlyForYourArchive,
                     isSelected: _isPrivate,
                     onTap: () => setState(() => _isPrivate = true),
                   ),
@@ -224,8 +226,8 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
                             color: Colors.white,
                           ),
                         )
-                      : const Text(
-                          'Save changes',
+                      : Text(
+                          l10n.saveChanges,
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w700,
@@ -295,7 +297,7 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to save: $e')),
+          SnackBar(content: Text('${AppLocalizations.of(context)!.saveChanges}: $e')),
         );
       }
     } finally {

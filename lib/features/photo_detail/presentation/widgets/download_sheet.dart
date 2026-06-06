@@ -4,6 +4,7 @@ import 'package:musea/core/services/download_notifier.dart';
 import 'package:musea/core/services/providers.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class DownloadOption {
   const DownloadOption({
@@ -19,30 +20,30 @@ class DownloadOption {
   final String url;
 }
 
-List<DownloadOption> buildDownloadOptions(Photo photo) {
+List<DownloadOption> buildDownloadOptions(Photo photo, AppLocalizations l10n) {
   return [
     DownloadOption(
-      label: 'Small',
-      callToActionLabel: 'Download Small',
-      description: 'Fast to save and easy to share.',
+      label: l10n.sizeSmall,
+      callToActionLabel: l10n.downloadSmall,
+      description: l10n.downloadDescSmall,
       url: photo.urlSmall,
     ),
     DownloadOption(
-      label: 'Regular',
-      callToActionLabel: 'Download Regular',
-      description: 'A balanced choice for most screens and posts.',
+      label: l10n.sizeRegular,
+      callToActionLabel: l10n.downloadRegular,
+      description: l10n.downloadDescRegular,
       url: photo.urlRegular,
     ),
     DownloadOption(
-      label: 'Full',
-      callToActionLabel: 'Download Full',
-      description: 'Sharper and more detailed for larger displays.',
+      label: l10n.sizeFull,
+      callToActionLabel: l10n.downloadFull,
+      description: l10n.downloadDescFull,
       url: photo.urlFull,
     ),
     DownloadOption(
-      label: 'Original',
-      callToActionLabel: 'Download Original',
-      description: 'The largest available version with the most flexibility.',
+      label: l10n.sizeOriginal,
+      callToActionLabel: l10n.downloadOriginal,
+      description: l10n.downloadDescOriginal,
       url: photo.urlRaw,
     ),
   ];
@@ -67,12 +68,19 @@ class DownloadSheet extends ConsumerStatefulWidget {
 }
 
 class _DownloadSheetState extends ConsumerState<DownloadSheet> {
-  late final List<DownloadOption> _options = buildDownloadOptions(widget.photo);
+  late List<DownloadOption> _options;
   int _selectedIndex = 1;
   bool _startedDownload = false;
 
   @override
+  void initState() {
+    super.initState();
+    _options = buildDownloadOptions(widget.photo, AppLocalizations.of(context)!);
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     ref.listen(downloadNotifierProvider, (previous, next) {
       final messenger = ScaffoldMessenger.maybeOf(context);
       if (messenger == null) return;
@@ -81,7 +89,7 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
         messenger
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            const SnackBar(content: Text('Image saved to gallery')),
+            SnackBar(content: Text(l10n.imageSavedToGallery)),
           );
       }
 
@@ -89,7 +97,7 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
         messenger
           ..hideCurrentSnackBar()
           ..showSnackBar(
-            const SnackBar(content: Text('Download failed')),
+            SnackBar(content: Text(l10n.downloadFailed)),
           );
       }
     });
@@ -160,6 +168,7 @@ class _SelectionView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final selectedOption = options[selectedIndex];
 
     return Column(
@@ -181,10 +190,10 @@ class _SelectionView extends StatelessWidget {
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Expanded(
+            Expanded(
               child: Text(
-                'Choose the size that works best for where you want to use this photo.',
-                style: TextStyle(
+                l10n.chooseSizeHint,
+                style: const TextStyle(
                   fontSize: 14,
                   height: 1.5,
                   color: Color(0xFF52525B),
@@ -330,11 +339,12 @@ class _ProgressView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final state = notifier.state;
     final actionLabel = switch (state.status) {
-      DownloadStatus.completed => 'Done',
-      DownloadStatus.failed => 'Back to Sizes',
-      _ => 'Download in Background',
+      DownloadStatus.completed => l10n.doneAction,
+      DownloadStatus.failed => l10n.backToSizes,
+      _ => l10n.downloadInBackground,
     };
 
     return Column(
@@ -353,9 +363,9 @@ class _ProgressView extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 18),
-        const Text(
-          'Download Progress',
-          style: TextStyle(
+        Text(
+          l10n.downloadProgress,
+          style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w700,
             color: AppColors.gray900,
@@ -363,7 +373,7 @@ class _ProgressView extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         Text(
-          _progressSubtitle(state),
+          _progressSubtitle(state, l10n),
           style: const TextStyle(
             fontSize: 14,
             height: 1.5,
@@ -434,17 +444,17 @@ class _ProgressView extends StatelessWidget {
     );
   }
 
-  String _progressSubtitle(DownloadProgress state) {
+  String _progressSubtitle(DownloadProgress state, AppLocalizations l10n) {
     if (state.isCompleted) {
-      return 'Your photo has been saved and is ready in the gallery.';
+      return l10n.downloadProgressCompleted;
     }
     if (state.isFailed) {
-      return 'Something went wrong while saving this image.';
+      return l10n.downloadProgressFailed;
     }
     if (state.isSaving) {
-      return 'Almost there. We are moving the file into your gallery now.';
+      return l10n.downloadProgressSaving;
     }
-    return 'You can keep browsing while the download continues in the background.';
+    return l10n.downloadProgressDownloading;
   }
 
   String _progressMeta(DownloadProgress state) {

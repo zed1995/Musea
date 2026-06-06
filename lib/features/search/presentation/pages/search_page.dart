@@ -8,6 +8,7 @@ import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/features/search/presentation/providers/search_controller.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
@@ -282,6 +283,7 @@ class _SearchHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       decoration: const BoxDecoration(
@@ -333,11 +335,11 @@ class _SearchHeader extends StatelessWidget {
                           controller: controller,
                           autofocus: true,
                           textInputAction: TextInputAction.done,
-                          decoration: const InputDecoration(
+                          decoration: InputDecoration(
                             isCollapsed: true,
                             border: InputBorder.none,
-                            hintText: 'Search photos, collections, users...',
-                            hintStyle: TextStyle(
+                            hintText: l10n.searchPlaceholder,
+                            hintStyle: const TextStyle(
                               color: AppColors.gray400,
                               fontSize: 14,
                               fontWeight: FontWeight.w500,
@@ -400,20 +402,20 @@ class _SearchHeader extends StatelessWidget {
                   child: Row(
                     children: [
                       _SegmentButton(
-                        label: 'Photos',
+                        label: l10n.segmentPhotos,
                         isActive: selectedSegment == SearchSegment.photos,
                         onTap: () => onSegmentChanged(SearchSegment.photos),
                       ),
                       const SizedBox(width: 8),
                       _SegmentButton(
-                        label: 'Collections',
+                        label: l10n.segmentCollections,
                         isActive: selectedSegment == SearchSegment.collections,
                         onTap: () =>
                             onSegmentChanged(SearchSegment.collections),
                       ),
                       const SizedBox(width: 8),
                       _SegmentButton(
-                        label: 'Users',
+                        label: l10n.segmentUsers,
                         isActive: selectedSegment == SearchSegment.users,
                         onTap: () => onSegmentChanged(SearchSegment.users),
                       ),
@@ -529,6 +531,7 @@ class _PhotoFilterPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       key: const Key('photo-filter-panel'),
       decoration: BoxDecoration(
@@ -550,14 +553,14 @@ class _PhotoFilterPanel extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _FilterSection<PhotoSortOption>(
-            title: 'Sort by',
-            options: const [
+            title: l10n.sortBy,
+            options: [
               _FilterOption(
-                label: 'Relevant',
+                label: l10n.filterRelevant,
                 value: PhotoSortOption.relevant,
               ),
               _FilterOption(
-                label: 'Latest',
+                label: l10n.filterLatest,
                 value: PhotoSortOption.latest,
               ),
             ],
@@ -566,13 +569,13 @@ class _PhotoFilterPanel extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _FilterSection<PhotoColorOption>(
-            title: 'Color',
-            options: const [
-              _FilterOption(label: 'Any', value: PhotoColorOption.any),
-              _FilterOption(label: 'Green', value: PhotoColorOption.green),
-              _FilterOption(label: 'Blue', value: PhotoColorOption.blue),
+            title: l10n.colorLabel,
+            options: [
+              _FilterOption(label: l10n.filterAny, value: PhotoColorOption.any),
+              _FilterOption(label: l10n.filterGreen, value: PhotoColorOption.green),
+              _FilterOption(label: l10n.filterBlue, value: PhotoColorOption.blue),
               _FilterOption(
-                label: 'Black & White',
+                label: l10n.filterBlackAndWhite,
                 value: PhotoColorOption.blackAndWhite,
               ),
             ],
@@ -581,19 +584,19 @@ class _PhotoFilterPanel extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _FilterSection<PhotoOrientationOption>(
-            title: 'Orientation',
-            options: const [
-              _FilterOption(label: 'Any', value: PhotoOrientationOption.any),
+            title: l10n.orientationLabel,
+            options: [
+              _FilterOption(label: l10n.filterAny, value: PhotoOrientationOption.any),
               _FilterOption(
-                label: 'Landscape',
+                label: l10n.filterLandscape,
                 value: PhotoOrientationOption.landscape,
               ),
               _FilterOption(
-                label: 'Portrait',
+                label: l10n.filterPortrait,
                 value: PhotoOrientationOption.portrait,
               ),
               _FilterOption(
-                label: 'Squarish',
+                label: l10n.filterSquarish,
                 value: PhotoOrientationOption.squarish,
               ),
             ],
@@ -602,11 +605,11 @@ class _PhotoFilterPanel extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           _FilterSection<PhotoContentSafetyOption>(
-            title: 'Content safety',
-            options: const [
-              _FilterOption(label: 'Low', value: PhotoContentSafetyOption.low),
+            title: l10n.contentSafety,
+            options: [
+              _FilterOption(label: l10n.filterLow, value: PhotoContentSafetyOption.low),
               _FilterOption(
-                label: 'High',
+                label: l10n.filterHigh,
                 value: PhotoContentSafetyOption.high,
               ),
             ],
@@ -705,6 +708,7 @@ class _PaginatedPhotoResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Center(child: LoadingIndicator());
     }
@@ -712,9 +716,9 @@ class _PaginatedPhotoResults extends StatelessWidget {
       return ErrorState(message: state.error.toString());
     }
     if (state.items.isEmpty) {
-      return const _SearchEmptyState(
-        title: 'No matching photos',
-        subtitle: 'Try a different keyword or broaden the query.',
+      return _SearchEmptyState(
+        title: l10n.noMatchingPhotos,
+        subtitle: l10n.noMatchingPhotosSubtitle,
       );
     }
 
@@ -746,6 +750,7 @@ class _PaginatedCollectionResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Center(child: LoadingIndicator());
     }
@@ -753,9 +758,9 @@ class _PaginatedCollectionResults extends StatelessWidget {
       return ErrorState(message: state.error.toString());
     }
     if (state.items.isEmpty) {
-      return const _SearchEmptyState(
-        title: 'No matching collections',
-        subtitle: 'Try another phrase to find curated sets.',
+      return _SearchEmptyState(
+        title: l10n.noMatchingCollections,
+        subtitle: l10n.noMatchingCollectionsSubtitle,
       );
     }
 
@@ -790,6 +795,7 @@ class _PaginatedUserResults extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (state.isLoading) {
       return const Center(child: LoadingIndicator());
     }
@@ -797,9 +803,9 @@ class _PaginatedUserResults extends StatelessWidget {
       return ErrorState(message: state.error.toString());
     }
     if (state.items.isEmpty) {
-      return const _SearchEmptyState(
-        title: 'No matching users',
-        subtitle: 'Try a creator name, username, or location.',
+      return _SearchEmptyState(
+        title: l10n.noMatchingUsers,
+        subtitle: l10n.noMatchingUsersSubtitle,
       );
     }
 
@@ -848,6 +854,7 @@ class _UserResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: () => context.push(
         '/profile/${user.username}',
@@ -943,7 +950,7 @@ class _UserResultTile extends StatelessWidget {
               ),
               alignment: Alignment.center,
               child: Text(
-                isFollowing ? 'Following' : 'Follow',
+                isFollowing ? l10n.following : l10n.follow,
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
@@ -965,30 +972,31 @@ class _SearchIdleState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 48),
+    final l10n = AppLocalizations.of(context)!;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 48),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
+          const Icon(
             Icons.search_rounded,
             size: 36,
             color: Color(0xFFA1A1AA),
           ),
-          SizedBox(height: 12),
+          const SizedBox(height: 12),
           Text(
-            'Start typing to search',
-            style: TextStyle(
+            l10n.startTypingToSearch,
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w700,
               color: Color(0xFF18181B),
             ),
           ),
-          SizedBox(height: 6),
+          const SizedBox(height: 6),
           Text(
-            'We will query photos, collections, and creators using the live search endpoints.',
+            l10n.searchIdleSubtitle,
             textAlign: TextAlign.center,
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 13,
               color: Color(0xFF71717A),
             ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 void showCollectionManageSheet(
   BuildContext context, {
@@ -39,6 +40,7 @@ class CollectionManageSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -65,8 +67,8 @@ class CollectionManageSheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Manage collection',
+                      Text(
+                        l10n.manageCollection,
                         style: TextStyle(
                           fontSize: 23,
                           fontWeight: FontWeight.w700,
@@ -76,7 +78,7 @@ class CollectionManageSheet extends StatelessWidget {
                       ),
                       const SizedBox(height: 8),
                       Text(
-                        'Update the collection, clean up saved photos, or delete it safely.',
+                        l10n.manageCollectionDesc,
                         style: TextStyle(
                           fontSize: 14,
                           height: 1.4,
@@ -111,8 +113,8 @@ class CollectionManageSheet extends StatelessWidget {
                 _MenuRow(
                   icon: Icons.edit_outlined,
                   iconBackground: const Color(0xFF18181B),
-                  title: 'Edit details',
-                  subtitle: 'Title, description, and visibility',
+                  title: l10n.editDetails,
+                  subtitle: l10n.editDetailsSubtitle,
                   onTap: () {
                     Navigator.of(context).pop();
                     onEdit();
@@ -122,8 +124,8 @@ class CollectionManageSheet extends StatelessWidget {
                 _MenuRow(
                   icon: Icons.delete_outline_rounded,
                   iconBackground: const Color(0xFF3F3F46),
-                  title: 'Remove photos',
-                  subtitle: 'Enter multi-select mode for this collection',
+                  title: l10n.removePhotos,
+                  subtitle: l10n.removePhotosSubtitle,
                   onTap: () {
                     Navigator.of(context).pop();
                     onRemovePhotos();
@@ -133,8 +135,8 @@ class CollectionManageSheet extends StatelessWidget {
                 _MenuRow(
                   icon: Icons.delete_forever_outlined,
                   iconBackground: const Color(0xFFDC2626),
-                  title: 'Delete collection',
-                  subtitle: 'Permanent action with confirmation',
+                  title: l10n.deleteCollectionAction2,
+                  subtitle: l10n.deleteCollectionSubtitle,
                   titleColor: const Color(0xFFDC2626),
                   subtitleColor: const Color(0xFFFCA5A5),
                   chevronColor: const Color(0xFFFCA5A5),

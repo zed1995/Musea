@@ -24,8 +24,8 @@ class SettingsPage extends ConsumerWidget {
     final current = settings.value;
     final languageLabel = switch (current?.language ?? AppLanguage.system) {
       AppLanguage.system => l10n.followSystemLanguage,
-      AppLanguage.english => 'English',
-      AppLanguage.simplifiedChinese => '简体中文',
+      AppLanguage.english => l10n.english,
+      AppLanguage.simplifiedChinese => l10n.simplifiedChinese,
     };
 
     return Scaffold(
@@ -122,7 +122,7 @@ class SettingsPage extends ConsumerWidget {
               SettingsRow(
                 icon: Icons.code_rounded,
                 title: l10n.feedbackSetting,
-                trailing: const _ChevronValue(value: 'GitHub'),
+                trailing: _ChevronValue(value: l10n.github),
                 onTap: () async {
                   await ref.read(feedbackLauncherProvider)(
                     ref.read(feedbackUriProvider),

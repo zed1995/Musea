@@ -37,14 +37,14 @@ class SettingsLanguagePage extends ConsumerWidget {
                     .setLanguage(AppLanguage.system),
               ),
               _LanguageOption(
-                title: 'English',
+                title: l10n.english,
                 isSelected: selected == AppLanguage.english,
                 onTap: () => ref
                     .read(settingsControllerProvider.notifier)
                     .setLanguage(AppLanguage.english),
               ),
               _LanguageOption(
-                title: '简体中文',
+                title: l10n.simplifiedChinese,
                 isSelected: selected == AppLanguage.simplifiedChinese,
                 onTap: () => ref
                     .read(settingsControllerProvider.notifier)

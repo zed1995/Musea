@@ -14,6 +14,7 @@ import 'package:musea/features/photo_detail/presentation/widgets/download_sheet.
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/error_state.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 
 class PhotoDetailPage extends ConsumerWidget {
@@ -99,6 +100,7 @@ class _PhotoDetailContent extends ConsumerWidget {
     final showExifSkeleton = isHydratingDeferredContent && photo.exif == null;
     final showDeferredError =
         showDeferredRetry && (photo.tags.isEmpty || photo.exif == null);
+    final l10n = AppLocalizations.of(context)!;
 
     void handleBookmark() {
       final authState = ref.read(authControllerProvider);
@@ -106,9 +108,8 @@ class _PhotoDetailContent extends ConsumerWidget {
         showAuthGateSheet(
           context,
           ref,
-          title: 'Sign in to save photos',
-          body:
-              'Build collections of what inspires you and keep them in sync with your Unsplash account.',
+          title: l10n.signInToSavePhotos,
+          body: l10n.signInToSavePhotosBody,
         );
       }
       showSaveToCollectionSheet(context, photoId: photo.id);
@@ -148,8 +149,8 @@ class _PhotoDetailContent extends ConsumerWidget {
                       if (!context.mounted || success) return;
 
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Could not update like right now'),
+                        SnackBar(
+                          content: Text(l10n.likeError),
                         ),
                       );
                     },
@@ -185,25 +186,25 @@ class _PhotoDetailContent extends ConsumerWidget {
                     ),
                   ] else if (showTagSkeleton) ...[
                     const SizedBox(height: 16),
-                    const _DeferredSectionSkeleton(
+                    _DeferredSectionSkeleton(
                       key: ValueKey('photo-detail-tags-skeleton'),
-                      title: 'TAGS',
+                      title: l10n.tags,
                       lines: 2,
                     ),
                   ] else if (showDeferredError) ...[
                     const SizedBox(height: 16),
-                    const _DeferredSectionPlaceholder(
-                      title: 'TAGS',
-                      message: 'Tags unavailable until details finish loading.',
+                    _DeferredSectionPlaceholder(
+                      title: l10n.tags,
+                      message: l10n.tagsUnavailable,
                     ),
                   ],
-                  if (_exifItems.isNotEmpty) ...[
+                  if (_exifItems(l10n).isNotEmpty) ...[
                     const SizedBox(height: 18),
                     const _SectionDivider(),
                     const SizedBox(height: 6),
-                    const Text(
-                      'CAMERA INFO',
-                      style: TextStyle(
+                    Text(
+                      l10n.cameraInfo,
+                      style: const TextStyle(
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
                         color: Color(0xFF71717A),
@@ -211,20 +212,19 @@ class _PhotoDetailContent extends ConsumerWidget {
                       ),
                     ),
                     const SizedBox(height: 0),
-                    _ExifGrid(items: _exifItems),
+                    _ExifGrid(items: _exifItems(l10n)),
                   ] else if (showExifSkeleton) ...[
                     const SizedBox(height: 18),
-                    const _DeferredSectionSkeleton(
+                    _DeferredSectionSkeleton(
                       key: ValueKey('photo-detail-exif-skeleton'),
-                      title: 'CAMERA INFO',
+                      title: l10n.cameraInfo,
                       lines: 3,
                     ),
                   ] else if (showDeferredError) ...[
                     const SizedBox(height: 18),
-                    const _DeferredSectionPlaceholder(
-                      title: 'CAMERA INFO',
-                      message:
-                          'Camera details unavailable until hydration succeeds.',
+                    _DeferredSectionPlaceholder(
+                      title: l10n.cameraInfo,
+                      message: l10n.cameraDetailsUnavailable,
                     ),
                   ],
                   if (photo.color.isNotEmpty) ...[
@@ -253,34 +253,34 @@ class _PhotoDetailContent extends ConsumerWidget {
 
   String? get _description => photo.description ?? photo.altDescription;
 
-  List<_ExifItem> get _exifItems {
+  List<_ExifItem> _exifItems(AppLocalizations l10n) {
     final exif = photo.exif;
     if (exif == null) return const [];
 
     final items = <_ExifItem>[];
     final camera = _join(exif.make, exif.model);
     if (camera != null) {
-      items.add(_ExifItem('Camera', camera));
+      items.add(_ExifItem(l10n.exifCamera, camera));
     }
     if (exif.aperture != null) {
-      items.add(_ExifItem('Aperture', exif.aperture!));
+      items.add(_ExifItem(l10n.exifAperture, exif.aperture!));
     }
     if (exif.exposureTime != null) {
-      items.add(_ExifItem('Shutter', exif.exposureTime!));
+      items.add(_ExifItem(l10n.exifShutter, exif.exposureTime!));
     }
     if (exif.iso != null) {
-      items.add(_ExifItem('ISO', exif.iso.toString()));
+      items.add(_ExifItem(l10n.exifIso, exif.iso.toString()));
     }
     if (exif.focalLength != null) {
-      items.add(_ExifItem('Focal', exif.focalLength!));
+      items.add(_ExifItem(l10n.exifFocal, exif.focalLength!));
     }
     if (photo.location != null &&
         (photo.location!.city?.isNotEmpty == true ||
             photo.location!.country?.isNotEmpty == true)) {
-      items.add(_ExifItem('Location', photo.location!.displayName));
+      items.add(_ExifItem(l10n.exifLocation, photo.location!.displayName));
     }
     if (photo.width > 0 && photo.height > 0) {
-      items.add(_ExifItem('Size', '${photo.width}×${photo.height}'));
+      items.add(_ExifItem(l10n.exifSize, '${photo.width}\u00d7${photo.height}'));
     }
     return items;
   }
@@ -462,6 +462,7 @@ class _UserRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         GestureDetector(
@@ -505,10 +506,10 @@ class _UserRow extends StatelessWidget {
             color: const Color(0xFF111111),
             borderRadius: BorderRadius.circular(999),
           ),
-          child: const Center(
+          child: Center(
             child: Text(
-              'Follow',
-              style: TextStyle(
+              l10n.follow,
+              style: const TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
                 color: Colors.white,
@@ -689,6 +690,7 @@ class _DeferredRetryBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -698,10 +700,10 @@ class _DeferredRetryBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
-              'Some detail sections could not be loaded yet.',
-              style: TextStyle(
+              l10n.detailSectionsFailed,
+              style: const TextStyle(
                 fontSize: 12,
                 color: Color(0xFF475569),
               ),
@@ -710,7 +712,7 @@ class _DeferredRetryBanner extends StatelessWidget {
           const SizedBox(width: 12),
           TextButton(
             onPressed: onRetry,
-            child: const Text('Retry loading details'),
+            child: Text(l10n.retryLoadingDetails),
           ),
         ],
       ),
@@ -996,6 +998,7 @@ class _DownloadButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -1004,14 +1007,14 @@ class _DownloadButton extends StatelessWidget {
           color: const Color(0xFF111111),
           borderRadius: BorderRadius.circular(12),
         ),
-        child: const Row(
+        child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.download_outlined, size: 20, color: Colors.white),
-            SizedBox(width: 8),
+            const Icon(Icons.download_outlined, size: 20, color: Colors.white),
+            const SizedBox(width: 8),
             Text(
-              'Download Free',
-              style: TextStyle(
+              l10n.downloadFree,
+              style: const TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
@@ -1031,6 +1034,7 @@ class _MoreFromPhotographer extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final photosAsync = ref.watch(userPhotosProvider(photo.user.username));
 
     return Padding(
@@ -1043,9 +1047,9 @@ class _MoreFromPhotographer extends ConsumerWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                const Text(
-                  'More from photographer',
-                  style: TextStyle(
+                Text(
+                  l10n.moreFromPhotographer,
+                  style: const TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: Color(0xFF18181B),
@@ -1056,9 +1060,9 @@ class _MoreFromPhotographer extends ConsumerWidget {
                     '/profile/${photo.user.username}',
                     extra: ProfileDetailExtra(user: photo.user),
                   ),
-                  child: const Text(
-                    'See all',
-                    style: TextStyle(
+                  child: Text(
+                    l10n.seeAll,
+                    style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFFA1A1AA),
                     ),

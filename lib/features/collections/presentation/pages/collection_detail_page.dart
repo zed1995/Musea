@@ -16,6 +16,7 @@ import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
 
 class CollectionDetailPage extends ConsumerWidget {
@@ -153,7 +154,8 @@ class _CollectionDetailContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final factRows = _buildFactRows(collection);
+    final l10n = AppLocalizations.of(context)!;
+    final factRows = _buildFactRows(collection, l10n);
     final previewUrls = _previewUrls(
       collection.previewPhotos,
       photosAsync,
@@ -182,10 +184,10 @@ class _CollectionDetailContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _sectionEyebrow('Collection Summary'),
+                        _sectionEyebrow(l10n.collectionSummary),
                         const SizedBox(height: 8),
                         Text(
-                          _summaryText(collection),
+                          _summaryText(collection, l10n),
                           style: AppTextStyles.bodyMedium.copyWith(
                             color: AppColors.gray600,
                             height: 1.5,
@@ -195,7 +197,7 @@ class _CollectionDetailContent extends StatelessWidget {
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: _buildMetaPills(collection),
+                            children: _buildMetaPills(collection, l10n),
                           ),
                         ),
                       ],
@@ -206,10 +208,10 @@ class _CollectionDetailContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const _DetailSectionHeader(
-                          eyebrow: 'Preview',
-                          title: 'First four photos',
-                          actionLabel: 'Open grid',
+                        _DetailSectionHeader(
+                          eyebrow: l10n.preview,
+                          title: l10n.firstFourPhotos,
+                          actionLabel: l10n.openGrid,
                         ),
                         const SizedBox(height: 12),
                         if (previewUrls.isNotEmpty)
@@ -228,17 +230,15 @@ class _CollectionDetailContent extends StatelessWidget {
                             children: [
                               _DeferredRetryBanner(onRetry: onRetryDeferred),
                               const SizedBox(height: 12),
-                              const _DeferredSectionPlaceholder(
-                                message:
-                                    'Preview unavailable until details finish loading.',
-                              ),
+                              _DeferredSectionPlaceholder(
+                                 message: l10n.previewUnavailable,
+                               ),
                             ],
                           )
                         else
-                          const _EmptyFeedCard(
-                            message:
-                                'Preview will appear when photos are added',
-                          ),
+                          _EmptyFeedCard(
+                             message: l10n.previewWillAppear,
+                           ),
                       ],
                     ),
                   ),
@@ -247,7 +247,7 @@ class _CollectionDetailContent extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _sectionEyebrow('Collection Facts'),
+                        _sectionEyebrow(l10n.collectionFacts),
                         const SizedBox(height: 10),
                         ...factRows,
                         if (showDeferredFactSkeleton) ...[
@@ -260,10 +260,9 @@ class _CollectionDetailContent extends StatelessWidget {
                           const SizedBox(height: 8),
                           _DeferredRetryBanner(onRetry: onRetryDeferred),
                           const SizedBox(height: 12),
-                          const _DeferredSectionPlaceholder(
-                            message:
-                                'Additional collection facts will appear after details finish loading.',
-                          ),
+                          _DeferredSectionPlaceholder(
+                             message: l10n.factsWillAppear,
+                           ),
                         ],
                       ],
                     ),
@@ -302,6 +301,7 @@ class _CollectionHero extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final topPadding = MediaQuery.of(context).padding.top;
     final curator = collection.user;
     final curatorUsername = curator?.username;
@@ -374,12 +374,12 @@ class _CollectionHero extends StatelessWidget {
                       children: [
                         _GlassChip(label: '${collection.totalPhotos} photos'),
                         const SizedBox(width: 8),
-                        const _GlassChip(label: 'Photo collection'),
+                        _GlassChip(label: l10n.photoCollection),
                         const SizedBox(width: 8),
                         _GlassChip(
                           label: _collectionIsPrivate(collection)
-                              ? 'Private'
-                              : 'Public',
+                              ? l10n.private
+                              : l10n.public,
                         ),
                       ],
                     ),
@@ -419,7 +419,7 @@ class _CollectionHero extends StatelessWidget {
                                         CrossAxisAlignment.start,
                                     children: [
                                       Text(
-                                        curator?.name ?? 'Unknown curator',
+                                        curator?.name ?? l10n.unknownCurator,
                                         style:
                                             AppTextStyles.bodyMedium.copyWith(
                                           color: Colors.white,
@@ -493,6 +493,7 @@ class _FeedSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return photosAsync.when(
       data: (photos) {
         debugPrint(
@@ -502,8 +503,8 @@ class _FeedSection extends StatelessWidget {
           debugPrint(
             '[CollectionDetailPage] feed empty state rendered',
           );
-          return const _SectionCard(
-            child: _EmptyFeedCard(message: 'No photos in this collection yet'),
+          return _SectionCard(
+            child: _EmptyFeedCard(message: l10n.noPhotosInCollection),
           );
         }
 
@@ -517,8 +518,8 @@ class _FeedSection extends StatelessWidget {
                 children: [
                   _sectionEyebrow('Photos'),
                   const SizedBox(height: 4),
-                  const Text(
-                    'Inside the collection',
+                  Text(
+                    l10n.insideTheCollection,
                     style: AppTextStyles.heading3,
                   ),
                 ],
@@ -556,14 +557,15 @@ class _ContinueExploringSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themes = _buildExploreThemes(collection);
+    final l10n = AppLocalizations.of(context)!;
+    final themes = _buildExploreThemes(collection, l10n);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const _DetailSectionHeader(
-          eyebrow: 'Continue Exploring',
-          title: 'Explore nearby themes first',
+        _DetailSectionHeader(
+          eyebrow: l10n.continueExploring,
+          title: l10n.exploreNearbyThemes,
           actionLabel: 'See all',
         ),
         const SizedBox(height: 12),
@@ -588,9 +590,10 @@ class _PreviewGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     if (previewUrls.isEmpty) {
-      return const _EmptyFeedCard(
-        message: 'Preview will appear when photos are added',
+      return _EmptyFeedCard(
+        message: l10n.previewWillAppear,
       );
     }
 
@@ -698,6 +701,7 @@ class _PreviewMoreTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
@@ -723,7 +727,7 @@ class _PreviewMoreTile extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            'Jump to feed',
+            l10n.jumpToFeed,
             style: AppTextStyles.caption.copyWith(
               color: Colors.white.withValues(alpha: 0.72),
               fontWeight: FontWeight.w600,
@@ -971,6 +975,7 @@ class _DeferredRetryBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
@@ -980,10 +985,10 @@ class _DeferredRetryBanner extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
-              'Some collection details are still unavailable.',
-              style: TextStyle(
+              l10n.collectionDetailsUnavailable,
+              style: const TextStyle(
                 fontSize: 12,
                 color: Color(0xFF475569),
               ),
@@ -992,7 +997,7 @@ class _DeferredRetryBanner extends StatelessWidget {
           const SizedBox(width: 12),
           TextButton(
             onPressed: onRetry,
-            child: const Text('Retry loading details'),
+            child: Text(l10n.retryLoadingDetails),
           ),
         ],
       ),
@@ -1160,17 +1165,17 @@ Text _sectionEyebrow(String text) {
   );
 }
 
-List<Widget> _buildFactRows(Collection collection) {
+List<Widget> _buildFactRows(Collection collection, AppLocalizations l10n) {
   final rows = <MapEntry<String, String>>[
     if (collection.publishedAt != null)
-      MapEntry('Published', _formatDate(collection.publishedAt!)),
+      MapEntry(l10n.published, _formatDate(collection.publishedAt!)),
     if (collection.updatedAt != null)
-      MapEntry('Updated', _formatDate(collection.updatedAt!)),
+      MapEntry(l10n.updated, _formatDate(collection.updatedAt!)),
     if (collection.lastCollectedAt != null)
-      MapEntry('Last collected', _formatDate(collection.lastCollectedAt!)),
+      MapEntry(l10n.lastCollected, _formatDate(collection.lastCollectedAt!)),
     MapEntry(
-      'Visibility',
-      _collectionIsPrivate(collection) ? 'Private' : 'Public',
+      l10n.visibility,
+      _collectionIsPrivate(collection) ? l10n.private : l10n.public,
     ),
     MapEntry('Photos', '${collection.totalPhotos}'),
   ];
@@ -1208,26 +1213,26 @@ List<Widget> _buildFactRows(Collection collection) {
       .toList();
 }
 
-List<Widget> _buildMetaPills(Collection collection) {
+List<Widget> _buildMetaPills(Collection collection, AppLocalizations l10n) {
   final pills = <Widget>[];
 
   if (collection.publishedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
-      _MetaPill(label: 'Published ${_formatDate(collection.publishedAt!)}'),
+      _MetaPill(label: l10n.publishedDate(_formatDate(collection.publishedAt!))),
     );
   }
   if (collection.updatedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
-      _MetaPill(label: 'Updated ${_formatDate(collection.updatedAt!)}'),
+      _MetaPill(label: l10n.updatedDate(_formatDate(collection.updatedAt!))),
     );
   }
   if (collection.lastCollectedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
       _MetaPill(
-        label: 'Last collected ${_formatDate(collection.lastCollectedAt!)}',
+        label: l10n.lastCollectedDate(_formatDate(collection.lastCollectedAt!)),
       ),
     );
   }
@@ -1235,8 +1240,8 @@ List<Widget> _buildMetaPills(Collection collection) {
     pills.add(
       _MetaPill(
         label: _collectionIsPrivate(collection)
-            ? 'Private collection'
-            : 'Public collection',
+            ? l10n.privateCollection
+            : l10n.publicCollection,
       ),
     );
   }
@@ -1244,7 +1249,7 @@ List<Widget> _buildMetaPills(Collection collection) {
   return pills;
 }
 
-List<String> _buildExploreThemes(Collection collection) {
+List<String> _buildExploreThemes(Collection collection, AppLocalizations l10n) {
   final rawThemes = <String>[
     ...collection.title
         .split(RegExp(r'[\s,/&-]+'))
@@ -1253,7 +1258,7 @@ List<String> _buildExploreThemes(Collection collection) {
         ?.split(RegExp(r'[\s,/&-]+'))
         .where((part) => part.trim().length >= 5),
     ...collection.mediaTypes,
-    if ((collection.user?.totalCollections ?? 0) > 0) 'Curated sets',
+    if ((collection.user?.totalCollections ?? 0) > 0) l10n.curatedSets,
   ];
 
   final deduped = <String>[];
@@ -1330,12 +1335,12 @@ List<String> _previewUrls(
   );
 }
 
-String _summaryText(Collection collection) {
+String _summaryText(Collection collection, AppLocalizations l10n) {
   final description = collection.description?.trim();
   if (description != null && description.isNotEmpty) {
     return description;
   }
-  return 'No curator description has been added for this collection yet. The layout stays intact and shifts emphasis to the curator and photo stream.';
+  return l10n.noDescriptionFallback;
 }
 
 String _capitalizeWords(String value) {
