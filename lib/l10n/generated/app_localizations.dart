@@ -242,6 +242,48 @@ abstract class AppLocalizations {
   /// **'Retry'**
   String get retryAction;
 
+  /// No description provided for @deleteAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteAction;
+
+  /// No description provided for @clearCompletedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Completed'**
+  String get clearCompletedAction;
+
+  /// No description provided for @clearFailedAction.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Failed'**
+  String get clearFailedAction;
+
+  /// No description provided for @downloadRecordsOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Deleting a task removes only the record here. Saved images stay in your gallery.'**
+  String get downloadRecordsOnlyHint;
+
+  /// No description provided for @downloadTaskRemoved.
+  ///
+  /// In en, this message translates to:
+  /// **'Task removed'**
+  String get downloadTaskRemoved;
+
+  /// No description provided for @completedTasksCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Completed tasks cleared'**
+  String get completedTasksCleared;
+
+  /// No description provided for @failedTasksCleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed tasks cleared'**
+  String get failedTasksCleared;
+
   /// No description provided for @activeStatus.
   ///
   /// In en, this message translates to:
@@ -1045,6 +1087,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Image saved to gallery'**
   String get imageSavedToGallery;
+
+  /// No description provided for @downloadRequiresWifiMessage.
+  ///
+  /// In en, this message translates to:
+  /// **'Turn off Wi-Fi only or connect to Wi-Fi to download.'**
+  String get downloadRequiresWifiMessage;
 
   /// No description provided for @downloadFailed.
   ///

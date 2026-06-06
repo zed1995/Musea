@@ -89,6 +89,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get retryAction => '重试';
 
   @override
+  String get deleteAction => '删除';
+
+  @override
+  String get clearCompletedAction => '清除已完成';
+
+  @override
+  String get clearFailedAction => '清除失败';
+
+  @override
+  String get downloadRecordsOnlyHint => '删除任务只会移除这里的记录，不会删除系统相册中已经保存的图片。';
+
+  @override
+  String get downloadTaskRemoved => '任务记录已删除';
+
+  @override
+  String get completedTasksCleared => '已完成任务已清除';
+
+  @override
+  String get failedTasksCleared => '失败任务已清除';
+
+  @override
   String get activeStatus => '进行中';
 
   @override
@@ -493,6 +514,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get imageSavedToGallery => '图片已保存到相册';
+
+  @override
+  String get downloadRequiresWifiMessage => '请关闭“仅在 Wi‑Fi 下下载”或连接到 Wi‑Fi 后再下载。';
 
   @override
   String get downloadFailed => '下载失败';

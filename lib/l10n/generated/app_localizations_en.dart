@@ -91,6 +91,28 @@ class AppLocalizationsEn extends AppLocalizations {
   String get retryAction => 'Retry';
 
   @override
+  String get deleteAction => 'Delete';
+
+  @override
+  String get clearCompletedAction => 'Clear Completed';
+
+  @override
+  String get clearFailedAction => 'Clear Failed';
+
+  @override
+  String get downloadRecordsOnlyHint =>
+      'Deleting a task removes only the record here. Saved images stay in your gallery.';
+
+  @override
+  String get downloadTaskRemoved => 'Task removed';
+
+  @override
+  String get completedTasksCleared => 'Completed tasks cleared';
+
+  @override
+  String get failedTasksCleared => 'Failed tasks cleared';
+
+  @override
   String get activeStatus => 'Active';
 
   @override
@@ -522,6 +544,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get imageSavedToGallery => 'Image saved to gallery';
+
+  @override
+  String get downloadRequiresWifiMessage =>
+      'Turn off Wi-Fi only or connect to Wi-Fi to download.';
 
   @override
   String get downloadFailed => 'Download failed';

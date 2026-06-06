@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/services/cache_summary_service.dart';
+import 'package:musea/core/services/download_notifier.dart';
 import 'package:musea/core/services/providers.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
@@ -22,6 +23,12 @@ class SettingsPage extends ConsumerWidget {
     final version = ref.watch(appVersionProvider);
 
     final current = settings.value;
+    final downloadTasks = ref.watch(downloadNotifierProvider).tasks;
+    final activeDownloadCount = downloadTasks
+        .where((task) => task.status == DownloadTaskStatus.downloading)
+        .length;
+    final downloadTaskCount =
+        activeDownloadCount > 0 ? activeDownloadCount : downloadTasks.length;
     final languageLabel = switch (current?.language ?? AppLanguage.system) {
       AppLanguage.system => l10n.followSystemLanguage,
       AppLanguage.english => l10n.english,
@@ -102,9 +109,7 @@ class SettingsPage extends ConsumerWidget {
                 icon: Icons.download_rounded,
                 title: l10n.downloadsSetting,
                 trailing: _ChevronValue(
-                  value: l10n.downloadsTaskCount(
-                    ref.watch(downloadNotifierProvider).tasks.length,
-                  ),
+                  value: l10n.downloadsTaskCount(downloadTaskCount),
                 ),
                 onTap: () => context.push('/settings/downloads'),
               ),

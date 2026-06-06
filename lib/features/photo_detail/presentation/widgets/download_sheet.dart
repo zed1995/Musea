@@ -4,6 +4,7 @@ import 'package:musea/core/services/download_notifier.dart';
 import 'package:musea/core/services/providers.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
+import 'package:musea/features/settings/presentation/providers/settings_provider.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
 
 class DownloadOption {
@@ -83,7 +84,8 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
     super.didChangeDependencies();
     if (!_initialized) {
       _initialized = true;
-      _options = buildDownloadOptions(widget.photo, AppLocalizations.of(context)!);
+      _options =
+          buildDownloadOptions(widget.photo, AppLocalizations.of(context)!);
     }
   }
 
@@ -112,14 +114,13 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
     });
 
     final notifier = ref.watch(downloadNotifierProvider);
-    final showProgress = _startedDownload || !notifier.state.isIdle;
+    final showProgress = _startedDownload || notifier.isDownloading;
     final viewInsets = MediaQuery.viewInsetsOf(context);
     final viewPadding = MediaQuery.viewPaddingOf(context);
-    final bottomPadding =
-        (viewInsets.bottom > viewPadding.bottom
-                ? viewInsets.bottom
-                : viewPadding.bottom) +
-            18;
+    final bottomPadding = (viewInsets.bottom > viewPadding.bottom
+            ? viewInsets.bottom
+            : viewPadding.bottom) +
+        18;
 
     return DecoratedBox(
       decoration: const BoxDecoration(
@@ -146,7 +147,31 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
                     setState(() => _selectedIndex = index);
                   },
                   onDismiss: () => Navigator.of(context).pop(),
-                  onDownload: () {
+                  onDownload: () async {
+                    final settings =
+                        await ref.read(settingsControllerProvider.future);
+                    if (settings.downloadOverWifiOnly) {
+                      final connectionType =
+                          await ref.read(downloadConnectionTypeProvider)();
+                      final blocked =
+                          connectionType == DownloadConnectionType.cellular ||
+                              connectionType == DownloadConnectionType.other ||
+                              connectionType == DownloadConnectionType.none;
+
+                      if (blocked) {
+                        if (!context.mounted) return;
+                        ScaffoldMessenger.of(context)
+                          ..hideCurrentSnackBar()
+                          ..showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.downloadRequiresWifiMessage),
+                            ),
+                          );
+                        return;
+                      }
+                    }
+
+                    if (!mounted) return;
                     setState(() => _startedDownload = true);
                     notifier.download(
                       _options[_selectedIndex].url,
@@ -393,7 +418,9 @@ class _ProgressView extends StatelessWidget {
         ClipRRect(
           borderRadius: BorderRadius.circular(999),
           child: LinearProgressIndicator(
-            value: state.isFailed ? 0 : (state.progress > 0 ? state.progress : null),
+            value: state.isFailed
+                ? 0
+                : (state.progress > 0 ? state.progress : null),
             minHeight: 8,
             backgroundColor: const Color(0xFFF4F4F5),
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gray900),
@@ -486,7 +513,8 @@ class _ProgressView extends StatelessWidget {
       value /= 1024;
       unitIndex += 1;
     }
-    final formatted = value >= 100 ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
+    final formatted =
+        value >= 100 ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
     return '$formatted ${units[unitIndex]}';
   }
 

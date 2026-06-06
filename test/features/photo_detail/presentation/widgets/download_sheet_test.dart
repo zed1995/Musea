@@ -1,12 +1,18 @@
+import 'dart:typed_data';
+
+import 'package:dartz/dartz.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musea/core/services/download_notifier.dart';
 import 'package:musea/core/services/providers.dart';
 import 'package:musea/features/discover/data/models/photo_model.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
-import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/download_sheet.dart';
+import 'package:musea/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:musea/features/settings/presentation/providers/settings_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 Photo buildPhoto({
   int width = 6000,
@@ -45,8 +51,21 @@ Photo buildPhoto({
   }).toEntity();
 }
 
+class _FakeSettingsLocalDataSource implements SettingsLocalDataSource {
+  _FakeSettingsLocalDataSource(this.value);
+
+  final StoredSettings value;
+
+  @override
+  Future<StoredSettings> readSettings() async => value;
+
+  @override
+  Future<void> saveSettings(StoredSettings settings) async {}
+}
+
 void main() {
-  testWidgets('DownloadSheet matches prototype selection copy and default action',
+  testWidgets(
+      'DownloadSheet matches prototype selection copy and default action',
       (tester) async {
     final notifier = DownloadNotifier.noop();
 
@@ -81,7 +100,8 @@ void main() {
     );
   });
 
-  testWidgets('DownloadSheet does not show estimated resolutions', (tester) async {
+  testWidgets('DownloadSheet does not show estimated resolutions',
+      (tester) async {
     final notifier = DownloadNotifier.noop();
 
     await tester.pumpWidget(
@@ -104,7 +124,8 @@ void main() {
     expect(find.textContaining('×'), findsNothing);
   });
 
-  testWidgets('DownloadSheet stays attached to the bottom edge', (tester) async {
+  testWidgets('DownloadSheet stays attached to the bottom edge',
+      (tester) async {
     final notifier = DownloadNotifier.noop();
 
     await tester.pumpWidget(
@@ -127,7 +148,8 @@ void main() {
     expect(find.byType(SafeArea), findsNothing);
   });
 
-  testWidgets('DownloadSheet white surface reaches screen bottom', (tester) async {
+  testWidgets('DownloadSheet white surface reaches screen bottom',
+      (tester) async {
     final notifier = DownloadNotifier.noop();
     final photo = buildPhoto();
 
@@ -175,5 +197,131 @@ void main() {
       tester.getRect(sheetFinder).bottom,
       tester.getRect(find.byType(Scaffold).first).bottom,
     );
+  });
+
+  testWidgets(
+      'DownloadSheet reopens on selection view after a previous successful download',
+      (tester) async {
+    final notifier = DownloadNotifier(
+      notifications: FlutterLocalNotificationsPlugin(),
+      trackDownload: (_) async => const Right(null),
+      requestNotificationPermissions: () async => false,
+      downloadBytes: ({
+        required url,
+        required onProgress,
+        required cancelToken,
+      }) async {
+        onProgress(5, 5);
+        return Uint8List.fromList([1, 2, 3, 4, 5]);
+      },
+      saveImageBytes: ({required bytes, required name}) async {},
+      successResetDelay: Duration.zero,
+    );
+
+    await notifier.download('https://example.com/regular.jpg', buildPhoto());
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadNotifierProvider.overrideWith((ref) => notifier),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DownloadSheet(photo: buildPhoto()),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.text('Download Progress'), findsNothing);
+    expect(find.text('Download Regular'), findsOneWidget);
+  });
+
+  testWidgets(
+      'DownloadSheet reopens on selection view after a previous failed download',
+      (tester) async {
+    final notifier = DownloadNotifier(
+      notifications: FlutterLocalNotificationsPlugin(),
+      trackDownload: (_) async => const Right(null),
+      requestNotificationPermissions: () async => false,
+      downloadBytes: ({
+        required url,
+        required onProgress,
+        required cancelToken,
+      }) async {
+        throw Exception('offline');
+      },
+      saveImageBytes: ({required bytes, required name}) async {},
+      successResetDelay: Duration.zero,
+    );
+
+    await notifier.download('https://example.com/regular.jpg', buildPhoto());
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadNotifierProvider.overrideWith((ref) => notifier),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DownloadSheet(photo: buildPhoto()),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    expect(find.text('Download Progress'), findsNothing);
+    expect(find.text('Download Regular'), findsOneWidget);
+  });
+
+  testWidgets(
+      'DownloadSheet blocks download on non-wifi when wifi-only setting is enabled',
+      (tester) async {
+    final notifier = DownloadNotifier.noop();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          downloadNotifierProvider.overrideWith((ref) => notifier),
+          settingsLocalDataSourceProvider.overrideWithValue(
+            _FakeSettingsLocalDataSource(
+              const StoredSettings(
+                language: AppLanguage.english,
+                downloadOverWifiOnly: true,
+              ),
+            ),
+          ),
+          downloadConnectionTypeProvider.overrideWith(
+            (ref) => () async => DownloadConnectionType.cellular,
+          ),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: Scaffold(
+            body: DownloadSheet(photo: buildPhoto()),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Download Regular'));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Turn off Wi-Fi only or connect to Wi-Fi to download.'),
+      findsOneWidget,
+    );
+    expect(find.text('Download Progress'), findsNothing);
+    expect(find.text('Download Regular'), findsOneWidget);
   });
 }

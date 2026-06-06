@@ -23,6 +23,12 @@ class SettingsDownloadsPage extends ConsumerWidget {
         .where((task) => task.status == DownloadTaskStatus.failed)
         .toList();
 
+    void showMessage(String message) {
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    }
+
     Widget buildSection(String title, List<DownloadTask> items) {
       if (items.isEmpty) return const SizedBox.shrink();
 
@@ -42,11 +48,21 @@ class SettingsDownloadsPage extends ConsumerWidget {
           ...items.map(
             (task) => Padding(
               padding: const EdgeInsets.only(bottom: 10),
-              child: _DownloadTaskTile(
-                task: task,
-                onRetry: task.status == DownloadTaskStatus.failed
-                    ? () => ref.read(downloadNotifierProvider).retryTask(task)
-                    : null,
+              child: _SwipeToRevealDelete(
+                deleteKey: ValueKey('delete-task-${task.id}'),
+                enabled: task.status != DownloadTaskStatus.downloading,
+                onDelete: task.status == DownloadTaskStatus.downloading
+                    ? null
+                    : () {
+                        ref.read(downloadNotifierProvider).removeTask(task.id);
+                        showMessage(l10n.downloadTaskRemoved);
+                      },
+                child: _DownloadTaskTile(
+                  task: task,
+                  onRetry: task.status == DownloadTaskStatus.failed
+                      ? () => ref.read(downloadNotifierProvider).retryTask(task)
+                      : null,
+                ),
               ),
             ),
           ),
@@ -61,12 +77,42 @@ class SettingsDownloadsPage extends ConsumerWidget {
         elevation: 0,
         surfaceTintColor: Colors.transparent,
         title: Text(l10n.downloadsPageTitle),
+        actions: [
+          if (completed.isNotEmpty || failed.isNotEmpty)
+            PopupMenuButton<_DownloadsMenuAction>(
+              icon: const Icon(Icons.more_horiz_rounded),
+              onSelected: (value) {
+                switch (value) {
+                  case _DownloadsMenuAction.clearCompleted:
+                    ref.read(downloadNotifierProvider).clearCompleted();
+                    showMessage(l10n.completedTasksCleared);
+                  case _DownloadsMenuAction.clearFailed:
+                    ref.read(downloadNotifierProvider).clearFailed();
+                    showMessage(l10n.failedTasksCleared);
+                }
+              },
+              itemBuilder: (context) => [
+                if (completed.isNotEmpty)
+                  PopupMenuItem<_DownloadsMenuAction>(
+                    value: _DownloadsMenuAction.clearCompleted,
+                    child: Text(l10n.clearCompletedAction),
+                  ),
+                if (failed.isNotEmpty)
+                  PopupMenuItem<_DownloadsMenuAction>(
+                    value: _DownloadsMenuAction.clearFailed,
+                    child: Text(l10n.clearFailedAction),
+                  ),
+              ],
+            ),
+        ],
       ),
       body: tasks.isEmpty
           ? _DownloadsEmptyState(label: l10n.noDownloadsYet)
           : ListView(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),
               children: [
+                _DownloadsHint(label: l10n.downloadRecordsOnlyHint),
+                const SizedBox(height: 16),
                 buildSection(l10n.downloadingSection, downloading),
                 if (downloading.isNotEmpty) const SizedBox(height: 16),
                 buildSection(l10n.completedSection, completed),
@@ -74,6 +120,95 @@ class SettingsDownloadsPage extends ConsumerWidget {
                 buildSection(l10n.failedSection, failed),
               ],
             ),
+    );
+  }
+}
+
+enum _DownloadsMenuAction {
+  clearCompleted,
+  clearFailed,
+}
+
+class _SwipeToRevealDelete extends StatefulWidget {
+  const _SwipeToRevealDelete({
+    required this.deleteKey,
+    required this.child,
+    this.enabled = true,
+    this.onDelete,
+  });
+
+  final Key deleteKey;
+  final Widget child;
+  final bool enabled;
+  final VoidCallback? onDelete;
+
+  @override
+  State<_SwipeToRevealDelete> createState() => _SwipeToRevealDeleteState();
+}
+
+class _SwipeToRevealDeleteState extends State<_SwipeToRevealDelete> {
+  static const double _actionWidth = 92;
+  double _dragExtent = 0;
+  bool _open = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.enabled || widget.onDelete == null) {
+      return widget.child;
+    }
+
+    return SizedBox(
+      height: 78,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(18),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Align(
+                alignment: Alignment.centerRight,
+                child: SizedBox(
+                  width: _actionWidth,
+                  child: FilledButton(
+                    key: widget.deleteKey,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppColors.error,
+                      foregroundColor: Colors.white,
+                      shape: const RoundedRectangleBorder(),
+                    ),
+                    onPressed: widget.onDelete,
+                    child: Text(AppLocalizations.of(context)!.deleteAction),
+                  ),
+                ),
+              ),
+            ),
+            AnimatedSlide(
+              offset: Offset(_open ? -_actionWidth / 320 : 0, 0),
+              duration: const Duration(milliseconds: 180),
+              curve: Curves.easeOut,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onTap: _open ? () => setState(() => _open = false) : null,
+                onHorizontalDragUpdate: (details) {
+                  _dragExtent += details.delta.dx;
+                },
+                onHorizontalDragEnd: (_) {
+                  final shouldOpen = _dragExtent < -24;
+                  final shouldClose = _dragExtent > 24;
+                  setState(() {
+                    if (shouldOpen) {
+                      _open = true;
+                    } else if (shouldClose) {
+                      _open = false;
+                    }
+                  });
+                  _dragExtent = 0;
+                },
+                child: widget.child,
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -86,6 +221,8 @@ class _DownloadTaskTile extends StatelessWidget {
 
   final DownloadTask task;
   final VoidCallback? onRetry;
+
+  bool get _showProgressMeta => task.status == DownloadTaskStatus.downloading;
 
   @override
   Widget build(BuildContext context) {
@@ -146,6 +283,19 @@ class _DownloadTaskTile extends StatelessWidget {
                       color: AppColors.gray500,
                     ),
                   ),
+                  if (_showProgressMeta) ...[
+                    const SizedBox(height: 6),
+                    Text(
+                      '${(task.progress * 100).round()}%  ${_formatBytes(task.receivedBytes)} / ${_formatBytes(task.totalBytes)}',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.gray700,
+                      ),
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -168,6 +318,21 @@ class _DownloadTaskTile extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatBytes(int bytes) {
+    if (bytes <= 0) return '0 B';
+    const units = ['B', 'KB', 'MB', 'GB'];
+    var value = bytes.toDouble();
+    var unitIndex = 0;
+    while (value >= 1024 && unitIndex < units.length - 1) {
+      value /= 1024;
+      unitIndex += 1;
+    }
+    final formatted = value >= 100 || value == value.roundToDouble()
+        ? value.toStringAsFixed(0)
+        : value.toStringAsFixed(1);
+    return '$formatted ${units[unitIndex]}';
   }
 }
 
@@ -210,6 +375,49 @@ class _StatusBadge extends StatelessWidget {
           fontWeight: FontWeight.w600,
           color: foreground,
         ),
+      ),
+    );
+  }
+}
+
+class _DownloadsHint extends StatelessWidget {
+  const _DownloadsHint({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: AppColors.gray200),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(top: 1),
+            child: Icon(
+              Icons.info_outline_rounded,
+              size: 16,
+              color: AppColors.gray500,
+            ),
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              label,
+              style: const TextStyle(
+                fontSize: 12,
+                height: 1.45,
+                fontWeight: FontWeight.w500,
+                color: AppColors.gray600,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

@@ -4,6 +4,7 @@ import 'package:dartz/dartz.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:dio/dio.dart';
 import 'package:musea/core/errors/failures.dart';
 import 'package:musea/core/services/download_local_datasource.dart';
 import 'package:musea/core/services/download_notifier.dart';
@@ -230,8 +231,7 @@ void main() {
         expect(restored.user.id, photo.user.id);
         expect(restored.user.username, photo.user.username);
         expect(restored.user.name, photo.user.name);
-        expect(restored.user.profileImageSmall,
-            photo.user.profileImageSmall);
+        expect(restored.user.profileImageSmall, photo.user.profileImageSmall);
       });
     });
 
@@ -264,6 +264,256 @@ void main() {
         expect(restored.photo.id, task.photo.id);
         expect(restored.photo.urlThumb, task.photo.urlThumb);
       });
+    });
+
+    test('restores persisted in-progress tasks as failed entries', () async {
+      final localDataSource = MockDownloadLocalDataSource();
+      final task = DownloadTask(
+        id: 'task-1',
+        photo: buildPhoto(),
+        title: 'Quiet light',
+        subtitle: 'Regular',
+        url: 'https://example.com/regular.jpg',
+        progress: 0.4,
+        receivedBytes: 400,
+        totalBytes: 1000,
+        status: DownloadTaskStatus.downloading,
+      );
+
+      when(() => localDataSource.loadTasks()).thenAnswer((_) async => [task]);
+      when(() => localDataSource.saveTasks(any())).thenAnswer((_) async {});
+
+      final notifier = DownloadNotifier(
+        notifications: FlutterLocalNotificationsPlugin(),
+        trackDownload: repository.trackDownload,
+        requestNotificationPermissions: () async => false,
+        localDataSource: localDataSource,
+      );
+
+      expect(notifier.tasks, isEmpty);
+
+      await Future<void>.delayed(Duration.zero);
+
+      expect(notifier.tasks, hasLength(1));
+      expect(notifier.tasks.single.status, DownloadTaskStatus.failed);
+      verify(() => localDataSource.saveTasks(any())).called(1);
+    });
+
+    test('removes task and returns to idle when a download is cancelled',
+        () async {
+      when(() => repository.trackDownload('photo-1'))
+          .thenAnswer((_) async => const Right(null));
+
+      final notifier = DownloadNotifier(
+        notifications: FlutterLocalNotificationsPlugin(),
+        trackDownload: repository.trackDownload,
+        requestNotificationPermissions: () async => false,
+        downloadBytes: ({
+          required url,
+          required onProgress,
+          required cancelToken,
+        }) async {
+          onProgress(1, 10);
+          await Future<void>.delayed(const Duration(milliseconds: 10));
+          if (cancelToken.isCancelled) {
+            throw DioException(
+              requestOptions: RequestOptions(path: url),
+              type: DioExceptionType.cancel,
+            );
+          }
+          return Uint8List.fromList([1, 2, 3]);
+        },
+        saveImageBytes: ({required bytes, required name}) async {},
+        successResetDelay: Duration.zero,
+      );
+
+      final future = notifier.download(
+        'https://example.com/regular.jpg',
+        buildPhoto(),
+      );
+      await Future<void>.delayed(Duration.zero);
+      notifier.cancel();
+      await future;
+
+      expect(notifier.tasks, isEmpty);
+      expect(notifier.state.isIdle, isTrue);
+      expect(notifier.state.isFailed, isFalse);
+    });
+
+    test('retryTask reuses the failed task instead of creating a duplicate',
+        () async {
+      when(() => repository.trackDownload('photo-1'))
+          .thenAnswer((_) async => const Right(null));
+
+      var attempts = 0;
+      final notifier = DownloadNotifier(
+        notifications: FlutterLocalNotificationsPlugin(),
+        trackDownload: repository.trackDownload,
+        requestNotificationPermissions: () async => false,
+        downloadBytes: ({
+          required url,
+          required onProgress,
+          required cancelToken,
+        }) async {
+          attempts += 1;
+          if (attempts == 1) {
+            throw Exception('offline');
+          }
+          onProgress(3, 3);
+          return Uint8List.fromList([1, 2, 3]);
+        },
+        saveImageBytes: ({required bytes, required name}) async {},
+        successResetDelay: Duration.zero,
+      );
+
+      await notifier.download('https://example.com/regular.jpg', buildPhoto());
+      final failedTask = notifier.tasks.single;
+
+      expect(failedTask.status, DownloadTaskStatus.failed);
+
+      await notifier.retryTask(failedTask);
+
+      expect(notifier.tasks, hasLength(1));
+      expect(notifier.tasks.single.id, failedTask.id);
+      expect(notifier.tasks.single.status, DownloadTaskStatus.completed);
+    });
+
+    test('removeTask deletes only the matching task record', () async {
+      final localDataSource = MockDownloadLocalDataSource();
+      final photo = buildPhoto();
+      final completed = DownloadTask(
+        id: 'completed',
+        photo: photo,
+        title: 'Quiet light',
+        subtitle: 'Regular',
+        url: photo.urlRegular,
+        progress: 1,
+        receivedBytes: 10,
+        totalBytes: 10,
+        status: DownloadTaskStatus.completed,
+      );
+      final failed = DownloadTask(
+        id: 'failed',
+        photo: photo,
+        title: 'Quiet light 2',
+        subtitle: 'Full',
+        url: photo.urlFull,
+        progress: 0,
+        receivedBytes: 0,
+        totalBytes: 10,
+        status: DownloadTaskStatus.failed,
+      );
+
+      when(() => localDataSource.loadTasks())
+          .thenAnswer((_) async => [completed, failed]);
+      when(() => localDataSource.saveTasks(any())).thenAnswer((_) async {});
+
+      final notifier = DownloadNotifier(
+        notifications: FlutterLocalNotificationsPlugin(),
+        trackDownload: repository.trackDownload,
+        requestNotificationPermissions: () async => false,
+        localDataSource: localDataSource,
+      );
+
+      expect(notifier.tasks, isEmpty);
+      await Future<void>.delayed(Duration.zero);
+
+      notifier.removeTask('failed');
+
+      expect(notifier.tasks, hasLength(1));
+      expect(notifier.tasks.single.id, 'completed');
+    });
+
+    test('clearCompleted removes only completed task records', () async {
+      final localDataSource = MockDownloadLocalDataSource();
+      final photo = buildPhoto();
+      final completed = DownloadTask(
+        id: 'completed',
+        photo: photo,
+        title: 'Quiet light',
+        subtitle: 'Regular',
+        url: photo.urlRegular,
+        progress: 1,
+        receivedBytes: 10,
+        totalBytes: 10,
+        status: DownloadTaskStatus.completed,
+      );
+      final failed = DownloadTask(
+        id: 'failed',
+        photo: photo,
+        title: 'Quiet light 2',
+        subtitle: 'Full',
+        url: photo.urlFull,
+        progress: 0,
+        receivedBytes: 0,
+        totalBytes: 10,
+        status: DownloadTaskStatus.failed,
+      );
+
+      when(() => localDataSource.loadTasks())
+          .thenAnswer((_) async => [completed, failed]);
+      when(() => localDataSource.saveTasks(any())).thenAnswer((_) async {});
+
+      final notifier = DownloadNotifier(
+        notifications: FlutterLocalNotificationsPlugin(),
+        trackDownload: repository.trackDownload,
+        requestNotificationPermissions: () async => false,
+        localDataSource: localDataSource,
+      );
+
+      expect(notifier.tasks, isEmpty);
+      await Future<void>.delayed(Duration.zero);
+
+      notifier.clearCompleted();
+
+      expect(notifier.tasks, hasLength(1));
+      expect(notifier.tasks.single.id, 'failed');
+    });
+
+    test('clearFailed removes only failed task records', () async {
+      final localDataSource = MockDownloadLocalDataSource();
+      final photo = buildPhoto();
+      final completed = DownloadTask(
+        id: 'completed',
+        photo: photo,
+        title: 'Quiet light',
+        subtitle: 'Regular',
+        url: photo.urlRegular,
+        progress: 1,
+        receivedBytes: 10,
+        totalBytes: 10,
+        status: DownloadTaskStatus.completed,
+      );
+      final failed = DownloadTask(
+        id: 'failed',
+        photo: photo,
+        title: 'Quiet light 2',
+        subtitle: 'Full',
+        url: photo.urlFull,
+        progress: 0,
+        receivedBytes: 0,
+        totalBytes: 10,
+        status: DownloadTaskStatus.failed,
+      );
+
+      when(() => localDataSource.loadTasks())
+          .thenAnswer((_) async => [completed, failed]);
+      when(() => localDataSource.saveTasks(any())).thenAnswer((_) async {});
+
+      final notifier = DownloadNotifier(
+        notifications: FlutterLocalNotificationsPlugin(),
+        trackDownload: repository.trackDownload,
+        requestNotificationPermissions: () async => false,
+        localDataSource: localDataSource,
+      );
+
+      expect(notifier.tasks, isEmpty);
+      await Future<void>.delayed(Duration.zero);
+
+      notifier.clearFailed();
+
+      expect(notifier.tasks, hasLength(1));
+      expect(notifier.tasks.single.id, 'completed');
     });
   });
 }

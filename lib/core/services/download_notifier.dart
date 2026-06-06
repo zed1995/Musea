@@ -235,7 +235,18 @@ class DownloadNotifier extends ChangeNotifier {
     _tasksLoaded = true;
     _localDataSource.loadTasks().then((saved) {
       if (saved.isNotEmpty) {
-        _tasks.addAll(saved);
+        var shouldPersist = false;
+        final restored = saved.map((task) {
+          if (task.status == DownloadTaskStatus.downloading) {
+            shouldPersist = true;
+            return task.copyWith(status: DownloadTaskStatus.failed);
+          }
+          return task;
+        }).toList();
+        _tasks.addAll(restored);
+        if (shouldPersist) {
+          _persistTasks();
+        }
         _safeNotify();
       }
     });
@@ -246,26 +257,52 @@ class DownloadNotifier extends ChangeNotifier {
   }
 
   Future<void> download(String url, Photo photo) async {
+    return _download(url, photo);
+  }
+
+  Future<void> _download(
+    String url,
+    Photo photo, {
+    String? existingTaskId,
+  }) async {
     if (_isDownloading) return;
     _ensureTasksLoaded();
 
     _isDownloading = true;
     _cancelToken = CancelToken();
-    final taskId = '${photo.id}-${DateTime.now().microsecondsSinceEpoch}';
-    _tasks.insert(
-      0,
-      DownloadTask(
-        id: taskId,
-        photo: photo,
-        title: photo.description ?? photo.altDescription ?? photo.id,
-        subtitle: _variantLabelForUrl(photo, url),
-        url: url,
-        progress: 0,
-        receivedBytes: 0,
-        totalBytes: 0,
-        status: DownloadTaskStatus.downloading,
-      ),
-    );
+    final taskId = existingTaskId ??
+        '${photo.id}-${DateTime.now().microsecondsSinceEpoch}';
+    if (existingTaskId == null) {
+      _tasks.insert(
+        0,
+        DownloadTask(
+          id: taskId,
+          photo: photo,
+          title: photo.description ?? photo.altDescription ?? photo.id,
+          subtitle: _variantLabelForUrl(photo, url),
+          url: url,
+          progress: 0,
+          receivedBytes: 0,
+          totalBytes: 0,
+          status: DownloadTaskStatus.downloading,
+        ),
+      );
+    } else {
+      _replaceTask(
+        taskId,
+        DownloadTask(
+          id: taskId,
+          photo: photo,
+          title: photo.description ?? photo.altDescription ?? photo.id,
+          subtitle: _variantLabelForUrl(photo, url),
+          url: url,
+          progress: 0,
+          receivedBytes: 0,
+          totalBytes: 0,
+          status: DownloadTaskStatus.downloading,
+        ),
+      );
+    }
     _persistTasks();
     _setState(
       const DownloadProgress(
@@ -353,6 +390,16 @@ class DownloadNotifier extends ChangeNotifier {
         ),
       );
     } catch (e) {
+      if (_isCancellation(e)) {
+        _removeTask(taskId);
+        await _persistTasks();
+        if (_notificationsEnabled) {
+          await _notifications.cancel(_notificationId);
+        }
+        _setState(DownloadProgress.initial);
+        return;
+      }
+
       if (_notificationsEnabled) {
         await _showFailureNotification(_humanizeError(e));
       }
@@ -383,8 +430,21 @@ class DownloadNotifier extends ChangeNotifier {
     _safeNotify();
   }
 
+  void removeTask(String id) {
+    _removeTask(id);
+    _persistTasks();
+  }
+
+  void clearCompleted() {
+    _removeTasksWhere((task) => task.status == DownloadTaskStatus.completed);
+  }
+
+  void clearFailed() {
+    _removeTasksWhere((task) => task.status == DownloadTaskStatus.failed);
+  }
+
   Future<void> retryTask(DownloadTask task) {
-    return download(task.url, task.photo);
+    return _download(task.url, task.photo, existingTaskId: task.id);
   }
 
   Future<void> _attemptTrackDownload(String photoId) async {
@@ -583,6 +643,31 @@ class DownloadNotifier extends ChangeNotifier {
       status: status,
     );
     _safeNotify();
+  }
+
+  void _removeTask(String id) {
+    _tasks.removeWhere((task) => task.id == id);
+    _safeNotify();
+  }
+
+  void _removeTasksWhere(bool Function(DownloadTask task) predicate) {
+    _tasks.removeWhere(predicate);
+    _persistTasks();
+    _safeNotify();
+  }
+
+  void _replaceTask(String id, DownloadTask next) {
+    final index = _tasks.indexWhere((task) => task.id == id);
+    if (index == -1) {
+      _tasks.insert(0, next);
+    } else {
+      _tasks[index] = next;
+    }
+    _safeNotify();
+  }
+
+  bool _isCancellation(Object error) {
+    return error is DioException && error.type == DioExceptionType.cancel;
   }
 
   String _variantLabelForUrl(Photo photo, String url) {
