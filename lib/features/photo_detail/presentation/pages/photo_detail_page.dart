@@ -15,6 +15,7 @@ import 'package:musea/features/profile/presentation/providers/profile_provider.d
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
+import 'package:musea/shared/widgets/immersive_hero_app_bar.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 
 class PhotoDetailPage extends ConsumerWidget {
@@ -378,79 +379,26 @@ class _PhotoHeroState extends State<_PhotoHero> {
           )
         else
           heroImage,
-        Positioned.fill(
-          child: IgnorePointer(
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.black.withValues(alpha: 0.34),
-                    Colors.black.withValues(alpha: 0.08),
-                    Colors.transparent,
-                  ],
-                  stops: const [0.0, 0.72, 1.0],
-                ),
+        ImmersiveHeroAppBar(
+          onBack: () => Navigator.maybePop(context),
+          actions: [
+            IconButton(
+              onPressed: widget.onBookmarkTap,
+              icon: const Icon(
+                Icons.bookmark_border_rounded,
+                color: Colors.white,
               ),
             ),
-          ),
-        ),
-        SafeArea(
-          bottom: false,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(12, 10, 12, 42),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                _HeroActionButton(
-                  icon: Icons.arrow_back_ios_new,
-                  onTap: () => Navigator.maybePop(context),
-                ),
-                Row(
-                  children: [
-                    _HeroActionButton(
-                      icon: Icons.bookmark_border,
-                      onTap: widget.onBookmarkTap,
-                    ),
-                    const SizedBox(width: 8),
-                    const _HeroActionButton(icon: Icons.ios_share),
-                    const SizedBox(width: 8),
-                    const _HeroActionButton(icon: Icons.more_horiz),
-                  ],
-                ),
-              ],
+            IconButton(
+              onPressed: () {},
+              icon: const Icon(
+                Icons.ios_share_rounded,
+                color: Colors.white,
+              ),
             ),
-          ),
+          ],
         ),
       ],
-    );
-  }
-}
-
-class _HeroActionButton extends StatelessWidget {
-  const _HeroActionButton({
-    required this.icon,
-    this.onTap,
-  });
-
-  final IconData icon;
-  final VoidCallback? onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: 34,
-        height: 34,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          color: Colors.white.withValues(alpha: 0.16),
-          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-        ),
-        child: Icon(icon, size: 18, color: Colors.white),
-      ),
     );
   }
 }

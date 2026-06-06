@@ -19,6 +19,7 @@ import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
+import 'package:musea/shared/widgets/immersive_hero_app_bar.dart';
 
 class CollectionDetailPage extends ConsumerWidget {
   const CollectionDetailPage({
@@ -341,31 +342,20 @@ class _CollectionHero extends StatelessWidget {
           SafeArea(
             bottom: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+              padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      _GlassActionButton(
-                        icon: Icons.arrow_back_ios_new_rounded,
-                        onPressed: () => Navigator.maybePop(context),
-                      ),
-                      Row(
-                        children: [
-                          if (isOwner) ...[
-                            _GlassActionButton(
-                              icon: Icons.grid_view_rounded,
-                              onPressed: onManageTap ?? () {},
-                            ),
-                            const SizedBox(width: 8),
-                          ],
-                          _GlassActionButton(
-                            icon: Icons.ios_share_rounded,
-                            onPressed: () {},
-                          ),
-                        ],
+                  ImmersiveHeroAppBar(
+                    onBack: () => Navigator.maybePop(context),
+                    topPadding: 0,
+                    actions: [
+                      IconButton(
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.ios_share_rounded,
+                          color: Colors.white,
+                        ),
                       ),
                     ],
                   ),
@@ -392,11 +382,30 @@ class _CollectionHero extends StatelessWidget {
                     style: AppTextStyles.heading1.copyWith(
                       color: Colors.white,
                       fontSize: 28,
-                      height: 1.02,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -1.1,
+                      height: 1.04,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: -0.9,
                     ),
                   ),
+                  if (isOwner) ...[
+                    const SizedBox(height: 12),
+                    TextButton.icon(
+                      onPressed: onManageTap ?? () {},
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                        backgroundColor: Colors.white.withValues(alpha: 0.12),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(999),
+                        ),
+                      ),
+                      icon: const Icon(Icons.grid_view_rounded, size: 18),
+                      label: Text(l10n.manageCollection),
+                    ),
+                  ],
                   const SizedBox(height: 14),
                   Row(
                     children: [
@@ -826,42 +835,6 @@ class _SectionCard extends StatelessWidget {
         ],
       ),
       child: child,
-    );
-  }
-}
-
-class _GlassActionButton extends StatelessWidget {
-  const _GlassActionButton({
-    required this.icon,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 44,
-      height: 44,
-      child: FilledButton(
-        onPressed: onPressed,
-        style: FilledButton.styleFrom(
-          backgroundColor: Colors.white.withValues(alpha: 0.16),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
-            side: BorderSide(
-              color: Colors.white.withValues(alpha: 0.14),
-            ),
-          ),
-          padding: EdgeInsets.zero,
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: Colors.white,
-        ),
-      ),
     );
   }
 }

@@ -98,6 +98,8 @@ void main() {
     expect(find.text('Preview'), findsOneWidget);
     expect(find.text('Collection Facts'), findsOneWidget);
     expect(find.text('Follow'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.ios_share_rounded), findsOneWidget);
   });
 
   testWidgets(
@@ -216,7 +218,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new_rounded));
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);

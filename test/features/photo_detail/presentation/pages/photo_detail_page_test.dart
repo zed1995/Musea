@@ -170,6 +170,10 @@ void main() {
     expect(find.text('Paula Poeira'), findsOneWidget);
     expect(find.text('Quiet light'), findsOneWidget);
     expect(find.text('Download Free'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.bookmark_border_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.ios_share_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.more_horiz), findsNothing);
     expect(tester.takeException(), isNull);
   });
 
