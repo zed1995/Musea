@@ -10,6 +10,7 @@ import 'package:musea/features/collections/presentation/pages/collection_remove_
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/search/domain/entities/search_result.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class _FakeCollectionRepository implements CollectionRepository {
   int photoRequests = 0;
@@ -111,6 +112,8 @@ void main() {
           collectionRepositoryProvider.overrideWithValue(fakeRepository),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionRemovePhotosPage(
             collectionId: 'col-1',
             collectionTitle: 'Test',

@@ -131,47 +131,49 @@ class SettingsPage extends ConsumerWidget {
               ),
             ],
           ),
-          const SizedBox(height: 28),
-          SizedBox(
-            height: 48,
-            child: TextButton.icon(
-              style: TextButton.styleFrom(
-                foregroundColor: AppColors.error,
-                backgroundColor: AppColors.error.withValues(alpha: 0.08),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
-              onPressed: () async {
-                final confirmed = await showDialog<bool>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(l10n.signOutTitle),
-                    content: Text(l10n.signOutBody),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: Text(l10n.cancelAction),
-                      ),
-                      FilledButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: Text(l10n.signOutAction),
-                      ),
-                    ],
+          if (ref.watch(authControllerProvider).isAuthenticated) ...[
+            const SizedBox(height: 28),
+            SizedBox(
+              height: 48,
+              child: TextButton.icon(
+                style: TextButton.styleFrom(
+                  foregroundColor: AppColors.error,
+                  backgroundColor: AppColors.error.withValues(alpha: 0.08),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
                   ),
-                );
+                ),
+                onPressed: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(l10n.signOutTitle),
+                      content: Text(l10n.signOutBody),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(l10n.cancelAction),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: Text(l10n.signOutAction),
+                        ),
+                      ],
+                    ),
+                  );
 
-                if (confirmed == true) {
-                  await ref.read(authControllerProvider.notifier).signOut();
-                  if (context.mounted && Navigator.of(context).canPop()) {
-                    context.pop();
+                  if (confirmed == true) {
+                    await ref.read(authControllerProvider.notifier).signOut();
+                    if (context.mounted && Navigator.of(context).canPop()) {
+                      context.pop();
+                    }
                   }
-                }
-              },
-              icon: const Icon(Icons.logout_rounded),
-              label: Text(l10n.signOutAction),
-            ),
+                },
+                icon: const Icon(Icons.logout_rounded),
+                label: Text(l10n.signOutAction),
+              ),
           ),
+          ],
         ],
       ),
     );

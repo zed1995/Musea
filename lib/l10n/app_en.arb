@@ -82,6 +82,18 @@
   "signInToSavePhotos": "Sign in to save photos",
   "signInToSavePhotosBody": "Build collections of what inspires you and keep them in sync with your Unsplash account.",
 
+  "@@_SHARED_WIDGETS": "Shared Widgets",
+  "featured": "Featured",
+  "byName": "by {name}",
+  "@byName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noPhotos": "No photos",
+
   "@@_PAGE_MINE": "Mine (Profile)",
   "collectionsPageTitle": "Collections",
   "minePageTitle": "Mine",
@@ -343,5 +355,60 @@
   "tooManyRequests": "Too many requests. Please try again later.",
   "photoAlreadyInCollection": "Photo already in this collection.",
   "couldNotIdentifyUser": "Could not identify user. Please sign in again.",
-  "signInAgainToCreate": "Please sign in again to create collections."
+  "signInAgainToCreate": "Please sign in again to create collections.",
+
+  "@@_PAGE_COLLECTION_REMOVE": "Remove Photos from Collection",
+  "batchMode": "Batch Mode",
+  "removePhotosSubtitle": "Select multiple photos to remove them from this collection. Photos stay available on Unsplash.",
+  "selection": "Selection",
+  "selectedCount": "{count} selected",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "willRemovePhotosDesc": "{count} photos will be removed from {title}. This does not delete the original photos.",
+  "@willRemovePhotosDesc": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "removeCountPhotos": "Remove {count} photos",
+  "@removeCountPhotos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noCollectionsSubtitle": "Check back later for curated collections",
+  "signInToCreateCollections": "Sign in to create collections",
+  "signInToCreateCollectionsBody": "Save your favorite photos into custom collections and organize them your way.",
+
+  "@@_PAGE_PHOTO": "Photo Details",
+  "colorPalette": "COLOR PALETTE",
+  "copiedHex": "Copied {hex}",
+  "@copiedHex": {
+    "placeholders": {
+      "hex": {
+        "type": "String"
+      }
+    }
+  },
+  "unableToLoadPhoto": "Unable to load photo",
+
+  "@@_PAGE_COLLECTION_DETAIL": "Collection Detail",
+  "unknownUser": "@unknown",
+  "exploreThemeRoadTrips": "Road trips",
+  "exploreThemeNationalParks": "National parks",
+  "exploreThemeLandscape": "Landscape",
+  "exploreThemeOpenSky": "Open sky",
+  "exploreThemeTravelNotes": "Travel notes"
 }

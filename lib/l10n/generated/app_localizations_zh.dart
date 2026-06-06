@@ -215,6 +215,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get signInToSavePhotosBody => '创建灵感合集，并与 Unsplash 账号同步。';
 
   @override
+  String get featured => '精选';
+
+  @override
+  String byName(String name) {
+    return '来自 $name';
+  }
+
+  @override
+  String get noPhotos => '暂无图片';
+
+  @override
   String get collectionsPageTitle => '合集';
 
   @override
@@ -553,7 +564,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get jumpToFeed => '跳转至信息流';
 
   @override
-  String get noDescriptionFallback => '创建者尚未为该合集添加描述。布局保持不变，重点移至创建者和图片流。';
+  String get noDescriptionFallback => '暂无创建者描述，重点展示创建者和图片。';
 
   @override
   String get curatedSets => '精选合集';
@@ -693,7 +704,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get removePhotos => '移除图片';
 
   @override
-  String get removePhotosSubtitle => '进入该合集的多选模式';
+  String get removePhotosSubtitle => '选择多张图片将其从此合集中移除。图片仍保留在 Unsplash 上。';
 
   @override
   String get deleteCollectionAction2 => '删除合集';
@@ -731,4 +742,63 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get signInAgainToCreate => '请重新登录以创建合集。';
+
+  @override
+  String get batchMode => '批量模式';
+
+  @override
+  String get selection => '已选择';
+
+  @override
+  String selectedCount(int count) {
+    return '已选 $count 张';
+  }
+
+  @override
+  String willRemovePhotosDesc(int count, String title) {
+    return '将从此合集移除 $count 张图片。不会删除原始图片。';
+  }
+
+  @override
+  String removeCountPhotos(int count) {
+    return '移除 $count 张图片';
+  }
+
+  @override
+  String get noCollectionsSubtitle => '稍后再来看看精选合集吧';
+
+  @override
+  String get signInToCreateCollections => '登录以创建合集';
+
+  @override
+  String get signInToCreateCollectionsBody => '将你喜欢的图片保存到自定义合集中，随心整理。';
+
+  @override
+  String get colorPalette => '调色板';
+
+  @override
+  String copiedHex(String hex) {
+    return '已复制 $hex';
+  }
+
+  @override
+  String get unableToLoadPhoto => '无法加载图片';
+
+  @override
+  String get unknownUser => '@unknown';
+
+  @override
+  String get exploreThemeRoadTrips => '公路旅行';
+
+  @override
+  String get exploreThemeNationalParks => '国家公园';
+
+  @override
+  String get exploreThemeLandscape => '风光';
+
+  @override
+  String get exploreThemeOpenSky => '开阔天空';
+
+  @override
+  String get exploreThemeTravelNotes => '旅行笔记';
 }

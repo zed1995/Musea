@@ -11,6 +11,7 @@ import 'package:musea/features/collections/presentation/providers/collections_pr
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 void main() {
   const curator = User(
@@ -82,7 +83,9 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-1'),
         ),
       ),
@@ -120,7 +123,9 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(
             collectionId: 'collection-progressive',
             initialCollection: initialCollection,
@@ -161,7 +166,9 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-deep-link'),
         ),
       ),
@@ -200,7 +207,9 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-root'),
         ),
       ),
@@ -242,7 +251,9 @@ void main() {
             ],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(
             collectionId: 'collection-error',
             initialCollection: initialCollection,
@@ -311,7 +322,9 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(
             collectionId: 'collection-hydrate-success',
             initialCollection: initialCollection,
@@ -376,7 +389,9 @@ void main() {
             ],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(
             collectionId: 'collection-preview-error',
             initialCollection: initialCollection,
@@ -422,7 +437,9 @@ void main() {
             },
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-feed-retry'),
         ),
       ),
@@ -469,7 +486,9 @@ void main() {
             (ref) => photos,
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-feed'),
         ),
       ),
@@ -515,7 +534,9 @@ void main() {
             (ref) => photos,
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-liked-feed'),
         ),
       ),
@@ -550,7 +571,9 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-2'),
         ),
       ),
@@ -583,7 +606,9 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-3'),
         ),
       ),
@@ -656,7 +681,9 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-5'),
         ),
       ),
@@ -707,6 +734,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp.router(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
       ),
     );

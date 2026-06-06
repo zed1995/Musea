@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class CollectionRemovePhotosPage extends ConsumerStatefulWidget {
   const CollectionRemovePhotosPage({
@@ -48,8 +49,9 @@ class _CollectionRemovePhotosPageState
       if (mounted) Navigator.of(context).pop();
     } catch (e) {
       if (mounted) {
+        final l10n = AppLocalizations.of(context)!;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to remove photos: $e')),
+          SnackBar(content: Text('${l10n.removePhotos}: $e')),
         );
       }
     } finally {
@@ -59,6 +61,7 @@ class _CollectionRemovePhotosPageState
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final photosAsync = ref.watch(collectionPhotosProvider(widget.collectionId));
 
     return Scaffold(
@@ -74,7 +77,7 @@ class _CollectionRemovePhotosPageState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Batch Mode',
+              l10n.batchMode,
               style: TextStyle(
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
@@ -83,7 +86,7 @@ class _CollectionRemovePhotosPageState
               ),
             ),
             Text(
-              'Remove photos',
+              l10n.removePhotos,
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w700,
@@ -98,7 +101,7 @@ class _CollectionRemovePhotosPageState
             child: TextButton(
               onPressed: _clearSelection,
               child: Text(
-                'Done',
+                l10n.doneAction,
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
@@ -136,8 +139,7 @@ class _CollectionRemovePhotosPageState
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'Select multiple photos to remove them from this collection. '
-                              'Photos stay available on Unsplash.',
+                              l10n.removePhotosSubtitle,
                               style: TextStyle(
                                 fontSize: 14,
                                 height: 1.5,
@@ -155,7 +157,7 @@ class _CollectionRemovePhotosPageState
                       child: Row(
                         children: [
                           Text(
-                            'Selection',
+                            l10n.selection,
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w700,
@@ -174,7 +176,7 @@ class _CollectionRemovePhotosPageState
                               borderRadius: BorderRadius.circular(999),
                             ),
                             child: Text(
-                              '${_selectedIds.length} selected',
+                              l10n.selectedCount(_selectedIds.length),
                               style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w700,
@@ -299,9 +301,7 @@ class _CollectionRemovePhotosPageState
                       borderRadius: BorderRadius.circular(18),
                     ),
                     child: Text(
-                      '${_selectedIds.length} photos will be removed from '
-                      '${widget.collectionTitle}. '
-                      'This does not delete the original photos.',
+                      l10n.willRemovePhotosDesc(_selectedIds.length, widget.collectionTitle),
                       style: TextStyle(
                         fontSize: 13,
                         height: 1.4,
@@ -331,7 +331,7 @@ class _CollectionRemovePhotosPageState
                               ),
                             )
                           : Text(
-                              'Remove ${_selectedIds.length} photos',
+                              l10n.removeCountPhotos(_selectedIds.length),
                               style: const TextStyle(
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,
@@ -348,7 +348,7 @@ class _CollectionRemovePhotosPageState
           child: CircularProgressIndicator(),
         ),
         error: (error, _) => Center(
-          child: Text('Failed to load photos: $error'),
+          child: Text('${l10n.removePhotos}: $error'),
         ),
       ),
     );

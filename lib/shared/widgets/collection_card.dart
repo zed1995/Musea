@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/router/detail_route_extras.dart';
 
 class CollectionCard extends StatelessWidget {
@@ -12,6 +13,7 @@ class CollectionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final coverUrl = collection.coverPhoto?.urlRegular ??
         (collection.previewPhotos.isNotEmpty
             ? collection.previewPhotos.first.smallUrl
@@ -82,7 +84,7 @@ class CollectionCard extends StatelessWidget {
                               ),
                               const SizedBox(height: 3),
                               Text(
-                                _metaText(),
+                                _metaText(l10n),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
@@ -98,9 +100,9 @@ class CollectionCard extends StatelessWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             if (_isFeatured) ...[
-                              const _MetaPill(
+                              _MetaPill(
                                 child: Text(
-                                  'Featured',
+                                  l10n.featured,
                                   style: _pillTextStyle,
                                 ),
                               ),
@@ -160,11 +162,11 @@ class CollectionCard extends StatelessWidget {
 
   bool get _isFeatured => collection.totalPhotos >= 20;
 
-  String _metaText() {
+  String _metaText(AppLocalizations l10n) {
     if (collection.user?.name case final name? when name.isNotEmpty) {
-      return 'by $name';
+      return l10n.byName(name);
     }
-    return '${collection.totalPhotos} photos';
+    return l10n.photoCount(collection.totalPhotos);
   }
 
   Widget _placeholder() {

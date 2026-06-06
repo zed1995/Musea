@@ -263,7 +263,7 @@ class _GuestTopBarButton extends StatelessWidget {
         border: Border.all(color: const Color(0xFFECECF0)),
       ),
       child: IconButton(
-        onPressed: () {},
+        onPressed: () => context.push('/settings'),
         icon:
             const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF27272A)),
         padding: EdgeInsets.zero,
@@ -920,23 +920,6 @@ class _MineHero extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 14),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: const Color(0xFFF1F1F3)),
-                ),
-                child: ListTile(
-                  leading: const Icon(
-                    Icons.tune_rounded,
-                    color: Color(0xFF3F3F46),
-                  ),
-                  title: Text(l10n.settingsTitle),
-                  trailing: const Icon(Icons.chevron_right_rounded),
-                  onTap: () => context.push('/settings'),
-                ),
-              ),
-              const SizedBox(height: 12),
               Text(
                 isRefreshing
                     ? l10n.syncingLatestProfile

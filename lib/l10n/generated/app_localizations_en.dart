@@ -222,6 +222,17 @@ class AppLocalizationsEn extends AppLocalizations {
       'Build collections of what inspires you and keep them in sync with your Unsplash account.';
 
   @override
+  String get featured => 'Featured';
+
+  @override
+  String byName(String name) {
+    return 'by $name';
+  }
+
+  @override
+  String get noPhotos => 'No photos';
+
+  @override
   String get collectionsPageTitle => 'Collections';
 
   @override
@@ -733,7 +744,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removePhotosSubtitle =>
-      'Enter multi-select mode for this collection';
+      'Select multiple photos to remove them from this collection. Photos stay available on Unsplash.';
 
   @override
   String get deleteCollectionAction2 => 'Delete collection';
@@ -773,4 +784,65 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get signInAgainToCreate =>
       'Please sign in again to create collections.';
+
+  @override
+  String get batchMode => 'Batch Mode';
+
+  @override
+  String get selection => 'Selection';
+
+  @override
+  String selectedCount(int count) {
+    return '$count selected';
+  }
+
+  @override
+  String willRemovePhotosDesc(int count, String title) {
+    return '$count photos will be removed from $title. This does not delete the original photos.';
+  }
+
+  @override
+  String removeCountPhotos(int count) {
+    return 'Remove $count photos';
+  }
+
+  @override
+  String get noCollectionsSubtitle =>
+      'Check back later for curated collections';
+
+  @override
+  String get signInToCreateCollections => 'Sign in to create collections';
+
+  @override
+  String get signInToCreateCollectionsBody =>
+      'Save your favorite photos into custom collections and organize them your way.';
+
+  @override
+  String get colorPalette => 'COLOR PALETTE';
+
+  @override
+  String copiedHex(String hex) {
+    return 'Copied $hex';
+  }
+
+  @override
+  String get unableToLoadPhoto => 'Unable to load photo';
+
+  @override
+  String get unknownUser => '@unknown';
+
+  @override
+  String get exploreThemeRoadTrips => 'Road trips';
+
+  @override
+  String get exploreThemeNationalParks => 'National parks';
+
+  @override
+  String get exploreThemeLandscape => 'Landscape';
+
+  @override
+  String get exploreThemeOpenSky => 'Open sky';
+
+  @override
+  String get exploreThemeTravelNotes => 'Travel notes';
 }

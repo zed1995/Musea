@@ -494,6 +494,24 @@ abstract class AppLocalizations {
   /// **'Build collections of what inspires you and keep them in sync with your Unsplash account.'**
   String get signInToSavePhotosBody;
 
+  /// No description provided for @featured.
+  ///
+  /// In en, this message translates to:
+  /// **'Featured'**
+  String get featured;
+
+  /// No description provided for @byName.
+  ///
+  /// In en, this message translates to:
+  /// **'by {name}'**
+  String byName(String name);
+
+  /// No description provided for @noPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'No photos'**
+  String get noPhotos;
+
   /// No description provided for @collectionsPageTitle.
   ///
   /// In en, this message translates to:
@@ -1421,7 +1439,7 @@ abstract class AppLocalizations {
   /// No description provided for @removePhotosSubtitle.
   ///
   /// In en, this message translates to:
-  /// **'Enter multi-select mode for this collection'**
+  /// **'Select multiple photos to remove them from this collection. Photos stay available on Unsplash.'**
   String get removePhotosSubtitle;
 
   /// No description provided for @deleteCollectionAction2.
@@ -1489,6 +1507,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Please sign in again to create collections.'**
   String get signInAgainToCreate;
+
+  /// No description provided for @batchMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Batch Mode'**
+  String get batchMode;
+
+  /// No description provided for @selection.
+  ///
+  /// In en, this message translates to:
+  /// **'Selection'**
+  String get selection;
+
+  /// No description provided for @selectedCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} selected'**
+  String selectedCount(int count);
+
+  /// No description provided for @willRemovePhotosDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} photos will be removed from {title}. This does not delete the original photos.'**
+  String willRemovePhotosDesc(int count, String title);
+
+  /// No description provided for @removeCountPhotos.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove {count} photos'**
+  String removeCountPhotos(int count);
+
+  /// No description provided for @noCollectionsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Check back later for curated collections'**
+  String get noCollectionsSubtitle;
+
+  /// No description provided for @signInToCreateCollections.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to create collections'**
+  String get signInToCreateCollections;
+
+  /// No description provided for @signInToCreateCollectionsBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Save your favorite photos into custom collections and organize them your way.'**
+  String get signInToCreateCollectionsBody;
+
+  /// No description provided for @colorPalette.
+  ///
+  /// In en, this message translates to:
+  /// **'COLOR PALETTE'**
+  String get colorPalette;
+
+  /// No description provided for @copiedHex.
+  ///
+  /// In en, this message translates to:
+  /// **'Copied {hex}'**
+  String copiedHex(String hex);
+
+  /// No description provided for @unableToLoadPhoto.
+  ///
+  /// In en, this message translates to:
+  /// **'Unable to load photo'**
+  String get unableToLoadPhoto;
+
+  /// No description provided for @unknownUser.
+  ///
+  /// In en, this message translates to:
+  /// **'@unknown'**
+  String get unknownUser;
+
+  /// No description provided for @exploreThemeRoadTrips.
+  ///
+  /// In en, this message translates to:
+  /// **'Road trips'**
+  String get exploreThemeRoadTrips;
+
+  /// No description provided for @exploreThemeNationalParks.
+  ///
+  /// In en, this message translates to:
+  /// **'National parks'**
+  String get exploreThemeNationalParks;
+
+  /// No description provided for @exploreThemeLandscape.
+  ///
+  /// In en, this message translates to:
+  /// **'Landscape'**
+  String get exploreThemeLandscape;
+
+  /// No description provided for @exploreThemeOpenSky.
+  ///
+  /// In en, this message translates to:
+  /// **'Open sky'**
+  String get exploreThemeOpenSky;
+
+  /// No description provided for @exploreThemeTravelNotes.
+  ///
+  /// In en, this message translates to:
+  /// **'Travel notes'**
+  String get exploreThemeTravelNotes;
 }
 
 class _AppLocalizationsDelegate

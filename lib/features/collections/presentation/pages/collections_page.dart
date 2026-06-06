@@ -31,11 +31,11 @@ class CollectionsPage extends ConsumerWidget {
                     onAddPressed: () =>
                         _handleAddPressed(context, ref, authState),
                   ),
-                  const Expanded(
+                  Expanded(
                     child: EmptyState(
                       icon: Icons.collections_bookmark_outlined,
-                      title: 'No collections',
-                      subtitle: 'Check back later for curated collections',
+                      title: l10n.noCollectionsYet,
+                      subtitle: l10n.noCollectionsSubtitle,
                     ),
                   ),
                 ],
@@ -91,15 +91,15 @@ class CollectionsPage extends ConsumerWidget {
     WidgetRef ref,
     AuthState authState,
   ) {
+    final l10n = AppLocalizations.of(context)!;
     if (authState.isAuthenticated) {
       showCreateCollectionSheet(context);
     } else {
       showAuthGateSheet(
         context,
         ref,
-        title: 'Sign in to create collections',
-        body:
-            'Save your favorite photos into custom collections and organize them your way.',
+        title: l10n.signInToCreateCollections,
+        body: l10n.signInToCreateCollectionsBody,
       );
     }
   }

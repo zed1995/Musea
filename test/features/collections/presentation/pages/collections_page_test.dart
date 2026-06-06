@@ -7,6 +7,7 @@ import 'package:musea/features/collections/presentation/pages/collections_page.d
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 /// A simple smoke test to verify the CollectionsPage renders without crashing.
 void main() {
@@ -28,14 +29,16 @@ void main() {
             (ref) => <Collection>[],
           ),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionsPage(),
         ),
       ),
     );
 
     // Verify the empty state message renders
-    expect(find.text('No collections'), findsOneWidget);
+    expect(find.text('No collections yet.'), findsOneWidget);
   });
 
   testWidgets('CollectionsPage uses the simplified prototype header',
@@ -85,7 +88,9 @@ void main() {
           ..._authOverrides(),
           collectionsProvider(1).overrideWith((ref) => collections),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionsPage(),
         ),
       ),
@@ -130,7 +135,9 @@ void main() {
           ..._authOverrides(),
           collectionsProvider(1).overrideWith((ref) => collections),
         ],
-        child: const MaterialApp(
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionsPage(),
         ),
       ),

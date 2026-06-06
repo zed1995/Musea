@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/core/theme/app_theme.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
@@ -25,7 +26,11 @@ class MuseaApp extends ConsumerWidget {
         settings.valueOrNull?.language ?? AppLanguage.system,
       ),
       supportedLocales: AppLocalizations.supportedLocales,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: [
+        ...AppLocalizations.localizationsDelegates,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+      ],
       routerConfig: appRouter,
     );
   }

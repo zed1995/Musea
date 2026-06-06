@@ -82,6 +82,18 @@
   "signInToSavePhotos": "登录以保存图片",
   "signInToSavePhotosBody": "创建灵感合集，并与 Unsplash 账号同步。",
 
+  "@@_SHARED_WIDGETS": "共享组件",
+  "featured": "精选",
+  "byName": "来自 {name}",
+  "@byName": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "noPhotos": "暂无图片",
+
   "@@_PAGE_MINE": "我的",
   "collectionsPageTitle": "合集",
   "minePageTitle": "我的",
@@ -213,7 +225,7 @@
   "retryLoadingDetails": "重试加载详情",
   "factsWillAppear": "更多合集信息将在详情加载完成后显示。",
   "jumpToFeed": "跳转至信息流",
-  "noDescriptionFallback": "创建者尚未为该合集添加描述。布局保持不变，重点移至创建者和图片流。",
+  "noDescriptionFallback": "暂无创建者描述，重点展示创建者和图片。",
   "curatedSets": "精选合集",
   "photoCount": "{count} 张图片",
   "@photoCount": {
@@ -343,5 +355,60 @@
   "tooManyRequests": "请求过于频繁，请稍后重试。",
   "photoAlreadyInCollection": "图片已在该合集中。",
   "couldNotIdentifyUser": "无法识别用户，请重新登录。",
-  "signInAgainToCreate": "请重新登录以创建合集。"
+  "signInAgainToCreate": "请重新登录以创建合集。",
+
+  "@@_PAGE_COLLECTION_REMOVE": "从合集中移除图片",
+  "batchMode": "批量模式",
+  "removePhotosSubtitle": "选择多张图片将其从此合集中移除。图片仍保留在 Unsplash 上。",
+  "selection": "已选择",
+  "selectedCount": "已选 {count} 张",
+  "@selectedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "willRemovePhotosDesc": "将从此合集移除 {count} 张图片。不会删除原始图片。",
+  "@willRemovePhotosDesc": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "title": {
+        "type": "String"
+      }
+    }
+  },
+  "removeCountPhotos": "移除 {count} 张图片",
+  "@removeCountPhotos": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "noCollectionsSubtitle": "稍后再来看看精选合集吧",
+  "signInToCreateCollections": "登录以创建合集",
+  "signInToCreateCollectionsBody": "将你喜欢的图片保存到自定义合集中，随心整理。",
+
+  "@@_PAGE_PHOTO": "图片详情",
+  "colorPalette": "调色板",
+  "copiedHex": "已复制 {hex}",
+  "@copiedHex": {
+    "placeholders": {
+      "hex": {
+        "type": "String"
+      }
+    }
+  },
+  "unableToLoadPhoto": "无法加载图片",
+
+  "@@_PAGE_COLLECTION_DETAIL": "合集详情",
+  "unknownUser": "@unknown",
+  "exploreThemeRoadTrips": "公路旅行",
+  "exploreThemeNationalParks": "国家公园",
+  "exploreThemeLandscape": "风光",
+  "exploreThemeOpenSky": "开阔天空",
+  "exploreThemeTravelNotes": "旅行笔记"
 }

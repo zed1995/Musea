@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:musea/features/discover/domain/entities/topic.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/core/theme/text_styles.dart';
+import 'package:musea/features/discover/domain/entities/topic.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class TopicBar extends StatelessWidget {
   const TopicBar({
@@ -30,7 +31,7 @@ class TopicBar extends StatelessWidget {
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: _TopicChip(
-                label: 'All',
+                label: AppLocalizations.of(context)!.filterAll,
                 isSelected: selectedTopicSlug == null,
                 onTap: () => onTopicTap(null),
               ),

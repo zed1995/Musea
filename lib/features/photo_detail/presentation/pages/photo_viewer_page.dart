@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 
 class PhotoViewerPage extends ConsumerWidget {
@@ -21,6 +22,7 @@ class PhotoViewerPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final photoAsync = ref.watch(photoDetailProvider(photoId));
     final resolvedPhoto = photoAsync.valueOrNull ?? initialPhoto;
 
@@ -43,7 +45,7 @@ class PhotoViewerPage extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 24),
             child: Text(
-              'Unable to load photo',
+              l10n.unableToLoadPhoto,
               style: TextStyle(
                 color: Colors.white.withValues(alpha: 0.85),
                 fontSize: 16,

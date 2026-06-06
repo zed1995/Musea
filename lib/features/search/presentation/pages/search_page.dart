@@ -909,7 +909,7 @@ class _UserResultTile extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '@${user.username} · ${user.totalPhotos} photos · ${user.totalCollections} collections',
+                    '@${user.username} · ${l10n.photoCount(user.totalPhotos)} · ${l10n.collectionsCount(user.totalCollections)}',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(

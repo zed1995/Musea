@@ -2,6 +2,7 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/intl.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/core/theme/text_styles.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
@@ -155,7 +156,8 @@ class _CollectionDetailContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
-    final factRows = _buildFactRows(collection, l10n);
+    final locale = Localizations.localeOf(context).toLanguageTag();
+    final factRows = _buildFactRows(collection, l10n, locale);
     final previewUrls = _previewUrls(
       collection.previewPhotos,
       photosAsync,
@@ -197,7 +199,7 @@ class _CollectionDetailContent extends StatelessWidget {
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           child: Row(
-                            children: _buildMetaPills(collection, l10n),
+                            children: _buildMetaPills(collection, l10n, locale),
                           ),
                         ),
                       ],
@@ -372,7 +374,7 @@ class _CollectionHero extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _GlassChip(label: '${collection.totalPhotos} photos'),
+                        _GlassChip(label: l10n.photoCount(collection.totalPhotos)),
                         const SizedBox(width: 8),
                         _GlassChip(label: l10n.photoCollection),
                         const SizedBox(width: 8),
@@ -430,7 +432,7 @@ class _CollectionHero extends StatelessWidget {
                                       ),
                                       const SizedBox(height: 4),
                                       Text(
-                                        _curatorMeta(curator),
+                                        _curatorMeta(curator, l10n),
                                         style: AppTextStyles.caption.copyWith(
                                           color: Colors.white.withValues(
                                             alpha: 0.96,
@@ -462,7 +464,7 @@ class _CollectionHero extends StatelessWidget {
                             ),
                           ),
                           child: Text(
-                            'Follow',
+                            l10n.follow,
                             style: AppTextStyles.caption.copyWith(
                               color: AppColors.gray900,
                               fontWeight: FontWeight.w700,
@@ -516,7 +518,7 @@ class _FeedSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _sectionEyebrow('Photos'),
+                  _sectionEyebrow(l10n.segmentPhotos),
                   const SizedBox(height: 4),
                   Text(
                     l10n.insideTheCollection,
@@ -566,7 +568,7 @@ class _ContinueExploringSection extends StatelessWidget {
         _DetailSectionHeader(
           eyebrow: l10n.continueExploring,
           title: l10n.exploreNearbyThemes,
-          actionLabel: 'See all',
+          actionLabel: l10n.seeAll,
         ),
         const SizedBox(height: 12),
         Wrap(
@@ -1165,19 +1167,19 @@ Text _sectionEyebrow(String text) {
   );
 }
 
-List<Widget> _buildFactRows(Collection collection, AppLocalizations l10n) {
+List<Widget> _buildFactRows(Collection collection, AppLocalizations l10n, String locale) {
   final rows = <MapEntry<String, String>>[
     if (collection.publishedAt != null)
-      MapEntry(l10n.published, _formatDate(collection.publishedAt!)),
+      MapEntry(l10n.published, _formatDate(collection.publishedAt!, locale)),
     if (collection.updatedAt != null)
-      MapEntry(l10n.updated, _formatDate(collection.updatedAt!)),
+      MapEntry(l10n.updated, _formatDate(collection.updatedAt!, locale)),
     if (collection.lastCollectedAt != null)
-      MapEntry(l10n.lastCollected, _formatDate(collection.lastCollectedAt!)),
+      MapEntry(l10n.lastCollected, _formatDate(collection.lastCollectedAt!, locale)),
     MapEntry(
       l10n.visibility,
       _collectionIsPrivate(collection) ? l10n.private : l10n.public,
     ),
-    MapEntry('Photos', '${collection.totalPhotos}'),
+    MapEntry(l10n.segmentPhotos, '${collection.totalPhotos}'),
   ];
 
   return rows
@@ -1213,26 +1215,26 @@ List<Widget> _buildFactRows(Collection collection, AppLocalizations l10n) {
       .toList();
 }
 
-List<Widget> _buildMetaPills(Collection collection, AppLocalizations l10n) {
+List<Widget> _buildMetaPills(Collection collection, AppLocalizations l10n, String locale) {
   final pills = <Widget>[];
 
   if (collection.publishedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
-      _MetaPill(label: l10n.publishedDate(_formatDate(collection.publishedAt!))),
+      _MetaPill(label: l10n.publishedDate(_formatDate(collection.publishedAt!, locale))),
     );
   }
   if (collection.updatedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
-      _MetaPill(label: l10n.updatedDate(_formatDate(collection.updatedAt!))),
+      _MetaPill(label: l10n.updatedDate(_formatDate(collection.updatedAt!, locale))),
     );
   }
   if (collection.lastCollectedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
       _MetaPill(
-        label: l10n.lastCollectedDate(_formatDate(collection.lastCollectedAt!)),
+        label: l10n.lastCollectedDate(_formatDate(collection.lastCollectedAt!, locale)),
       ),
     );
   }
@@ -1276,12 +1278,12 @@ List<String> _buildExploreThemes(Collection collection, AppLocalizations l10n) {
     return deduped;
   }
 
-  return const [
-    'Road trips',
-    'National parks',
-    'Landscape',
-    'Open sky',
-    'Travel notes',
+  return [
+    l10n.exploreThemeRoadTrips,
+    l10n.exploreThemeNationalParks,
+    l10n.exploreThemeLandscape,
+    l10n.exploreThemeOpenSky,
+    l10n.exploreThemeTravelNotes,
   ];
 }
 
@@ -1364,34 +1366,20 @@ String? _coverUrl(Collection collection) {
   return null;
 }
 
-String _curatorMeta(User? user) {
+String _curatorMeta(User? user, AppLocalizations l10n) {
   if (user == null) {
-    return '@unknown';
+    return l10n.unknownUser;
   }
 
   final parts = <String>['@${user.username}'];
   if (user.totalCollections > 0) {
-    parts.add('${user.totalCollections} collections');
+    parts.add(l10n.collectionsCount(user.totalCollections));
   }
   return parts.join(' · ');
 }
 
-String _formatDate(DateTime date) {
-  const months = [
-    'Jan',
-    'Feb',
-    'Mar',
-    'Apr',
-    'May',
-    'Jun',
-    'Jul',
-    'Aug',
-    'Sep',
-    'Oct',
-    'Nov',
-    'Dec',
-  ];
-  return '${months[date.month - 1]} ${date.day}, ${date.year}';
+String _formatDate(DateTime date, String locale) {
+  return DateFormat.yMMMd(locale).format(date);
 }
 
 String _bestProfileImage(User user) {

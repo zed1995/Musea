@@ -330,6 +330,9 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Settings'), findsOneWidget);
+    expect(
+      find.byIcon(Icons.tune_rounded),
+      findsOneWidget,
+    );
   });
 }

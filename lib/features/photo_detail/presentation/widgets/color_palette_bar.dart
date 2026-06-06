@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:musea/core/utils/color_palette.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class ColorPaletteSection extends StatelessWidget {
   const ColorPaletteSection({super.key, required this.hexColor});
@@ -9,13 +10,14 @@ class ColorPaletteSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final palette = generateColorPalette(hexColor);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'COLOR PALETTE',
+        Text(
+          l10n.colorPalette,
           style: TextStyle(
             fontSize: 11,
             fontWeight: FontWeight.w700,
@@ -69,6 +71,7 @@ class _PaletteSwatch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final r = color.red;
     final g = color.green;
     final b = color.blue;
@@ -84,7 +87,7 @@ class _PaletteSwatch extends StatelessWidget {
           Clipboard.setData(ClipboardData(text: hex));
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text('Copied $hex'),
+              content: Text(l10n.copiedHex(hex)),
               duration: const Duration(seconds: 1),
             ),
           );
