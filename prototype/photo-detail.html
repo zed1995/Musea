@@ -60,24 +60,23 @@
             position: absolute;
             top: 0; left: 0; right: 0;
             z-index: 10;
-            padding: 10px 12px 42px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.34) 0%, rgba(0,0,0,0.08) 72%, transparent 100%);
+            padding: 8px 4px 28px;
+            min-height: 64px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.12) 56%, transparent 100%);
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
         .photo-topbar button {
-            width: 36px; height: 36px; border-radius: 12px;
+            width: 48px; height: 48px; border-radius: 999px;
             display: flex; align-items: center; justify-content: center;
-            cursor: pointer; border: none;
-            background: rgba(255,255,255,0.16);
-            border: 1px solid rgba(255,255,255,0.12);
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
+            cursor: pointer;
+            background: transparent;
+            border: 0;
             color: #fff;
             transition: all 0.15s ease;
         }
-        .photo-topbar button:hover { background: rgba(255,255,255,0.24); }
+        .photo-topbar button:hover { background: rgba(255,255,255,0.10); }
 
         .user-avatar {
             width: 34px; height: 34px; border-radius: 50%;
@@ -222,11 +221,10 @@
 
             <!-- Top bar overlaid on photo -->
             <div class="photo-topbar">
-                <button aria-label="Back"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg></button>
-                <div class="flex items-center gap-2">
+                <button aria-label="Back"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12H5"/><path d="m11 18-6-6 6-6"/></svg></button>
+                <div class="flex items-center gap-1">
                     <button aria-label="Save"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v17l-6-4-6 4z"/></svg></button>
                     <button aria-label="Share"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4"/><path d="m8 8 4-4 4 4"/><path d="M5 12v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>
-                    <button aria-label="More"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12h.01"/><path d="M19 12h.01"/><path d="M5 12h.01"/></svg></button>
                 </div>
             </div>
         </div>

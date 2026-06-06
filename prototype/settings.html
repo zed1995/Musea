@@ -33,7 +33,7 @@
     </script>
     <style>
         * { -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', system-ui, sans-serif; background: #f5f5f4; color: #111; overflow-x: hidden; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #F6F6F6; color: #111; overflow-x: hidden; }
         .icon {
             width: 20px;
             height: 20px;
@@ -46,53 +46,31 @@
             fill: none;
         }
         .icon-sm { width: 16px; height: 16px; }
-        .status-bar { background: rgba(250,250,250,0.94); }
+        .status-bar { background: rgba(246,246,246,0.98); }
         .scrollbar-hide::-webkit-scrollbar { display: none; }
         .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
         .topbar-title {
-            font-size: 32px;
-            line-height: 1;
-            letter-spacing: -0.05em;
-            font-weight: 800;
+            font-size: 22px;
+            line-height: 1.2;
+            letter-spacing: -0.02em;
+            font-weight: 600;
             color: #18181B;
         }
-        .topbar-kicker {
-            font-size: 11px;
-            line-height: 1;
-            letter-spacing: 0.14em;
-            text-transform: uppercase;
-            font-weight: 700;
-            color: #A1A1AA;
-        }
-        .topbar-icon-btn {
-            width: 38px;
-            height: 38px;
-            border-radius: 14px;
-            background: rgba(255,255,255,0.86);
-            border: 1px solid #ECECF0;
+        .topbar-nav-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 999px;
+            background: transparent;
+            border: 0;
             display: flex;
             align-items: center;
             justify-content: center;
             color: #27272A;
-            box-shadow: 0 10px 24px rgba(24,24,27,0.05);
+            flex-shrink: 0;
         }
-        .hero-shell {
-            position: relative;
-            overflow: hidden;
-            background:
-                radial-gradient(circle at top right, rgba(24,24,27,0.06), transparent 32%),
-                linear-gradient(180deg, #FCFCFD 0%, #F6F5F3 100%);
-            border-bottom: 1px solid #ECE9E3;
-        }
-        .hero-shell::after {
-            content: '';
-            position: absolute;
-            right: -48px;
-            top: -32px;
-            width: 160px;
-            height: 160px;
-            border-radius: 999px;
-            background: radial-gradient(circle, rgba(214,211,209,0.55) 0%, rgba(214,211,209,0) 72%);
+        .topbar-shell {
+            background: rgba(246,246,246,0.98);
+            border-bottom: 1px solid #E5E7EB;
         }
         .section-label {
             font-size: 11px;
@@ -100,14 +78,14 @@
             letter-spacing: 0.14em;
             text-transform: uppercase;
             font-weight: 800;
-            color: #A8A29E;
+            color: #9CA3AF;
             padding-left: 6px;
         }
         .settings-group {
             border-radius: 24px;
-            background: rgba(255,255,255,0.92);
-            border: 1px solid #EEEBE6;
-            box-shadow: 0 14px 34px rgba(24,24,27,0.05);
+            background: #FFFFFF;
+            border: 1px solid #E5E7EB;
+            box-shadow: 0 6px 18px rgba(24,24,27,0.04);
             overflow: hidden;
         }
         .settings-row {
@@ -116,9 +94,9 @@
             align-items: center;
             gap: 14px;
             padding: 0 18px;
-            background: rgba(255,255,255,0.88);
+            background: #FFFFFF;
         }
-        .settings-row + .settings-row { border-top: 1px solid #F3F1ED; }
+        .settings-row + .settings-row { border-top: 1px solid #F3F4F6; }
         .row-icon {
             width: 42px;
             height: 42px;
@@ -127,8 +105,8 @@
             align-items: center;
             justify-content: center;
             flex-shrink: 0;
-            background: linear-gradient(180deg, #F7F6F4 0%, #F0ECE7 100%);
-            color: #292524;
+            background: #F3F4F6;
+            color: #374151;
         }
         .row-title {
             font-size: 14px;
@@ -139,7 +117,7 @@
         .row-value {
             font-size: 12px;
             font-weight: 700;
-            color: #57534E;
+            color: #6B7280;
             white-space: nowrap;
         }
         .toggle-pill {
@@ -176,7 +154,7 @@
     </style>
 </head>
 <body>
-<div class="w-[412px] h-[915px] mx-auto relative overflow-hidden bg-[#F7F5F1]">
+<div class="w-[412px] h-[915px] mx-auto relative overflow-hidden bg-[#F6F6F6]">
     <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
         <span class="text-sm font-semibold text-zinc-900">12:30</span>
         <div class="flex items-center gap-2">
@@ -187,21 +165,17 @@
     </div>
 
     <div class="pt-[52px] pb-[32px] h-full overflow-y-auto scrollbar-hide">
-        <div class="hero-shell px-4 pt-4 pb-6">
-            <div class="relative z-10 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="topbar-icon-btn">
-                        <svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
-                    </div>
-                    <div>
-                        <div class="topbar-kicker">Workspace</div>
-                        <h1 class="topbar-title">Settings</h1>
-                    </div>
-                </div>
+        <div class="sticky top-0 z-40 topbar-shell px-4 pt-3 pb-3">
+            <div class="flex items-center justify-between">
+                <button class="topbar-nav-btn" aria-label="Back">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="M20 12H5"/><path d="m11 18-6-6 6-6"/></svg>
+                </button>
+                <h1 class="topbar-title">Settings</h1>
+                <div class="w-10 h-10 flex-shrink-0"></div>
             </div>
         </div>
 
-        <div class="px-4 pt-6 space-y-5">
+        <div class="px-4 pt-5 space-y-5">
             <div>
                 <div class="section-label">Preferences</div>
                 <div class="settings-group mt-3">
