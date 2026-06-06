@@ -47,7 +47,7 @@ class _SaveToCollectionSheetState
   @override
   void initState() {
     super.initState();
-    _loadCollections();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _loadCollections());
   }
 
   @override

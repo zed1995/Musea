@@ -7,6 +7,7 @@ import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/domain/repositories/collection_repository.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
 import 'package:musea/features/collections/presentation/widgets/create_collection_sheet.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class MockCollectionRepository extends Mock implements CollectionRepository {}
 
@@ -24,6 +25,8 @@ void main() {
           collectionRepositoryProvider.overrideWithValue(mockRepository),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: Center(child: Text('Test host')),
           ),

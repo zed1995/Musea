@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/widgets/collection_manage_sheet.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 void main() {
   Widget buildTestApp({
@@ -10,6 +11,8 @@ void main() {
     VoidCallback? onDelete,
   }) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: Builder(
           builder: (context) => ElevatedButton(

@@ -10,6 +10,7 @@ import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
@@ -73,6 +74,8 @@ void main() {
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[]),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PhotoDetailPage(
             photoId: 'photo-1',
             initialPhoto: initialPhoto,
@@ -108,6 +111,8 @@ void main() {
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[]),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PhotoDetailPage(
             photoId: 'photo-1',
             initialPhoto: initialPhoto,
@@ -143,6 +148,8 @@ void main() {
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[]),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PhotoDetailPage(
             photoId: 'photo-1',
             initialPhoto: hydratedEmptyPhoto,
@@ -177,6 +184,8 @@ void main() {
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[]),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PhotoDetailPage(
             photoId: 'photo-1',
             initialPhoto: prefetchedPhoto,
@@ -203,8 +212,10 @@ void main() {
           photoDetailProvider('photo-1').overrideWith((ref) => pending.future),
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[]),
         ],
-        child: const MaterialApp(
-          home: PhotoDetailPage(photoId: 'photo-1'),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PhotoDetailPage(photoId: 'photo-1'),
         ),
       ),
     );
@@ -234,6 +245,8 @@ void main() {
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[]),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PhotoDetailPage(
             photoId: 'photo-1',
             initialPhoto: initialPhoto,
@@ -296,6 +309,8 @@ void main() {
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[]),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PhotoDetailPage(
             photoId: 'photo-hero-lock',
             initialPhoto: initialPhoto,
@@ -336,8 +351,10 @@ void main() {
           photoDetailProvider('photo-root').overrideWith((ref) => photo),
           userPhotosProvider('forest').overrideWith((ref) => <Photo>[]),
         ],
-        child: const MaterialApp(
-          home: PhotoDetailPage(photoId: 'photo-root'),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PhotoDetailPage(photoId: 'photo-root'),
         ),
       ),
     );
@@ -388,6 +405,8 @@ void main() {
 
     await tester.pumpWidget(
       MaterialApp.router(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         routerConfig: router,
       ),
     );

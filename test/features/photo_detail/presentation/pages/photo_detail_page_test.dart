@@ -15,6 +15,7 @@ import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page
 import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/color_palette_bar.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/router/detail_route_extras.dart';
 
 class MockPhotoRepository extends Mock implements PhotoRepository {}
@@ -156,8 +157,10 @@ void main() {
           photoDetailProvider('photo-1').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: const MaterialApp(
-          home: PhotoDetailPage(photoId: 'photo-1'),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PhotoDetailPage(photoId: 'photo-1'),
         ),
       ),
     );
@@ -193,8 +196,10 @@ void main() {
           photoDetailProvider('photo-main').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: const MaterialApp(
-          home: PhotoDetailPage(photoId: 'photo-main'),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PhotoDetailPage(photoId: 'photo-main'),
         ),
       ),
     );
@@ -237,8 +242,10 @@ void main() {
           photoDetailProvider('photo-liked').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: const MaterialApp(
-          home: PhotoDetailPage(photoId: 'photo-liked'),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PhotoDetailPage(photoId: 'photo-liked'),
         ),
       ),
     );
@@ -302,8 +309,10 @@ void main() {
           photoDetailProvider('photo-toggle-like').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: const MaterialApp(
-          home: PhotoDetailPage(photoId: 'photo-toggle-like'),
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PhotoDetailPage(photoId: 'photo-toggle-like'),
         ),
       ),
     );
@@ -370,7 +379,11 @@ void main() {
           photoDetailProvider(photo.id).overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
       ),
     );
 
@@ -431,7 +444,11 @@ void main() {
           photoDetailProvider(photo.id).overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: MaterialApp.router(routerConfig: router),
+        child: MaterialApp.router(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          routerConfig: router,
+        ),
       ),
     );
 
@@ -467,6 +484,8 @@ void main() {
           photoDetailProvider(photo.id).overrideWith((ref) => photo),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: PhotoViewerPage(
             photoId: photo.id,
             initialPhoto: photo,

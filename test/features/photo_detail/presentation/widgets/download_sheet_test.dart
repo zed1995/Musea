@@ -5,6 +5,7 @@ import 'package:musea/core/services/download_notifier.dart';
 import 'package:musea/core/services/providers.dart';
 import 'package:musea/features/discover/data/models/photo_model.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/download_sheet.dart';
 
 Photo buildPhoto({
@@ -55,6 +56,8 @@ void main() {
           downloadNotifierProvider.overrideWith((ref) => notifier),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: DownloadSheet(photo: buildPhoto()),
           ),
@@ -87,6 +90,8 @@ void main() {
           downloadNotifierProvider.overrideWith((ref) => notifier),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: DownloadSheet(photo: buildPhoto(width: 6000, height: 4000)),
           ),
@@ -108,6 +113,8 @@ void main() {
           downloadNotifierProvider.overrideWith((ref) => notifier),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: Scaffold(
             body: DownloadSheet(photo: buildPhoto()),
           ),
@@ -130,6 +137,8 @@ void main() {
           downloadNotifierProvider.overrideWith((ref) => notifier),
         ],
         child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: MediaQuery(
             data: const MediaQueryData(
               padding: EdgeInsets.only(bottom: 34),

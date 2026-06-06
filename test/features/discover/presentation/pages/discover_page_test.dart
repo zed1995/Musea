@@ -13,6 +13,7 @@ import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/discover/presentation/pages/discover_page.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
 import 'package:musea/features/discover/presentation/providers/topics_provider.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class MockPhotoRepository extends Mock implements PhotoRepository {}
 
@@ -132,6 +133,8 @@ void main() {
           topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: DiscoverPage(),
         ),
       ),
@@ -228,6 +231,8 @@ void main() {
               ])),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: DiscoverPage(),
         ),
       ),
@@ -339,6 +344,8 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: DiscoverPage(),
         ),
       ),
@@ -473,6 +480,8 @@ void main() {
           ),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: DiscoverPage(),
         ),
       ),
@@ -541,6 +550,8 @@ void main() {
           topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
         ],
         child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           home: DiscoverPage(),
         ),
       ),

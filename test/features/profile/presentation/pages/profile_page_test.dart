@@ -9,6 +9,7 @@ import 'package:musea/core/errors/failures.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
@@ -98,6 +99,8 @@ void main() {
     return ProviderScope(
       overrides: overrides,
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: ProfilePage(
           username: username,
           initialUser: initialUser,

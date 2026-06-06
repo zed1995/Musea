@@ -14,6 +14,7 @@ import 'package:musea/features/profile/domain/repositories/profile_repository.da
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/features/search/domain/entities/search_result.dart';
 import 'package:musea/features/search/presentation/pages/search_page.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class MockPhotoRepository extends Mock implements PhotoRepository {}
 
@@ -121,6 +122,8 @@ void main() {
         profileRepositoryProvider.overrideWithValue(mockProfileRepo),
       ],
       child: MaterialApp(
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         home: SearchPage(initialQuery: initialQuery),
       ),
     );
