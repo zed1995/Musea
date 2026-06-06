@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class BottomNavBar extends StatelessWidget {
   const BottomNavBar({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final location = GoRouterState.of(context).uri.toString();
     final selectedIndex = _calculateSelectedIndex(location);
 
@@ -26,7 +28,7 @@ class BottomNavBar extends StatelessWidget {
               _NavItem(
                 icon:
                     selectedIndex == 0 ? Icons.explore : Icons.explore_outlined,
-                label: 'Discover',
+                label: l10n.discoverNavLabel,
                 isActive: selectedIndex == 0,
                 onTap: () => _onItemTapped(0, context),
               ),
@@ -34,13 +36,13 @@ class BottomNavBar extends StatelessWidget {
                 icon: selectedIndex == 1
                     ? Icons.collections_bookmark
                     : Icons.collections_bookmark_outlined,
-                label: 'Collections',
+                label: l10n.collectionsNavLabel,
                 isActive: selectedIndex == 1,
                 onTap: () => _onItemTapped(1, context),
               ),
               _NavItem(
                 icon: selectedIndex == 2 ? Icons.person : Icons.person_outline,
-                label: 'Mine',
+                label: l10n.mineNavLabel,
                 isActive: selectedIndex == 2,
                 onTap: () => _onItemTapped(2, context),
               ),

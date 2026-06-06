@@ -1,0 +1,44 @@
+{
+  "@@locale": "en",
+  "settingsTitle": "Settings",
+  "preferencesTitle": "Preferences",
+  "languageSetting": "Language",
+  "downloadOverWifiOnlySetting": "Download over Wi-Fi only",
+  "storageTitle": "Storage",
+  "cacheSetting": "Cache",
+  "clearCacheTitle": "Clear cache?",
+  "clearCacheBody": "This removes temporary cache but keeps completed downloads.",
+  "cancelAction": "Cancel",
+  "clearAction": "Clear",
+  "downloadsSetting": "Downloads",
+  "downloadsTaskCount": "{count, plural, =1 {1 task} other {{count} tasks}}",
+  "@downloadsTaskCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutTitle": "About",
+  "versionSetting": "Version",
+  "feedbackSetting": "Feedback",
+  "signOutAction": "Sign out",
+  "signOutTitle": "Sign out?",
+  "signOutBody": "Your current account session will be removed from this device.",
+  "followSystemLanguage": "Follow system",
+  "downloadsPageTitle": "Downloads",
+  "downloadingSection": "Downloading",
+  "completedSection": "Completed",
+  "failedSection": "Failed",
+  "retryAction": "Retry",
+  "activeStatus": "Active",
+  "doneStatus": "Done",
+  "failedStatus": "Failed",
+  "noDownloadsYet": "No downloads yet",
+  "discoverNavLabel": "Discover",
+  "collectionsNavLabel": "Collections",
+  "mineNavLabel": "Mine",
+  "searchPlaceholder": "Search photos, collections, users...",
+  "minePageTitle": "Mine",
+  "collectionsPageTitle": "Collections"
+}

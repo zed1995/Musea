@@ -55,9 +55,11 @@ void main() {
 
     setUp(() {
       repository = MockPhotoRepository();
-      when(() => repository.getPhotos(page: any(named: 'page'), perPage: any(named: 'perPage')))
+      when(() => repository.getPhotos(
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'))).thenThrow(UnimplementedError());
+      when(() => repository.getPhotoById(any()))
           .thenThrow(UnimplementedError());
-      when(() => repository.getPhotoById(any())).thenThrow(UnimplementedError());
       when(() => repository.getRandomPhoto()).thenThrow(UnimplementedError());
       when(
         () => repository.searchPhotos(
@@ -70,8 +72,9 @@ void main() {
           contentFilter: any(named: 'contentFilter'),
         ),
       ).thenThrow(UnimplementedError());
-      when(() => repository.getTopics(page: any(named: 'page'), perPage: any(named: 'perPage')))
-          .thenThrow(UnimplementedError());
+      when(() => repository.getTopics(
+          page: any(named: 'page'),
+          perPage: any(named: 'perPage'))).thenThrow(UnimplementedError());
       when(
         () => repository.getTopicPhotos(
           any(),
@@ -138,6 +141,65 @@ void main() {
 
       expect(saved, isTrue);
       expect(notifier.state.statusText, isEmpty);
+    });
+
+    test('adds completed task to task list after a successful download',
+        () async {
+      when(() => repository.trackDownload('photo-1'))
+          .thenAnswer((_) async => const Right(null));
+
+      final notifier = DownloadNotifier(
+        notifications: FlutterLocalNotificationsPlugin(),
+        trackDownload: repository.trackDownload,
+        requestNotificationPermissions: () async => false,
+        downloadBytes: ({
+          required url,
+          required onProgress,
+          required cancelToken,
+        }) async {
+          onProgress(4, 8);
+          onProgress(8, 8);
+          return Uint8List.fromList([1, 2, 3]);
+        },
+        saveImageBytes: ({required bytes, required name}) async {},
+        successResetDelay: Duration.zero,
+      );
+
+      await notifier.download('https://example.com/regular.jpg', buildPhoto());
+
+      expect(notifier.tasks, hasLength(1));
+      expect(notifier.tasks.single.status, DownloadTaskStatus.completed);
+      expect(notifier.tasks.single.title, 'Quiet light');
+    });
+
+    test('marks a failed task and keeps retry metadata available', () async {
+      when(() => repository.trackDownload('photo-1'))
+          .thenAnswer((_) async => const Right(null));
+
+      final notifier = DownloadNotifier(
+        notifications: FlutterLocalNotificationsPlugin(),
+        trackDownload: repository.trackDownload,
+        requestNotificationPermissions: () async => false,
+        downloadBytes: ({
+          required url,
+          required onProgress,
+          required cancelToken,
+        }) async {
+          throw Exception('offline');
+        },
+        saveImageBytes: ({required bytes, required name}) async {},
+        successResetDelay: Duration.zero,
+      );
+
+      await notifier.download('https://example.com/regular.jpg', buildPhoto());
+
+      expect(notifier.tasks, hasLength(1));
+      expect(notifier.tasks.single.status, DownloadTaskStatus.failed);
+      expect(
+        notifier.tasks.single.url,
+        'https://example.com/regular.jpg',
+      );
+      expect(notifier.tasks.single.photo.id, 'photo-1');
     });
   });
 }

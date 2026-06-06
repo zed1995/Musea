@@ -8,12 +8,14 @@ import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/empty_state.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 
 class CollectionsPage extends ConsumerWidget {
   const CollectionsPage({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final collectionsAsync = ref.watch(collectionsProvider(1));
     final authState = ref.watch(authControllerProvider);
 
@@ -25,6 +27,7 @@ class CollectionsPage extends ConsumerWidget {
               child: Column(
                 children: [
                   _CollectionsHeader(
+                    title: l10n.collectionsPageTitle,
                     onAddPressed: () =>
                         _handleAddPressed(context, ref, authState),
                   ),
@@ -44,6 +47,7 @@ class CollectionsPage extends ConsumerWidget {
             child: Column(
               children: [
                 _CollectionsHeader(
+                  title: l10n.collectionsPageTitle,
                   onAddPressed: () =>
                       _handleAddPressed(context, ref, authState),
                 ),
@@ -102,8 +106,12 @@ class CollectionsPage extends ConsumerWidget {
 }
 
 class _CollectionsHeader extends StatelessWidget {
-  const _CollectionsHeader({required this.onAddPressed});
+  const _CollectionsHeader({
+    required this.title,
+    required this.onAddPressed,
+  });
 
+  final String title;
   final VoidCallback onAddPressed;
 
   @override
@@ -112,10 +120,10 @@ class _CollectionsHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
       child: Row(
         children: [
-          const Expanded(
+          Expanded(
             child: Text(
-              'Collections',
-              style: TextStyle(
+              title,
+              style: const TextStyle(
                 fontSize: 30,
                 height: 1.1,
                 fontWeight: FontWeight.w700,

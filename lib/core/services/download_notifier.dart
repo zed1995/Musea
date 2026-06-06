@@ -17,7 +17,8 @@ typedef SaveImageBytes = Future<void> Function({
   required String name,
 });
 
-typedef TrackPhotoDownload = Future<Either<Failure, void>> Function(String photoId);
+typedef TrackPhotoDownload = Future<Either<Failure, void>> Function(
+    String photoId);
 typedef RequestNotificationPermissions = Future<bool> Function();
 
 enum DownloadStatus {
@@ -26,6 +27,55 @@ enum DownloadStatus {
   saving,
   completed,
   failed,
+}
+
+enum DownloadTaskStatus {
+  downloading,
+  completed,
+  failed,
+}
+
+class DownloadTask {
+  const DownloadTask({
+    required this.id,
+    required this.photo,
+    required this.title,
+    required this.subtitle,
+    required this.url,
+    required this.progress,
+    required this.receivedBytes,
+    required this.totalBytes,
+    required this.status,
+  });
+
+  final String id;
+  final Photo photo;
+  final String title;
+  final String subtitle;
+  final String url;
+  final double progress;
+  final int receivedBytes;
+  final int totalBytes;
+  final DownloadTaskStatus status;
+
+  DownloadTask copyWith({
+    double? progress,
+    int? receivedBytes,
+    int? totalBytes,
+    DownloadTaskStatus? status,
+  }) {
+    return DownloadTask(
+      id: id,
+      photo: photo,
+      title: title,
+      subtitle: subtitle,
+      url: url,
+      progress: progress ?? this.progress,
+      receivedBytes: receivedBytes ?? this.receivedBytes,
+      totalBytes: totalBytes ?? this.totalBytes,
+      status: status ?? this.status,
+    );
+  }
 }
 
 class DownloadProgress {
@@ -125,6 +175,7 @@ class DownloadNotifier extends ChangeNotifier {
   final SaveImageBytes? _saveImageBytes;
   final Duration _successResetDelay;
 
+  final List<DownloadTask> _tasks = <DownloadTask>[];
   DownloadProgress _state = DownloadProgress.initial;
   bool _isDownloading = false;
   bool _channelCreated = false;
@@ -138,6 +189,7 @@ class DownloadNotifier extends ChangeNotifier {
 
   DownloadProgress get state => _state;
   bool get isDownloading => _isDownloading;
+  List<DownloadTask> get tasks => List<DownloadTask>.unmodifiable(_tasks);
 
   void cancel() {
     _cancelToken?.cancel('Download cancelled by user');
@@ -149,6 +201,21 @@ class DownloadNotifier extends ChangeNotifier {
 
     _isDownloading = true;
     _cancelToken = CancelToken();
+    final taskId = '${photo.id}-${DateTime.now().microsecondsSinceEpoch}';
+    _tasks.insert(
+      0,
+      DownloadTask(
+        id: taskId,
+        photo: photo,
+        title: photo.description ?? photo.altDescription ?? photo.id,
+        subtitle: _variantLabelForUrl(photo, url),
+        url: url,
+        progress: 0,
+        receivedBytes: 0,
+        totalBytes: 0,
+        status: DownloadTaskStatus.downloading,
+      ),
+    );
     _setState(
       const DownloadProgress(
         progress: 0.0,
@@ -181,6 +248,13 @@ class DownloadNotifier extends ChangeNotifier {
               status: DownloadStatus.downloading,
             ),
           );
+          _updateTask(
+            taskId,
+            progress: progress.clamp(0.0, 1.0),
+            receivedBytes: received,
+            totalBytes: total > 0 ? total : 0,
+            status: DownloadTaskStatus.downloading,
+          );
 
           if (_notificationsEnabled && total > 0) {
             _showProgressNotification(
@@ -212,6 +286,13 @@ class DownloadNotifier extends ChangeNotifier {
         await _showSuccessNotification();
       }
 
+      _updateTask(
+        taskId,
+        progress: 1.0,
+        receivedBytes: bytes.length,
+        totalBytes: bytes.length,
+        status: DownloadTaskStatus.completed,
+      );
       _setState(
         _state.copyWith(
           progress: 1.0,
@@ -235,6 +316,11 @@ class DownloadNotifier extends ChangeNotifier {
           status: DownloadStatus.failed,
         ),
       );
+      _updateTask(
+        taskId,
+        progress: 0.0,
+        status: DownloadTaskStatus.failed,
+      );
     } finally {
       _cancelToken = null;
       _isDownloading = false;
@@ -245,6 +331,10 @@ class DownloadNotifier extends ChangeNotifier {
     _state = DownloadProgress.initial;
     _isDownloading = false;
     _safeNotify();
+  }
+
+  Future<void> retryTask(DownloadTask task) {
+    return download(task.url, task.photo);
   }
 
   Future<void> _attemptTrackDownload(String photoId) async {
@@ -423,6 +513,34 @@ class DownloadNotifier extends ChangeNotifier {
   void _setState(DownloadProgress value) {
     _state = value;
     _safeNotify();
+  }
+
+  void _updateTask(
+    String id, {
+    double? progress,
+    int? receivedBytes,
+    int? totalBytes,
+    DownloadTaskStatus? status,
+  }) {
+    final index = _tasks.indexWhere((task) => task.id == id);
+    if (index == -1) return;
+
+    _tasks[index] = _tasks[index].copyWith(
+      progress: progress,
+      receivedBytes: receivedBytes,
+      totalBytes: totalBytes,
+      status: status,
+    );
+    _safeNotify();
+  }
+
+  String _variantLabelForUrl(Photo photo, String url) {
+    if (url == photo.urlRaw) return 'Raw';
+    if (url == photo.urlFull) return 'Full';
+    if (url == photo.urlRegular) return 'Regular';
+    if (url == photo.urlSmall) return 'Small';
+    if (url == photo.urlThumb) return 'Thumb';
+    return 'Download';
   }
 
   @override

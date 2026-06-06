@@ -1,0 +1,44 @@
+{
+  "@@locale": "zh",
+  "settingsTitle": "设置",
+  "preferencesTitle": "偏好设置",
+  "languageSetting": "语言",
+  "downloadOverWifiOnlySetting": "仅在 Wi‑Fi 下下载",
+  "storageTitle": "存储",
+  "cacheSetting": "缓存",
+  "clearCacheTitle": "清除缓存？",
+  "clearCacheBody": "这会移除临时缓存，但不会删除已下载的内容。",
+  "cancelAction": "取消",
+  "clearAction": "清除",
+  "downloadsSetting": "下载任务",
+  "downloadsTaskCount": "{count, plural, =1 {1 个任务} other {{count} 个任务}}",
+  "@downloadsTaskCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutTitle": "关于",
+  "versionSetting": "版本",
+  "feedbackSetting": "反馈",
+  "signOutAction": "退出登录",
+  "signOutTitle": "退出登录？",
+  "signOutBody": "当前账号会从这台设备上退出。",
+  "followSystemLanguage": "跟随系统",
+  "downloadsPageTitle": "下载任务",
+  "downloadingSection": "下载中",
+  "completedSection": "已完成",
+  "failedSection": "失败",
+  "retryAction": "重试",
+  "activeStatus": "进行中",
+  "doneStatus": "完成",
+  "failedStatus": "失败",
+  "noDownloadsYet": "还没有下载任务",
+  "discoverNavLabel": "发现",
+  "collectionsNavLabel": "合集",
+  "mineNavLabel": "我的",
+  "searchPlaceholder": "搜索图片、合集、用户...",
+  "minePageTitle": "我的",
+  "collectionsPageTitle": "合集"
+}

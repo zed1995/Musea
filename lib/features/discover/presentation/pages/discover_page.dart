@@ -14,6 +14,7 @@ import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/photo_feed.dart';
 import 'package:musea/core/theme/colors.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/router/detail_route_extras.dart';
 
 class DiscoverPage extends ConsumerStatefulWidget {
@@ -131,9 +132,9 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                           '/photo/${photo.id}',
                           extra: PhotoDetailExtra(photo: photo),
                         ),
-                        onUserTap: (photo) =>
-                            context.push('/profile/${photo.user.username}',
-                                extra: ProfileDetailExtra(user: photo.user)),
+                        onUserTap: (photo) => context.push(
+                            '/profile/${photo.user.username}',
+                            extra: ProfileDetailExtra(user: photo.user)),
                         onLikeTap: (photo) => _toggleLike(photo),
                         onBookmarkTap: (photo) => _handleBookmark(photo),
                       ),
@@ -148,6 +149,7 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
   }
 
   Widget _buildHeader() {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
       child: Row(
@@ -163,15 +165,16 @@ class _DiscoverPageState extends ConsumerState<DiscoverPage> {
                   color: const Color(0xFFF7F7F7),
                   borderRadius: BorderRadius.circular(999),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.search, color: AppColors.gray400, size: 20),
-                    SizedBox(width: 10),
+                    const Icon(Icons.search,
+                        color: AppColors.gray400, size: 20),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: Text(
-                        'Search photos, collections, users...',
+                        l10n.searchPlaceholder,
                         overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: AppColors.gray400,
                           fontSize: 14,
                           fontWeight: FontWeight.w400,

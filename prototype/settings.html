@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musea — Settings</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+    <link href="https://fonts.loli.net/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        zinc: {
+                            50: '#FAFAFA',
+                            100: '#F4F4F5',
+                            200: '#E4E4E7',
+                            300: '#D4D4D8',
+                            400: '#A1A1AA',
+                            500: '#71717A',
+                            600: '#52525B',
+                            700: '#3F3F46',
+                            800: '#27272A',
+                            900: '#18181B',
+                            950: '#09090B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f5f5f4; color: #111; overflow-x: hidden; }
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .icon-sm { width: 16px; height: 16px; }
+        .status-bar { background: rgba(250,250,250,0.94); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .topbar-title {
+            font-size: 32px;
+            line-height: 1;
+            letter-spacing: -0.05em;
+            font-weight: 800;
+            color: #18181B;
+        }
+        .topbar-kicker {
+            font-size: 11px;
+            line-height: 1;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #A1A1AA;
+        }
+        .topbar-icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.86);
+            border: 1px solid #ECECF0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #27272A;
+            box-shadow: 0 10px 24px rgba(24,24,27,0.05);
+        }
+        .hero-shell {
+            position: relative;
+            overflow: hidden;
+            background:
+                radial-gradient(circle at top right, rgba(24,24,27,0.06), transparent 32%),
+                linear-gradient(180deg, #FCFCFD 0%, #F6F5F3 100%);
+            border-bottom: 1px solid #ECE9E3;
+        }
+        .hero-shell::after {
+            content: '';
+            position: absolute;
+            right: -48px;
+            top: -32px;
+            width: 160px;
+            height: 160px;
+            border-radius: 999px;
+            background: radial-gradient(circle, rgba(214,211,209,0.55) 0%, rgba(214,211,209,0) 72%);
+        }
+        .section-label {
+            font-size: 11px;
+            line-height: 1;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #A8A29E;
+            padding-left: 6px;
+        }
+        .settings-group {
+            border-radius: 24px;
+            background: rgba(255,255,255,0.92);
+            border: 1px solid #EEEBE6;
+            box-shadow: 0 14px 34px rgba(24,24,27,0.05);
+            overflow: hidden;
+        }
+        .settings-row {
+            min-height: 74px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 0 18px;
+            background: rgba(255,255,255,0.88);
+        }
+        .settings-row + .settings-row { border-top: 1px solid #F3F1ED; }
+        .row-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            background: linear-gradient(180deg, #F7F6F4 0%, #F0ECE7 100%);
+            color: #292524;
+        }
+        .row-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #18181B;
+            letter-spacing: -0.01em;
+        }
+        .row-value {
+            font-size: 12px;
+            font-weight: 700;
+            color: #57534E;
+            white-space: nowrap;
+        }
+        .toggle-pill {
+            width: 50px;
+            height: 30px;
+            border-radius: 999px;
+            background: #18181B;
+            padding: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+        }
+        .toggle-knob {
+            width: 24px;
+            height: 24px;
+            border-radius: 999px;
+            background: #fff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.16);
+        }
+        .signout-btn {
+            height: 52px;
+            border-radius: 16px;
+            background: #FFF1F2;
+            color: #BE123C;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 800;
+            box-shadow: inset 0 0 0 1px rgba(225,29,72,0.08);
+        }
+    </style>
+</head>
+<body>
+<div class="w-[412px] h-[915px] mx-auto relative overflow-hidden bg-[#F7F5F1]">
+    <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
+        <span class="text-sm font-semibold text-zinc-900">12:30</span>
+        <div class="flex items-center gap-2">
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v4"/><path d="M12 11v9"/><path d="M17 6v14"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path fill="currentColor" stroke="none" d="M8 10h7v4H8z"/></svg>
+        </div>
+    </div>
+
+    <div class="pt-[52px] pb-[32px] h-full overflow-y-auto scrollbar-hide">
+        <div class="hero-shell px-4 pt-4 pb-6">
+            <div class="relative z-10 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="topbar-icon-btn">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                    </div>
+                    <div>
+                        <div class="topbar-kicker">Workspace</div>
+                        <h1 class="topbar-title">Settings</h1>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="px-4 pt-6 space-y-5">
+            <div>
+                <div class="section-label">Preferences</div>
+                <div class="settings-group mt-3">
+                    <div class="settings-row">
+                        <div class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M4 5h7"/><path d="M4 9h3"/><path d="M13 5h7"/><path d="M14 9h6"/><path d="M8 17l4-10 4 10"/><path d="M9.5 13h5"/></svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="row-title">Language</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="row-value">Follow system</div>
+                            <svg class="icon text-stone-400" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 18h.01"/><path d="M8.5 15.5a5 5 0 1 1 7 0"/><path d="M4.93 10.93a10 10 0 0 1 14.14 0"/></svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="row-title">Download over Wi-Fi only</div>
+                        </div>
+                        <div class="toggle-pill">
+                            <div class="toggle-knob"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-label">Storage</div>
+                <div class="settings-group mt-3">
+                    <div class="settings-row">
+                        <div class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M3 7h18"/><path d="M6 7V5a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2"/><path d="M8 11v6"/><path d="M12 11v6"/><path d="M16 11v6"/><path d="M5 7l1 12a1 1 0 0 0 1 .9h10a1 1 0 0 0 1-.9L19 7"/></svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="row-title">Cache</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="row-value">128 MB</div>
+                            <svg class="icon text-stone-400" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+                        </div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M12 3v10"/><path d="m8 9 4 4 4-4"/><path d="M5 17v1a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-1"/></svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="row-title">Downloads</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="row-value">17 tasks</div>
+                            <svg class="icon text-stone-400" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-label">About</div>
+                <div class="settings-group mt-3">
+                    <div class="settings-row">
+                        <div class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01"/><path d="M11 12h1v4h1"/></svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="row-title">Version</div>
+                        </div>
+                        <div class="row-value">v0.8.3</div>
+                    </div>
+                    <div class="settings-row">
+                        <div class="row-icon">
+                            <svg class="icon" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3"/><path d="M15 17v-3.5a3.5 3.5 0 0 0-1-2.45c3.34-.37 6.85-1.64 6.85-7.55A5.9 5.9 0 0 0 19.5 1S18.4.65 15 2.48a13.38 13.38 0 0 0-6 0C5.6.65 4.5 1 4.5 1A5.9 5.9 0 0 0 3.15 3.5c0 5.87 3.5 7.18 6.85 7.55a3.5 3.5 0 0 0-1 2.45V17"/></svg>
+                        </div>
+                        <div class="min-w-0 flex-1">
+                            <div class="row-title">Feedback</div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="row-value">GitHub</div>
+                            <svg class="icon text-stone-400" viewBox="0 0 24 24"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="signout-btn w-full">
+                <svg class="icon" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></svg>
+                Sign out
+            </button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

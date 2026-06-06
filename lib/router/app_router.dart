@@ -9,6 +9,9 @@ import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page
 import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
 import 'package:musea/features/profile/presentation/pages/mine_page.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
+import 'package:musea/features/settings/presentation/pages/settings_downloads_page.dart';
+import 'package:musea/features/settings/presentation/pages/settings_language_page.dart';
+import 'package:musea/features/settings/presentation/pages/settings_page.dart';
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/features/search/presentation/pages/search_page.dart';
 import 'package:musea/shared/widgets/bottom_nav_bar.dart';
@@ -47,6 +50,23 @@ final appRouter = GoRouter(
           pageBuilder: (context, state) => const NoTransitionPage(
             child: ProfileTabPage(),
           ),
+        ),
+      ],
+    ),
+    GoRoute(
+      path: '/settings',
+      parentNavigatorKey: _rootNavigatorKey,
+      builder: (context, state) => const SettingsPage(),
+      routes: [
+        GoRoute(
+          path: 'language',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => const SettingsLanguagePage(),
+        ),
+        GoRoute(
+          path: 'downloads',
+          parentNavigatorKey: _rootNavigatorKey,
+          builder: (context, state) => const SettingsDownloadsPage(),
         ),
       ],
     ),

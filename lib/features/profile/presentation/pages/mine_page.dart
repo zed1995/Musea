@@ -1,6 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/features/auth/domain/entities/auth_user.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
@@ -9,6 +10,7 @@ import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/presentation/providers/profile_controller.dart';
 import 'package:musea/features/search/presentation/providers/search_controller.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
@@ -72,7 +74,6 @@ class _MinePageState extends ConsumerState<MinePage> {
       onRefresh: () => ref
           .read(authControllerProvider.notifier)
           .refreshIfNeeded(force: true),
-      onSignOut: () => ref.read(authControllerProvider.notifier).signOut(),
     );
   }
 }
@@ -92,6 +93,7 @@ class _SignedOutMineView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final bottomScrollPadding = MediaQuery.paddingOf(context).bottom + 40;
 
     return Scaffold(
@@ -100,11 +102,11 @@ class _SignedOutMineView extends StatelessWidget {
         children: [
           Container(
             color: const Color(0xFFFCFCFD),
-            child: const SafeArea(
+            child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: EdgeInsets.fromLTRB(12, 12, 12, 10),
-                child: _MineGuestTopBar(),
+                padding: const EdgeInsets.fromLTRB(12, 12, 12, 10),
+                child: _MineGuestTopBar(title: l10n.minePageTitle),
               ),
             ),
           ),
@@ -223,16 +225,18 @@ class _SignedOutMineView extends StatelessWidget {
 }
 
 class _MineGuestTopBar extends StatelessWidget {
-  const _MineGuestTopBar();
+  const _MineGuestTopBar({required this.title});
+
+  final String title;
 
   @override
   Widget build(BuildContext context) {
-    return const Row(
+    return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
         Text(
-          'Mine',
+          title,
           style: TextStyle(
             fontSize: 30,
             height: 1,
@@ -621,7 +625,6 @@ class _SignedInMineView extends ConsumerStatefulWidget {
     required this.isRefreshing,
     required this.errorMessage,
     required this.onRefresh,
-    required this.onSignOut,
   });
 
   final AuthUser authUser;
@@ -629,7 +632,6 @@ class _SignedInMineView extends ConsumerStatefulWidget {
   final bool isRefreshing;
   final String? errorMessage;
   final Future<void> Function() onRefresh;
-  final VoidCallback onSignOut;
 
   @override
   ConsumerState<_SignedInMineView> createState() => _SignedInMineViewState();
@@ -665,17 +667,13 @@ class _SignedInMineViewState extends ConsumerState<_SignedInMineView> {
         _scrollController.position.maxScrollExtent - 200) {
       switch (_selectedSegment) {
         case _MineSegment.photos:
-          ref
-              .read(userPhotosControllerProvider(_username).notifier)
-              .loadMore();
+          ref.read(userPhotosControllerProvider(_username).notifier).loadMore();
         case _MineSegment.collections:
           ref
               .read(userCollectionsControllerProvider(_username).notifier)
               .loadMore();
         case _MineSegment.likes:
-          ref
-              .read(userLikesControllerProvider(_username).notifier)
-              .loadMore();
+          ref.read(userLikesControllerProvider(_username).notifier).loadMore();
       }
     }
   }
@@ -693,7 +691,6 @@ class _SignedInMineViewState extends ConsumerState<_SignedInMineView> {
               child: _MineHero(
                 user: widget.authUser,
                 isRefreshing: widget.isRefreshing,
-                onSignOut: widget.onSignOut,
               ),
             ),
             if (widget.errorMessage != null)
@@ -742,8 +739,7 @@ class _SignedInMineViewState extends ConsumerState<_SignedInMineView> {
         final state = ref.watch(userPhotosControllerProvider(_username));
         return _MinePhotoSection(state: state);
       case _MineSegment.collections:
-        final state =
-            ref.watch(userCollectionsControllerProvider(_username));
+        final state = ref.watch(userCollectionsControllerProvider(_username));
         return _MineCollectionsSection(state: state);
       case _MineSegment.likes:
         final state = ref.watch(userLikesControllerProvider(_username));
@@ -756,15 +752,14 @@ class _MineHero extends StatelessWidget {
   const _MineHero({
     required this.user,
     required this.isRefreshing,
-    required this.onSignOut,
   });
 
   final AuthUser user;
   final bool isRefreshing;
-  final VoidCallback onSignOut;
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final subtitleParts = [
       if ((user.location ?? '').trim().isNotEmpty) user.location!.trim(),
       'Personal workspace for photos, collections, and saved inspiration.',
@@ -794,10 +789,10 @@ class _MineHero extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
+                      const Text(
                         'Workspace',
                         style: TextStyle(
                           fontSize: 11,
@@ -809,8 +804,8 @@ class _MineHero extends StatelessWidget {
                       ),
                       SizedBox(height: 6),
                       Text(
-                        'Mine',
-                        style: TextStyle(
+                        l10n.minePageTitle,
+                        style: const TextStyle(
                           fontSize: 30,
                           height: 1,
                           letterSpacing: -1.2,
@@ -821,8 +816,8 @@ class _MineHero extends StatelessWidget {
                     ],
                   ),
                   _TopBarIconButton(
-                    icon: Icons.more_horiz_rounded,
-                    onTap: () => _showMineActions(context, onSignOut),
+                    icon: Icons.tune_rounded,
+                    onTap: () => context.push('/settings'),
                   ),
                 ],
               ),
@@ -924,6 +919,23 @@ class _MineHero extends StatelessWidget {
                   ],
                 ),
               ),
+              const SizedBox(height: 14),
+              Container(
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: const Color(0xFFF1F1F3)),
+                ),
+                child: ListTile(
+                  leading: const Icon(
+                    Icons.tune_rounded,
+                    color: Color(0xFF3F3F46),
+                  ),
+                  title: Text(l10n.settingsTitle),
+                  trailing: const Icon(Icons.chevron_right_rounded),
+                  onTap: () => context.push('/settings'),
+                ),
+              ),
               const SizedBox(height: 12),
               Text(
                 isRefreshing
@@ -939,54 +951,6 @@ class _MineHero extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-
-  Future<void> _showMineActions(
-    BuildContext context,
-    VoidCallback onSignOut,
-  ) async {
-    await showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) {
-        return SafeArea(
-          top: false,
-          child: Container(
-            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 44,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD4D4D8),
-                    borderRadius: BorderRadius.circular(999),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                ListTile(
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  leading: const Icon(Icons.logout_rounded),
-                  title: const Text('Sign out'),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    onSignOut();
-                  },
-                ),
-              ],
-            ),
-          ),
-        );
-      },
     );
   }
 }

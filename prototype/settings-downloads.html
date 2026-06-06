@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musea — Downloads</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.loli.net" crossorigin>
+    <link href="https://fonts.loli.net/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] },
+                    colors: {
+                        zinc: {
+                            50: '#FAFAFA',
+                            100: '#F4F4F5',
+                            200: '#E4E4E7',
+                            300: '#D4D4D8',
+                            400: '#A1A1AA',
+                            500: '#71717A',
+                            600: '#52525B',
+                            700: '#3F3F46',
+                            800: '#27272A',
+                            900: '#18181B',
+                            950: '#09090B'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        * { -webkit-tap-highlight-color: transparent; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #f5f5f4; color: #111; overflow-x: hidden; }
+        .icon {
+            width: 20px;
+            height: 20px;
+            display: block;
+            flex-shrink: 0;
+            stroke: currentColor;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .icon-sm { width: 16px; height: 16px; }
+        .status-bar { background: rgba(250,250,250,0.94); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .topbar-icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.86);
+            border: 1px solid #ECECF0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #27272A;
+            box-shadow: 0 10px 24px rgba(24,24,27,0.05);
+        }
+        .hero-shell {
+            background:
+                radial-gradient(circle at top right, rgba(24,24,27,0.06), transparent 32%),
+                linear-gradient(180deg, #FCFCFD 0%, #F6F5F3 100%);
+            border-bottom: 1px solid #ECE9E3;
+        }
+        .eyebrow {
+            font-size: 11px;
+            line-height: 1;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #A8A29E;
+        }
+        .page-title {
+            margin-top: 8px;
+            font-size: 31px;
+            line-height: 1;
+            letter-spacing: -0.05em;
+            font-weight: 800;
+            color: #18181B;
+        }
+        .task-section-label {
+            font-size: 11px;
+            line-height: 1;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            font-weight: 800;
+            color: #A8A29E;
+            padding-left: 6px;
+        }
+        .task-list {
+            border-radius: 24px;
+            background: rgba(255,255,255,0.92);
+            border: 1px solid #EEEBE6;
+            box-shadow: 0 14px 34px rgba(24,24,27,0.05);
+            overflow: hidden;
+        }
+        .task-row {
+            display: flex;
+            gap: 12px;
+            padding: 12px 16px;
+            background: rgba(255,255,255,0.9);
+        }
+        .task-row + .task-row { border-top: 1px solid #F3F1ED; }
+        .thumb {
+            width: 64px;
+            height: 64px;
+            border-radius: 16px;
+            object-fit: cover;
+            flex-shrink: 0;
+            box-shadow: 0 10px 24px rgba(24,24,27,0.08);
+        }
+        .status-pill {
+            height: 24px;
+            padding: 0 10px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            white-space: nowrap;
+        }
+        .status-active { background: #18181B; color: #fff; }
+        .status-done { background: #EEF2E8; color: #3F4B2A; }
+        .status-failed { background: #FFF1F2; color: #BE123C; }
+        .progress-rail {
+            width: 100%;
+            height: 7px;
+            border-radius: 999px;
+            background: #ECE7E2;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #18181B 0%, #57534E 100%);
+        }
+        .retry-btn {
+            height: 34px;
+            padding: 0 14px;
+            border-radius: 999px;
+            background: #18181B;
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .empty-card {
+            border-radius: 20px;
+            background: rgba(255,255,255,0.82);
+            border: 1px dashed #D6D3D1;
+        }
+    </style>
+</head>
+<body>
+<div class="w-[412px] h-[915px] mx-auto relative overflow-hidden bg-[#F7F5F1]">
+    <div class="status-bar fixed top-0 left-0 right-0 z-50 px-6 py-2 flex items-center justify-between" style="width:412px;margin:0 auto;">
+        <span class="text-sm font-semibold text-zinc-900">12:30</span>
+        <div class="flex items-center gap-2">
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M4 20h16"/><path d="M7 16v4"/><path d="M12 11v9"/><path d="M17 6v14"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><path d="M5 12.5a10 10 0 0 1 14 0"/><path d="M8.5 16a5 5 0 0 1 7 0"/><path d="M12 20h.01"/></svg>
+            <svg class="icon icon-sm text-zinc-800" viewBox="0 0 24 24"><rect x="5" y="7" width="13" height="10" rx="2"/><path d="M21 11v2"/><path fill="currentColor" stroke="none" d="M8 10h7v4H8z"/></svg>
+        </div>
+    </div>
+
+    <div class="pt-[52px] pb-[28px] h-full overflow-y-auto scrollbar-hide">
+        <div class="hero-shell px-4 pt-4 pb-6">
+            <div class="flex items-center gap-3">
+                <div class="topbar-icon-btn">
+                    <svg class="icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
+                </div>
+                <div>
+                    <div class="eyebrow">Storage</div>
+                    <h1 class="page-title">Downloads</h1>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="px-4 pt-6 space-y-5">
+            <div>
+                <div class="task-section-label">Downloading</div>
+                <div class="task-list mt-3">
+                    <div class="task-row">
+                        <img class="thumb" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=200&q=80" alt="Forest path">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Forest Path</div>
+                                    <div class="mt-1 text-[12px] text-stone-500">Regular · 1080×1350</div>
+                                </div>
+                                <div class="status-pill status-active">58%</div>
+                            </div>
+                            <div class="mt-3 progress-rail">
+                                <div class="progress-fill" style="width:58%"></div>
+                            </div>
+                            <div class="mt-2 flex items-center justify-between text-[11px] text-stone-500">
+                                <span>5.8 MB / 10.0 MB</span>
+                                <span>12s left</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="task-row">
+                        <img class="thumb" src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=200&q=80" alt="Sunset ridge">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Sunset Ridge</div>
+                                    <div class="mt-1 text-[12px] text-stone-500">Full · 3200×4000</div>
+                                </div>
+                                <div class="status-pill status-active">21%</div>
+                            </div>
+                            <div class="mt-3 progress-rail">
+                                <div class="progress-fill" style="width:21%"></div>
+                            </div>
+                            <div class="mt-2 flex items-center justify-between text-[11px] text-stone-500">
+                                <span>8.2 MB / 39.1 MB</span>
+                                <span>On Wi-Fi</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="task-section-label">Completed</div>
+                <div class="task-list mt-3">
+                    <div class="task-row">
+                        <img class="thumb" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=200&q=80" alt="Mountain lake">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Mountain Lake</div>
+                                    <div class="mt-1 text-[12px] text-stone-500">Small · 400×500</div>
+                                </div>
+                                <div class="status-pill status-done">Saved</div>
+                            </div>
+                            <div class="mt-3 text-[11px] text-stone-500">
+                                Saved today
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <div class="task-section-label">Needs retry</div>
+                <div class="task-list mt-3">
+                    <div class="task-row">
+                        <img class="thumb" src="https://images.unsplash.com/photo-1511300636408-a63a89df3482?auto=format&fit=crop&w=200&q=80" alt="Night city">
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-start justify-between gap-3">
+                                <div class="min-w-0">
+                                    <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Night City</div>
+                                    <div class="mt-1 text-[12px] text-stone-500">Raw · Interrupted on unstable network</div>
+                                </div>
+                                <div class="status-pill status-failed">Failed</div>
+                            </div>
+                            <div class="mt-3 flex items-center justify-between gap-3">
+                                <div class="text-[11px] text-rose-600">Connection interrupted</div>
+                                <button class="retry-btn">Retry</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="empty-card p-5">
+                <div class="text-[17px] font-bold tracking-[-0.03em] text-zinc-900">No downloads yet</div>
+                <div class="mt-2 text-[12px] text-stone-500">Saved photos will appear here.</div>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

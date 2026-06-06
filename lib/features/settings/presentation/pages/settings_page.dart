@@ -1,0 +1,208 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
+import 'package:musea/core/services/cache_summary_service.dart';
+import 'package:musea/core/services/providers.dart';
+import 'package:musea/core/theme/colors.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
+import 'package:musea/features/settings/data/datasources/settings_local_datasource.dart';
+import 'package:musea/features/settings/presentation/providers/settings_provider.dart';
+import 'package:musea/features/settings/presentation/widgets/settings_row.dart';
+import 'package:musea/features/settings/presentation/widgets/settings_section.dart';
+import 'package:musea/l10n/generated/app_localizations.dart';
+
+class SettingsPage extends ConsumerWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
+    final settings = ref.watch(settingsControllerProvider);
+    final cacheBytes = ref.watch(cacheBytesProvider);
+    final version = ref.watch(appVersionProvider);
+
+    final current = settings.value;
+    final languageLabel = switch (current?.language ?? AppLanguage.system) {
+      AppLanguage.system => l10n.followSystemLanguage,
+      AppLanguage.english => 'English',
+      AppLanguage.simplifiedChinese => '简体中文',
+    };
+
+    return Scaffold(
+      backgroundColor: AppColors.gray50,
+      appBar: AppBar(
+        backgroundColor: AppColors.gray50,
+        elevation: 0,
+        surfaceTintColor: Colors.transparent,
+        title: Text(l10n.settingsTitle),
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),
+        children: [
+          SettingsSection(
+            title: l10n.preferencesTitle,
+            children: [
+              SettingsRow(
+                icon: Icons.translate_rounded,
+                title: l10n.languageSetting,
+                trailing: _ChevronValue(value: languageLabel),
+                onTap: () => context.push('/settings/language'),
+              ),
+              SettingsRow(
+                icon: Icons.wifi_rounded,
+                title: l10n.downloadOverWifiOnlySetting,
+                trailing: Switch(
+                  value: current?.downloadOverWifiOnly ?? true,
+                  onChanged: (value) {
+                    ref
+                        .read(settingsControllerProvider.notifier)
+                        .setDownloadOverWifiOnly(value);
+                  },
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          SettingsSection(
+            title: l10n.storageTitle,
+            children: [
+              SettingsRow(
+                icon: Icons.delete_outline_rounded,
+                title: l10n.cacheSetting,
+                trailing: _ChevronValue(
+                  value: CacheSummaryService.formatBytes(cacheBytes.value ?? 0),
+                ),
+                onTap: () async {
+                  final confirmed = await showDialog<bool>(
+                    context: context,
+                    builder: (context) => AlertDialog(
+                      title: Text(l10n.clearCacheTitle),
+                      content: Text(l10n.clearCacheBody),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: Text(l10n.cancelAction),
+                        ),
+                        FilledButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: Text(l10n.clearAction),
+                        ),
+                      ],
+                    ),
+                  );
+
+                  if (confirmed == true) {
+                    await ref
+                        .read(settingsControllerProvider.notifier)
+                        .clearCache();
+                  }
+                },
+              ),
+              SettingsRow(
+                icon: Icons.download_rounded,
+                title: l10n.downloadsSetting,
+                trailing: _ChevronValue(
+                  value: l10n.downloadsTaskCount(
+                    ref.watch(downloadNotifierProvider).tasks.length,
+                  ),
+                ),
+                onTap: () => context.push('/settings/downloads'),
+              ),
+            ],
+          ),
+          const SizedBox(height: 18),
+          SettingsSection(
+            title: l10n.aboutTitle,
+            children: [
+              SettingsRow(
+                icon: Icons.info_outline_rounded,
+                title: l10n.versionSetting,
+                trailing: Text(version.value ?? '...'),
+              ),
+              SettingsRow(
+                icon: Icons.code_rounded,
+                title: l10n.feedbackSetting,
+                trailing: const _ChevronValue(value: 'GitHub'),
+                onTap: () async {
+                  await ref.read(feedbackLauncherProvider)(
+                    ref.read(feedbackUriProvider),
+                  );
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 28),
+          SizedBox(
+            height: 48,
+            child: TextButton.icon(
+              style: TextButton.styleFrom(
+                foregroundColor: AppColors.error,
+                backgroundColor: AppColors.error.withValues(alpha: 0.08),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+              onPressed: () async {
+                final confirmed = await showDialog<bool>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(l10n.signOutTitle),
+                    content: Text(l10n.signOutBody),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(false),
+                        child: Text(l10n.cancelAction),
+                      ),
+                      FilledButton(
+                        onPressed: () => Navigator.of(context).pop(true),
+                        child: Text(l10n.signOutAction),
+                      ),
+                    ],
+                  ),
+                );
+
+                if (confirmed == true) {
+                  await ref.read(authControllerProvider.notifier).signOut();
+                  if (context.mounted && Navigator.of(context).canPop()) {
+                    context.pop();
+                  }
+                }
+              },
+              icon: const Icon(Icons.logout_rounded),
+              label: Text(l10n.signOutAction),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ChevronValue extends StatelessWidget {
+  const _ChevronValue({required this.value});
+
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 13,
+            fontWeight: FontWeight.w500,
+            color: AppColors.gray500,
+          ),
+        ),
+        const SizedBox(width: 2),
+        const Icon(
+          Icons.chevron_right_rounded,
+          size: 18,
+          color: AppColors.gray400,
+        ),
+      ],
+    );
+  }
+}
