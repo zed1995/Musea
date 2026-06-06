@@ -7,7 +7,6 @@ import 'package:musea/core/theme/colors.dart';
 import 'package:musea/core/theme/text_styles.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
-import 'package:musea/features/collections/presentation/pages/collection_remove_photos_page.dart';
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
 import 'package:musea/features/collections/presentation/widgets/collection_delete_sheet.dart';
 import 'package:musea/features/collections/presentation/widgets/collection_edit_sheet.dart';
@@ -139,12 +138,10 @@ class _CollectionDetailContent extends StatelessWidget {
   final VoidCallback? onRetryDeferred;
 
   void _showManageSheet(BuildContext context) {
-    final photosList = photosAsync.valueOrNull ?? [];
     showCollectionManageSheet(
       context,
       collection: collection,
-      onEdit: () =>
-          showCollectionEditSheet(context, collection: collection),
+      onEdit: () => showCollectionEditSheet(context, collection: collection),
       onRemovePhotos: () => context.push(
         '/collection/${collection.id}/remove',
         extra: collection.title,
@@ -234,14 +231,14 @@ class _CollectionDetailContent extends StatelessWidget {
                               _DeferredRetryBanner(onRetry: onRetryDeferred),
                               const SizedBox(height: 12),
                               _DeferredSectionPlaceholder(
-                                 message: l10n.previewUnavailable,
-                               ),
+                                message: l10n.previewUnavailable,
+                              ),
                             ],
                           )
                         else
                           _EmptyFeedCard(
-                             message: l10n.previewWillAppear,
-                           ),
+                            message: l10n.previewWillAppear,
+                          ),
                       ],
                     ),
                   ),
@@ -264,8 +261,8 @@ class _CollectionDetailContent extends StatelessWidget {
                           _DeferredRetryBanner(onRetry: onRetryDeferred),
                           const SizedBox(height: 12),
                           _DeferredSectionPlaceholder(
-                             message: l10n.factsWillAppear,
-                           ),
+                            message: l10n.factsWillAppear,
+                          ),
                         ],
                       ],
                     ),
@@ -364,7 +361,8 @@ class _CollectionHero extends StatelessWidget {
                     scrollDirection: Axis.horizontal,
                     child: Row(
                       children: [
-                        _GlassChip(label: l10n.photoCount(collection.totalPhotos)),
+                        _GlassChip(
+                            label: l10n.photoCount(collection.totalPhotos)),
                         const SizedBox(width: 8),
                         _GlassChip(label: l10n.photoCollection),
                         const SizedBox(width: 8),
@@ -414,7 +412,8 @@ class _CollectionHero extends StatelessWidget {
                           onTap: canOpenProfile
                               ? () => context.push(
                                     '/profile/$curatorUsername',
-                                    extra: ProfileDetailExtra(user: collection.user!),
+                                    extra: ProfileDetailExtra(
+                                        user: collection.user!),
                                   )
                               : null,
                           borderRadius: BorderRadius.circular(16),
@@ -1140,14 +1139,16 @@ Text _sectionEyebrow(String text) {
   );
 }
 
-List<Widget> _buildFactRows(Collection collection, AppLocalizations l10n, String locale) {
+List<Widget> _buildFactRows(
+    Collection collection, AppLocalizations l10n, String locale) {
   final rows = <MapEntry<String, String>>[
     if (collection.publishedAt != null)
       MapEntry(l10n.published, _formatDate(collection.publishedAt!, locale)),
     if (collection.updatedAt != null)
       MapEntry(l10n.updated, _formatDate(collection.updatedAt!, locale)),
     if (collection.lastCollectedAt != null)
-      MapEntry(l10n.lastCollected, _formatDate(collection.lastCollectedAt!, locale)),
+      MapEntry(
+          l10n.lastCollected, _formatDate(collection.lastCollectedAt!, locale)),
     MapEntry(
       l10n.visibility,
       _collectionIsPrivate(collection) ? l10n.private : l10n.public,
@@ -1188,26 +1189,31 @@ List<Widget> _buildFactRows(Collection collection, AppLocalizations l10n, String
       .toList();
 }
 
-List<Widget> _buildMetaPills(Collection collection, AppLocalizations l10n, String locale) {
+List<Widget> _buildMetaPills(
+    Collection collection, AppLocalizations l10n, String locale) {
   final pills = <Widget>[];
 
   if (collection.publishedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
-      _MetaPill(label: l10n.publishedDate(_formatDate(collection.publishedAt!, locale))),
+      _MetaPill(
+          label:
+              l10n.publishedDate(_formatDate(collection.publishedAt!, locale))),
     );
   }
   if (collection.updatedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
-      _MetaPill(label: l10n.updatedDate(_formatDate(collection.updatedAt!, locale))),
+      _MetaPill(
+          label: l10n.updatedDate(_formatDate(collection.updatedAt!, locale))),
     );
   }
   if (collection.lastCollectedAt != null) {
     if (pills.isNotEmpty) pills.add(const SizedBox(width: 8));
     pills.add(
       _MetaPill(
-        label: l10n.lastCollectedDate(_formatDate(collection.lastCollectedAt!, locale)),
+        label: l10n.lastCollectedDate(
+            _formatDate(collection.lastCollectedAt!, locale)),
       ),
     );
   }

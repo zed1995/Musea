@@ -262,14 +262,13 @@ class _GuestTopBarButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFECECF0)),
       ),
-        child: IconButton(
+      child: IconButton(
         onPressed: () => context.push('/settings'),
-        icon:
-            const Icon(
-              Icons.settings_outlined,
-              size: 18,
-              color: Color(0xFF27272A),
-            ),
+        icon: const Icon(
+          Icons.settings_outlined,
+          size: 18,
+          color: Color(0xFF27272A),
+        ),
         padding: EdgeInsets.zero,
       ),
     );

@@ -114,8 +114,7 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> {
               .loadMore();
         case _ProfileSegment.collections:
           ref
-              .read(
-                  userCollectionsControllerProvider(widget.username).notifier)
+              .read(userCollectionsControllerProvider(widget.username).notifier)
               .loadMore();
         case _ProfileSegment.likes:
           ref
@@ -169,16 +168,14 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> {
   Widget _buildSelectedSection() {
     switch (_selectedSegment) {
       case _ProfileSegment.photos:
-        final state =
-            ref.watch(userPhotosControllerProvider(widget.username));
+        final state = ref.watch(userPhotosControllerProvider(widget.username));
         return _PaginatedPhotoSection(state: state);
       case _ProfileSegment.collections:
         final state =
             ref.watch(userCollectionsControllerProvider(widget.username));
         return _PaginatedCollectionSection(state: state);
       case _ProfileSegment.likes:
-        final state =
-            ref.watch(userLikesControllerProvider(widget.username));
+        final state = ref.watch(userLikesControllerProvider(widget.username));
         return _PaginatedPhotoSection(state: state, showLikes: true);
     }
   }

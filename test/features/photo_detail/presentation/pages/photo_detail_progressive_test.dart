@@ -360,7 +360,7 @@ void main() {
     );
 
     await tester.pump();
-    await tester.tap(find.byIcon(Icons.arrow_back_ios_new));
+    await tester.tap(find.byIcon(Icons.arrow_back_rounded));
     await tester.pump();
 
     expect(tester.takeException(), isNull);

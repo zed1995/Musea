@@ -178,11 +178,11 @@ class _PhotoDetailContent extends ConsumerWidget {
                       runSpacing: 8,
                       children: photo.tags
                           .map((tag) => _TagChip(
-                            label: tag.title,
-                            onTap: () => context.push(
-                              '/search?q=${Uri.encodeComponent(tag.title)}',
-                            ),
-                          ))
+                                label: tag.title,
+                                onTap: () => context.push(
+                                  '/search?q=${Uri.encodeComponent(tag.title)}',
+                                ),
+                              ))
                           .toList(),
                     ),
                   ] else if (showTagSkeleton) ...[
@@ -281,7 +281,8 @@ class _PhotoDetailContent extends ConsumerWidget {
       items.add(_ExifItem(l10n.exifLocation, photo.location!.displayName));
     }
     if (photo.width > 0 && photo.height > 0) {
-      items.add(_ExifItem(l10n.exifSize, '${photo.width}\u00d7${photo.height}'));
+      items
+          .add(_ExifItem(l10n.exifSize, '${photo.width}\u00d7${photo.height}'));
     }
     return items;
   }

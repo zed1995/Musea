@@ -114,7 +114,8 @@ class _SearchPageState extends ConsumerState<SearchPage> {
     setState(() => _submittedQuery = query);
     ref.read(searchPhotosControllerProvider.notifier).search(
           query,
-          orderBy: _sortOption == PhotoSortOption.latest ? 'latest' : 'relevant',
+          orderBy:
+              _sortOption == PhotoSortOption.latest ? 'latest' : 'relevant',
           color: _colorOption == PhotoColorOption.any
               ? null
               : _colorOption == PhotoColorOption.green
@@ -125,8 +126,9 @@ class _SearchPageState extends ConsumerState<SearchPage> {
           orientation: _orientationOption == PhotoOrientationOption.any
               ? null
               : _orientationOption.name,
-          contentFilter:
-              _contentSafetyOption == PhotoContentSafetyOption.low ? 'low' : 'high',
+          contentFilter: _contentSafetyOption == PhotoContentSafetyOption.low
+              ? 'low'
+              : 'high',
         );
     ref.read(searchCollectionsControllerProvider.notifier).search(query);
     ref.read(searchUsersControllerProvider.notifier).search(query);
@@ -572,8 +574,10 @@ class _PhotoFilterPanel extends StatelessWidget {
             title: l10n.colorLabel,
             options: [
               _FilterOption(label: l10n.filterAny, value: PhotoColorOption.any),
-              _FilterOption(label: l10n.filterGreen, value: PhotoColorOption.green),
-              _FilterOption(label: l10n.filterBlue, value: PhotoColorOption.blue),
+              _FilterOption(
+                  label: l10n.filterGreen, value: PhotoColorOption.green),
+              _FilterOption(
+                  label: l10n.filterBlue, value: PhotoColorOption.blue),
               _FilterOption(
                 label: l10n.filterBlackAndWhite,
                 value: PhotoColorOption.blackAndWhite,
@@ -586,7 +590,8 @@ class _PhotoFilterPanel extends StatelessWidget {
           _FilterSection<PhotoOrientationOption>(
             title: l10n.orientationLabel,
             options: [
-              _FilterOption(label: l10n.filterAny, value: PhotoOrientationOption.any),
+              _FilterOption(
+                  label: l10n.filterAny, value: PhotoOrientationOption.any),
               _FilterOption(
                 label: l10n.filterLandscape,
                 value: PhotoOrientationOption.landscape,
@@ -607,7 +612,8 @@ class _PhotoFilterPanel extends StatelessWidget {
           _FilterSection<PhotoContentSafetyOption>(
             title: l10n.contentSafety,
             options: [
-              _FilterOption(label: l10n.filterLow, value: PhotoContentSafetyOption.low),
+              _FilterOption(
+                  label: l10n.filterLow, value: PhotoContentSafetyOption.low),
               _FilterOption(
                 label: l10n.filterHigh,
                 value: PhotoContentSafetyOption.high,
@@ -865,9 +871,8 @@ class _UserResultTile extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             top: BorderSide(
-              color: showTopBorder
-                  ? const Color(0xFFF4F4F5)
-                  : Colors.transparent,
+              color:
+                  showTopBorder ? const Color(0xFFF4F4F5) : Colors.transparent,
             ),
           ),
         ),
@@ -954,9 +959,7 @@ class _UserResultTile extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
-                  color: isFollowing
-                      ? const Color(0xFF71717A)
-                      : Colors.white,
+                  color: isFollowing ? const Color(0xFF71717A) : Colors.white,
                 ),
               ),
             ),

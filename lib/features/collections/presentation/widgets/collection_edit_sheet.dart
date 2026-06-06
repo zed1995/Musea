@@ -37,8 +37,7 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
   @override
   void initState() {
     super.initState();
-    _titleController =
-        TextEditingController(text: widget.collection.title);
+    _titleController = TextEditingController(text: widget.collection.title);
     _descriptionController =
         TextEditingController(text: widget.collection.description ?? '');
     _isPrivate = widget.collection.isPrivate;
@@ -296,7 +295,9 @@ class _CollectionEditSheetState extends ConsumerState<CollectionEditSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('${AppLocalizations.of(context)!.saveChanges}: $e')),
+          SnackBar(
+              content:
+                  Text('${AppLocalizations.of(context)!.saveChanges}: $e')),
         );
       }
     } finally {
@@ -325,14 +326,11 @@ class _VisibilityOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF18181B)
-              : const Color(0xFFFAFAFA),
+          color: isSelected ? const Color(0xFF18181B) : const Color(0xFFFAFAFA),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF18181B)
-                : const Color(0xFFF1F1F3),
+            color:
+                isSelected ? const Color(0xFF18181B) : const Color(0xFFF1F1F3),
           ),
         ),
         child: Row(
@@ -370,7 +368,8 @@ class _VisibilityOption extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
-                      color: isSelected ? Colors.white : const Color(0xFF18181B),
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF18181B),
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -378,8 +377,9 @@ class _VisibilityOption extends StatelessWidget {
                     subtitle,
                     style: TextStyle(
                       fontSize: 12,
-                      color:
-                          isSelected ? Colors.white.withValues(alpha: 0.7) : Colors.grey[500],
+                      color: isSelected
+                          ? Colors.white.withValues(alpha: 0.7)
+                          : Colors.grey[500],
                     ),
                   ),
                 ],

@@ -80,7 +80,8 @@ void main() {
       tester,
       collection: Collection(id: 'col-1', title: 'Old Title', totalPhotos: 5),
     );
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Save changes'));
+    await tester
+        .ensureVisible(find.widgetWithText(FilledButton, 'Save changes'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Save changes'),
         warnIfMissed: false);
@@ -120,7 +121,8 @@ void main() {
     await tester.pumpAndSettle();
     await tester.tap(find.text('Private'), warnIfMissed: false);
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Save changes'));
+    await tester
+        .ensureVisible(find.widgetWithText(FilledButton, 'Save changes'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Save changes'),
         warnIfMissed: false);

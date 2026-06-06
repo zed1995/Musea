@@ -208,8 +208,7 @@ void main() {
     expect(find.text('Sign out'), findsOneWidget);
   });
 
-  testWidgets('hides sign out button when not authenticated',
-      (tester) async {
+  testWidgets('hides sign out button when not authenticated', (tester) async {
     await tester.pumpWidget(buildApp(authenticated: false));
 
     await tester.pumpAndSettle();

@@ -154,8 +154,7 @@ class _SaveToCollectionSheetState
               duration: const Duration(seconds: 3),
               action: SnackBarAction(
                 label: l10n.view,
-                onPressed: () =>
-                    router.push('/collection/${collection.id}'),
+                onPressed: () => router.push('/collection/${collection.id}'),
               ),
             ),
           );
@@ -222,7 +221,6 @@ class _SaveToCollectionSheetState
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: EdgeInsets.only(
         bottom: MediaQuery.of(context).viewInsets.bottom,
@@ -780,14 +778,11 @@ class _VisibilityOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF18181B)
-              : const Color(0xFFFAFAFA),
+          color: isSelected ? const Color(0xFF18181B) : const Color(0xFFFAFAFA),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF18181B)
-                : const Color(0xFFF1F1F3),
+            color:
+                isSelected ? const Color(0xFF18181B) : const Color(0xFFF1F1F3),
           ),
         ),
         child: Row(
@@ -828,9 +823,8 @@ class _VisibilityOption extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isSelected
-                          ? Colors.white
-                          : const Color(0xFF18181B),
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF18181B),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -839,9 +833,8 @@ class _VisibilityOption extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       height: 1.3,
-                      color: isSelected
-                          ? Colors.white70
-                          : const Color(0xFF71717A),
+                      color:
+                          isSelected ? Colors.white70 : const Color(0xFF71717A),
                     ),
                   ),
                 ],

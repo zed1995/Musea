@@ -176,7 +176,7 @@ class SettingsPage extends ConsumerWidget {
                 icon: const Icon(Icons.logout_rounded),
                 label: Text(l10n.signOutAction),
               ),
-          ),
+            ),
           ],
         ],
       ),

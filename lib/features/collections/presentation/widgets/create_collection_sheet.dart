@@ -249,10 +249,9 @@ class _CreateCollectionSheetState
             SizedBox(
               width: double.infinity,
               child: FilledButton(
-                onPressed:
-                    _titleController.text.trim().isEmpty || _isSubmitting
-                        ? null
-                        : _handleCreate,
+                onPressed: _titleController.text.trim().isEmpty || _isSubmitting
+                    ? null
+                    : _handleCreate,
                 style: FilledButton.styleFrom(
                   backgroundColor: const Color(0xFF18181B),
                   foregroundColor: Colors.white,
@@ -311,10 +310,8 @@ class _CreateCollectionSheetState
               server: (_, message) => l10n.serverError(message),
               cache: (message) => 'Error: $message',
               notFound: (message) => 'Error: $message',
-              unauthorized: (_) =>
-                  l10n.signInAgainToCreate,
-              rateLimit: (_) =>
-                  l10n.tooManyRequests,
+              unauthorized: (_) => l10n.signInAgainToCreate,
+              rateLimit: (_) => l10n.tooManyRequests,
               unknown: (message) => 'Error: $message',
             );
           });
@@ -353,14 +350,11 @@ class _VisibilityOption extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: isSelected
-              ? const Color(0xFF18181B)
-              : const Color(0xFFFAFAFA),
+          color: isSelected ? const Color(0xFF18181B) : const Color(0xFFFAFAFA),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isSelected
-                ? const Color(0xFF18181B)
-                : const Color(0xFFF1F1F3),
+            color:
+                isSelected ? const Color(0xFF18181B) : const Color(0xFFF1F1F3),
           ),
         ),
         child: Row(
@@ -374,9 +368,7 @@ class _VisibilityOption extends StatelessWidget {
                 shape: BoxShape.circle,
                 color: isSelected ? Colors.white : Colors.transparent,
                 border: Border.all(
-                  color: isSelected
-                      ? Colors.white
-                      : const Color(0xFFA1A1AA),
+                  color: isSelected ? Colors.white : const Color(0xFFA1A1AA),
                   width: 2,
                 ),
               ),
@@ -403,9 +395,8 @@ class _VisibilityOption extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
-                      color: isSelected
-                          ? Colors.white
-                          : const Color(0xFF18181B),
+                      color:
+                          isSelected ? Colors.white : const Color(0xFF18181B),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -414,9 +405,8 @@ class _VisibilityOption extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 11,
                       height: 1.3,
-                      color: isSelected
-                          ? Colors.white70
-                          : const Color(0xFF71717A),
+                      color:
+                          isSelected ? Colors.white70 : const Color(0xFF71717A),
                     ),
                   ),
                 ],

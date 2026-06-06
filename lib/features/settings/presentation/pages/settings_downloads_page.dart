@@ -42,7 +42,7 @@ class SettingsDownloadsPage extends ConsumerWidget {
               fontSize: 11,
               fontWeight: FontWeight.w700,
               letterSpacing: 1.4,
-              color: const Color(0xFFA8A29E),
+              color: Color(0xFFA8A29E),
             ),
           ),
           const SizedBox(height: 10),
@@ -316,8 +316,6 @@ class _DownloadTaskTile extends StatelessWidget {
   final bool grouped;
   final bool revealed;
   final VoidCallback? onRetry;
-
-  bool get _showProgressMeta => task.status == DownloadTaskStatus.downloading;
   String get _progressLabel => '${(task.progress * 100).round()}%';
 
   @override
@@ -593,49 +591,6 @@ class _StatusBadge extends StatelessWidget {
           letterSpacing: 0.8,
           color: foreground,
         ),
-      ),
-    );
-  }
-}
-
-class _DownloadsHint extends StatelessWidget {
-  const _DownloadsHint({required this.label});
-
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.gray200),
-      ),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.only(top: 1),
-            child: Icon(
-              Icons.info_outline_rounded,
-              size: 16,
-              color: AppColors.gray500,
-            ),
-          ),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontSize: 12,
-                height: 1.45,
-                fontWeight: FontWeight.w500,
-                color: AppColors.gray600,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

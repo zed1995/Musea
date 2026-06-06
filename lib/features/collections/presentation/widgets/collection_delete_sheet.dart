@@ -215,7 +215,7 @@ class _CollectionDeleteSheetState extends ConsumerState<CollectionDeleteSheet> {
                         ),
                       )
                     : Text(
-                         l10n.deleteCollectionAction,
+                        l10n.deleteCollectionAction,
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w700,

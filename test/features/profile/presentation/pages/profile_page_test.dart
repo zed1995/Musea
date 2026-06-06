@@ -239,8 +239,7 @@ void main() {
     expect(find.byType(LoadingIndicator), findsNothing);
   });
 
-  testWidgets('ProfilePage keeps initialUser when fetch fails',
-      (tester) async {
+  testWidgets('ProfilePage keeps initialUser when fetch fails', (tester) async {
     final failingUser = Completer<User>();
     const initialUser = User(
       id: 'user-4',
@@ -271,8 +270,7 @@ void main() {
     expect(find.byType(LoadingIndicator), findsNothing);
   });
 
-  testWidgets('ProfilePage shows loading when no initialUser',
-      (tester) async {
+  testWidgets('ProfilePage shows loading when no initialUser', (tester) async {
     final pendingUser = Completer<User>();
 
     await tester.pumpWidget(

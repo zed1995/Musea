@@ -55,16 +55,19 @@ void main() {
     expect(find.byIcon(Icons.close_rounded), findsOneWidget);
   });
 
-  testWidgets('delete button disabled until correct name typed', (tester) async {
+  testWidgets('delete button disabled until correct name typed',
+      (tester) async {
     when(
       () => mockRepository.deleteCollection(any()),
     ).thenAnswer((_) async => const Right(null));
     await showSheet(tester);
 
     expect(
-      tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Delete collection'),
-      ).enabled,
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Delete collection'),
+          )
+          .enabled,
       isFalse,
     );
 
@@ -72,9 +75,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Delete collection'),
-      ).enabled,
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Delete collection'),
+          )
+          .enabled,
       isTrue,
     );
   });
@@ -84,9 +89,11 @@ void main() {
     await tester.enterText(find.byType(TextFormField), 'Wrong Name');
     await tester.pumpAndSettle();
     expect(
-      tester.widget<FilledButton>(
-        find.widgetWithText(FilledButton, 'Delete collection'),
-      ).enabled,
+      tester
+          .widget<FilledButton>(
+            find.widgetWithText(FilledButton, 'Delete collection'),
+          )
+          .enabled,
       isFalse,
     );
   });
@@ -98,7 +105,8 @@ void main() {
     await showSheet(tester);
     await tester.enterText(find.byType(TextFormField), 'Kyoto Research');
     await tester.pumpAndSettle();
-    await tester.ensureVisible(find.widgetWithText(FilledButton, 'Delete collection'));
+    await tester
+        .ensureVisible(find.widgetWithText(FilledButton, 'Delete collection'));
     await tester.pumpAndSettle();
     await tester.tap(find.widgetWithText(FilledButton, 'Delete collection'),
         warnIfMissed: false);
