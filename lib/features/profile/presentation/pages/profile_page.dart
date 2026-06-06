@@ -303,7 +303,7 @@ class _ProfileHero extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _CircleActionButton(
-                    icon: Icons.arrow_back_ios_new_rounded,
+                    icon: Icons.arrow_back_rounded,
                     onPressed: onBack,
                   ),
                   _CircleActionButton(

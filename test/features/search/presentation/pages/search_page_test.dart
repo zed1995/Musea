@@ -134,6 +134,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Start typing to search'), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
   });
 
   testWidgets('SearchPage shows photo results after submit', (tester) async {

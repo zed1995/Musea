@@ -5,6 +5,7 @@ import 'package:musea/features/settings/data/datasources/settings_local_datasour
 import 'package:musea/features/settings/presentation/providers/settings_provider.dart';
 import 'package:musea/features/settings/presentation/widgets/settings_section.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
+import 'package:musea/shared/widgets/android_top_bar.dart';
 
 class SettingsLanguagePage extends ConsumerWidget {
   const SettingsLanguagePage({super.key});
@@ -17,11 +18,9 @@ class SettingsLanguagePage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.gray50,
-      appBar: AppBar(
-        backgroundColor: AppColors.gray50,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        title: Text(l10n.languageSetting),
+      appBar: AndroidTopBar(
+        titleText: l10n.languageSetting,
+        showBackButton: Navigator.of(context).canPop(),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 24),

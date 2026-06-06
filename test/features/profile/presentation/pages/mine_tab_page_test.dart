@@ -103,6 +103,9 @@ void main() {
     expect(collectionsChips.any((widget) => widget.maxLines == 1), isTrue);
 
     expect(find.text('Browse profiles'), findsOneWidget);
+    expect(find.text('Mine'), findsOneWidget);
+    expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.tune_rounded), findsNothing);
   });
 
   testWidgets('Mine tab shows cached profile content when signed in',
@@ -167,9 +170,10 @@ void main() {
     expect(find.text('Collections'), findsWidgets);
     expect(find.text('Likes'), findsWidgets);
     expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
-    expect(find.byIcon(Icons.tune_rounded), findsOneWidget);
     expect(find.text('Edit profile'), findsNothing);
     expect(find.text('Continue with Unsplash'), findsNothing);
+    expect(find.byIcon(Icons.settings_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.tune_rounded), findsNothing);
   });
 
   testWidgets('Mine tab switches between photos collections and likes',
@@ -334,8 +338,9 @@ void main() {
     await tester.pump();
 
     expect(
-      find.byIcon(Icons.tune_rounded),
+      find.byIcon(Icons.settings_outlined),
       findsOneWidget,
     );
+    expect(find.byIcon(Icons.tune_rounded), findsNothing);
   });
 }

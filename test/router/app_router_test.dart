@@ -187,7 +187,8 @@ void main() {
 
     expect(find.text('Photos'), findsWidgets);
     expect(find.text('Users'), findsWidgets);
-    expect(find.byIcon(Icons.arrow_back_ios_new_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
+    expect(find.byIcon(Icons.arrow_back_ios_new_rounded), findsNothing);
   });
 
   testWidgets('router forwards photo and collection extras into detail pages',

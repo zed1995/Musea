@@ -262,10 +262,14 @@ class _GuestTopBarButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: const Color(0xFFECECF0)),
       ),
-      child: IconButton(
+        child: IconButton(
         onPressed: () => context.push('/settings'),
         icon:
-            const Icon(Icons.tune_rounded, size: 18, color: Color(0xFF27272A)),
+            const Icon(
+              Icons.settings_outlined,
+              size: 18,
+              color: Color(0xFF27272A),
+            ),
         padding: EdgeInsets.zero,
       ),
     );
@@ -789,31 +793,15 @@ class _MineHero extends StatelessWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.workspace,
-                        style: const TextStyle(
-                          fontSize: 11,
-                          height: 1,
-                          letterSpacing: 1.3,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFFA1A1AA),
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        l10n.minePageTitle,
-                        style: const TextStyle(
-                          fontSize: 30,
-                          height: 1,
-                          letterSpacing: -1.2,
-                          fontWeight: FontWeight.w700,
-                          color: Color(0xFF18181B),
-                        ),
-                      ),
-                    ],
+                  Text(
+                    l10n.minePageTitle,
+                    style: const TextStyle(
+                      fontSize: 30,
+                      height: 1,
+                      letterSpacing: -1.2,
+                      fontWeight: FontWeight.w700,
+                      color: Color(0xFF18181B),
+                    ),
                   ),
                   Row(
                     mainAxisSize: MainAxisSize.min,
@@ -824,7 +812,7 @@ class _MineHero extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       _TopBarIconButton(
-                        icon: Icons.tune_rounded,
+                        icon: Icons.settings_outlined,
                         onTap: () => context.push('/settings'),
                       ),
                     ],

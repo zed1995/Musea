@@ -11,6 +11,7 @@ import 'package:musea/features/settings/presentation/providers/settings_provider
 import 'package:musea/features/settings/presentation/widgets/settings_row.dart';
 import 'package:musea/features/settings/presentation/widgets/settings_section.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
+import 'package:musea/shared/widgets/android_top_bar.dart';
 
 class SettingsPage extends ConsumerWidget {
   const SettingsPage({super.key});
@@ -37,11 +38,9 @@ class SettingsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: AppColors.gray50,
-      appBar: AppBar(
-        backgroundColor: AppColors.gray50,
-        elevation: 0,
-        surfaceTintColor: Colors.transparent,
-        title: Text(l10n.settingsTitle),
+      appBar: AndroidTopBar(
+        titleText: l10n.settingsTitle,
+        showBackButton: Navigator.of(context).canPop(),
       ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 12, 20, 28),

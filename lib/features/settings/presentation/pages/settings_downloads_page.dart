@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:musea/core/services/download_notifier.dart';
 import 'package:musea/core/services/providers.dart';
 import 'package:musea/core/theme/colors.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
+import 'package:musea/shared/widgets/android_top_bar.dart';
 
 class SettingsDownloadsPage extends ConsumerWidget {
   const SettingsDownloadsPage({super.key});
@@ -123,38 +123,39 @@ class SettingsDownloadsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: const Color(0xFFF7F5F1),
+      appBar: AndroidTopBar(
+        titleText: l10n.downloadsPageTitle,
+        showBackButton: true,
+        trailing: completed.isNotEmpty || failed.isNotEmpty
+            ? PopupMenuButton<_DownloadsMenuAction>(
+                icon: const Icon(Icons.more_horiz_rounded),
+                onSelected: (value) {
+                  switch (value) {
+                    case _DownloadsMenuAction.clearCompleted:
+                      ref.read(downloadNotifierProvider).clearCompleted();
+                      showMessage(l10n.completedTasksCleared);
+                    case _DownloadsMenuAction.clearFailed:
+                      ref.read(downloadNotifierProvider).clearFailed();
+                      showMessage(l10n.failedTasksCleared);
+                  }
+                },
+                itemBuilder: (context) => [
+                  if (completed.isNotEmpty)
+                    PopupMenuItem<_DownloadsMenuAction>(
+                      value: _DownloadsMenuAction.clearCompleted,
+                      child: Text(l10n.clearCompletedAction),
+                    ),
+                  if (failed.isNotEmpty)
+                    PopupMenuItem<_DownloadsMenuAction>(
+                      value: _DownloadsMenuAction.clearFailed,
+                      child: Text(l10n.clearFailedAction),
+                    ),
+                ],
+              )
+            : null,
+      ),
       body: Column(
         children: [
-          _DownloadsHero(
-            title: l10n.downloadsPageTitle,
-            menu: completed.isNotEmpty || failed.isNotEmpty
-                ? PopupMenuButton<_DownloadsMenuAction>(
-                    icon: const Icon(Icons.more_horiz_rounded),
-                    onSelected: (value) {
-                      switch (value) {
-                        case _DownloadsMenuAction.clearCompleted:
-                          ref.read(downloadNotifierProvider).clearCompleted();
-                          showMessage(l10n.completedTasksCleared);
-                        case _DownloadsMenuAction.clearFailed:
-                          ref.read(downloadNotifierProvider).clearFailed();
-                          showMessage(l10n.failedTasksCleared);
-                      }
-                    },
-                    itemBuilder: (context) => [
-                      if (completed.isNotEmpty)
-                        PopupMenuItem<_DownloadsMenuAction>(
-                          value: _DownloadsMenuAction.clearCompleted,
-                          child: Text(l10n.clearCompletedAction),
-                        ),
-                      if (failed.isNotEmpty)
-                        PopupMenuItem<_DownloadsMenuAction>(
-                          value: _DownloadsMenuAction.clearFailed,
-                          child: Text(l10n.clearFailedAction),
-                        ),
-                    ],
-                  )
-                : null,
-          ),
           Expanded(
             child: tasks.isEmpty
                 ? ListView(
@@ -592,135 +593,6 @@ class _StatusBadge extends StatelessWidget {
           letterSpacing: 0.8,
           color: foreground,
         ),
-      ),
-    );
-  }
-}
-
-class _DownloadsHero extends StatelessWidget {
-  const _DownloadsHero({
-    required this.title,
-    this.menu,
-  });
-
-  final String title;
-  final Widget? menu;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Color(0xFFECE9E3))),
-      ),
-      child: DecoratedBox(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-            colors: [Color(0xFFFCFCFD), Color(0xFFF6F5F3)],
-          ),
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              top: -32,
-              right: -24,
-              child: IgnorePointer(
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        Color(0x1418181B),
-                        Color(0x0018181B),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            SafeArea(
-              bottom: false,
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-                child: Row(
-                  children: [
-                    _HeroIconButton(
-                      icon: Icons.chevron_left_rounded,
-                      onTap: () => context.pop(),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Storage',
-                            style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 1.4,
-                              color: Color(0xFFA8A29E),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            title,
-                            style: const TextStyle(
-                              fontSize: 31,
-                              height: 1,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -1.6,
-                              color: Color(0xFF18181B),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (menu != null) menu!,
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _HeroIconButton extends StatelessWidget {
-  const _HeroIconButton({
-    required this.icon,
-    required this.onTap,
-  });
-
-  final IconData icon;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(14),
-      child: Container(
-        width: 38,
-        height: 38,
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.86),
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: const Color(0xFFECECF0)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 24,
-              offset: const Offset(0, 10),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: const Color(0xFF27272A)),
       ),
     );
   }

@@ -307,8 +307,8 @@ class _SearchHeader extends StatelessWidget {
                   side: const BorderSide(color: Color(0xFFE4E4E7)),
                 ),
                 child: const Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 18,
+                  Icons.arrow_back_rounded,
+                  size: 20,
                   color: Color(0xFF3F3F46),
                 ),
               ),
