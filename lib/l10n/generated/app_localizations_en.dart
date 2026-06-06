@@ -515,6 +515,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get downloadInBackground => 'Download in Background';
 
   @override
+  String get downloadPreparing => 'Preparing download...';
+
+  @override
+  String get downloadSaving => 'Saving to gallery...';
+
+  @override
   String get imageSavedToGallery => 'Image saved to gallery';
 
   @override

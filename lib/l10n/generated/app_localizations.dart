@@ -1028,6 +1028,18 @@ abstract class AppLocalizations {
   /// **'Download in Background'**
   String get downloadInBackground;
 
+  /// No description provided for @downloadPreparing.
+  ///
+  /// In en, this message translates to:
+  /// **'Preparing download...'**
+  String get downloadPreparing;
+
+  /// No description provided for @downloadSaving.
+  ///
+  /// In en, this message translates to:
+  /// **'Saving to gallery...'**
+  String get downloadSaving;
+
   /// No description provided for @imageSavedToGallery.
   ///
   /// In en, this message translates to:

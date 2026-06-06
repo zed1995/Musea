@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:gal/gal.dart';
 import 'package:musea/core/errors/failures.dart';
+import 'package:musea/core/services/download_local_datasource.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 
 typedef DownloadBytes = Future<Uint8List> Function({
@@ -76,6 +77,32 @@ class DownloadTask {
       status: status ?? this.status,
     );
   }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'photo': photo.toJson(),
+        'title': title,
+        'subtitle': subtitle,
+        'url': url,
+        'progress': progress,
+        'received_bytes': receivedBytes,
+        'total_bytes': totalBytes,
+        'status': status.name,
+      };
+
+  factory DownloadTask.fromJson(Map<String, dynamic> json) => DownloadTask(
+        id: json['id'] as String,
+        photo: Photo.fromJson(json['photo'] as Map<String, dynamic>),
+        title: json['title'] as String,
+        subtitle: json['subtitle'] as String,
+        url: json['url'] as String,
+        progress: (json['progress'] as num).toDouble(),
+        receivedBytes: (json['received_bytes'] as num).toInt(),
+        totalBytes: (json['total_bytes'] as num).toInt(),
+        status: DownloadTaskStatus.values.firstWhere(
+          (s) => s.name == json['status'],
+        ),
+      );
 }
 
 class DownloadProgress {
@@ -133,6 +160,7 @@ class DownloadNotifier extends ChangeNotifier {
     SaveImageBytes? saveImageBytes,
     Duration successResetDelay = const Duration(seconds: 2),
     Dio? dio,
+    DownloadLocalDataSource? localDataSource,
   })  : _notifications = notifications,
         _trackDownload = trackDownload,
         _requestNotificationPermissions =
@@ -147,7 +175,8 @@ class DownloadNotifier extends ChangeNotifier {
               ),
             ),
         _downloadBytes = downloadBytes,
-        _saveImageBytes = saveImageBytes;
+        _saveImageBytes = saveImageBytes,
+        _localDataSource = localDataSource ?? _NoopDownloadLocalDataSource();
 
   factory DownloadNotifier.noop() {
     return DownloadNotifier(
@@ -174,9 +203,11 @@ class DownloadNotifier extends ChangeNotifier {
   final DownloadBytes? _downloadBytes;
   final SaveImageBytes? _saveImageBytes;
   final Duration _successResetDelay;
+  final DownloadLocalDataSource _localDataSource;
 
   final List<DownloadTask> _tasks = <DownloadTask>[];
   DownloadProgress _state = DownloadProgress.initial;
+  bool _tasksLoaded = false;
   bool _isDownloading = false;
   bool _channelCreated = false;
   bool _disposed = false;
@@ -189,15 +220,34 @@ class DownloadNotifier extends ChangeNotifier {
 
   DownloadProgress get state => _state;
   bool get isDownloading => _isDownloading;
-  List<DownloadTask> get tasks => List<DownloadTask>.unmodifiable(_tasks);
+  List<DownloadTask> get tasks {
+    _ensureTasksLoaded();
+    return List<DownloadTask>.unmodifiable(_tasks);
+  }
 
   void cancel() {
     _cancelToken?.cancel('Download cancelled by user');
     _cancelToken = null;
   }
 
+  void _ensureTasksLoaded() {
+    if (_tasksLoaded) return;
+    _tasksLoaded = true;
+    _localDataSource.loadTasks().then((saved) {
+      if (saved.isNotEmpty) {
+        _tasks.addAll(saved);
+        _safeNotify();
+      }
+    });
+  }
+
+  Future<void> _persistTasks() {
+    return _localDataSource.saveTasks(List<DownloadTask>.from(_tasks));
+  }
+
   Future<void> download(String url, Photo photo) async {
     if (_isDownloading) return;
+    _ensureTasksLoaded();
 
     _isDownloading = true;
     _cancelToken = CancelToken();
@@ -216,6 +266,7 @@ class DownloadNotifier extends ChangeNotifier {
         status: DownloadTaskStatus.downloading,
       ),
     );
+    _persistTasks();
     _setState(
       const DownloadProgress(
         progress: 0.0,
@@ -293,6 +344,7 @@ class DownloadNotifier extends ChangeNotifier {
         totalBytes: bytes.length,
         status: DownloadTaskStatus.completed,
       );
+      _persistTasks();
       _setState(
         _state.copyWith(
           progress: 1.0,
@@ -300,17 +352,14 @@ class DownloadNotifier extends ChangeNotifier {
           status: DownloadStatus.completed,
         ),
       );
-
-      await Future.delayed(_successResetDelay);
-      reset();
     } catch (e) {
       if (_notificationsEnabled) {
         await _showFailureNotification(_humanizeError(e));
       }
       _setState(
-        const DownloadProgress(
+        DownloadProgress(
           progress: 0.0,
-          statusText: 'Download failed',
+          statusText: 'Download failed: ${_humanizeError(e)}',
           receivedBytes: 0,
           totalBytes: 0,
           status: DownloadStatus.failed,
@@ -321,6 +370,7 @@ class DownloadNotifier extends ChangeNotifier {
         progress: 0.0,
         status: DownloadTaskStatus.failed,
       );
+      _persistTasks();
     } finally {
       _cancelToken = null;
       _isDownloading = false;
@@ -504,10 +554,11 @@ class DownloadNotifier extends ChangeNotifier {
   }
 
   String _humanizeError(Object error) {
-    if (error is DioException && error.type == DioExceptionType.cancel) {
-      return 'Download cancelled';
+    if (error is DioException) {
+      if (error.type == DioExceptionType.cancel) return 'cancelled';
+      return '${error.type}${error.message != null ? ': ${error.message}' : ''}';
     }
-    return 'Unable to save image';
+    return error.toString();
   }
 
   void _setState(DownloadProgress value) {
@@ -558,4 +609,15 @@ class DownloadNotifier extends ChangeNotifier {
       notifyListeners();
     }
   }
+}
+
+class _NoopDownloadLocalDataSource implements DownloadLocalDataSource {
+  @override
+  Future<List<DownloadTask>> loadTasks() async => [];
+
+  @override
+  Future<void> saveTasks(List<DownloadTask> tasks) async {}
+
+  @override
+  Future<void> clearTasks() async {}
 }

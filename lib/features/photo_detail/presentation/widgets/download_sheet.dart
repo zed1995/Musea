@@ -71,11 +71,20 @@ class _DownloadSheetState extends ConsumerState<DownloadSheet> {
   late List<DownloadOption> _options;
   int _selectedIndex = 1;
   bool _startedDownload = false;
+  bool _initialized = false;
 
   @override
   void initState() {
     super.initState();
-    _options = buildDownloadOptions(widget.photo, AppLocalizations.of(context)!);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_initialized) {
+      _initialized = true;
+      _options = buildDownloadOptions(widget.photo, AppLocalizations.of(context)!);
+    }
   }
 
   @override
@@ -390,28 +399,30 @@ class _ProgressView extends StatelessWidget {
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.gray900),
           ),
         ),
-        const SizedBox(height: 12),
-        Row(
-          children: [
-            Text(
-              state.statusText,
-              style: const TextStyle(
-                fontSize: 13,
-                color: Color(0xFF27272A),
-                fontWeight: FontWeight.w600,
+        if (!state.isCompleted && !state.isFailed) ...[
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Text(
+                _statusText(state, l10n),
+                style: const TextStyle(
+                  fontSize: 13,
+                  color: Color(0xFF27272A),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
-            const Spacer(),
-            Text(
-              _progressMeta(state),
-              style: const TextStyle(
-                fontSize: 12,
-                color: Color(0xFF71717A),
-                fontWeight: FontWeight.w500,
+              const Spacer(),
+              Text(
+                _progressMeta(state),
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF71717A),
+                  fontWeight: FontWeight.w500,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
+        ],
         const SizedBox(height: 16),
         SizedBox(
           width: double.infinity,
@@ -477,5 +488,15 @@ class _ProgressView extends StatelessWidget {
     }
     final formatted = value >= 100 ? value.toStringAsFixed(0) : value.toStringAsFixed(1);
     return '$formatted ${units[unitIndex]}';
+  }
+
+  String _statusText(DownloadProgress state, AppLocalizations l10n) {
+    if (state.isCompleted) return l10n.imageSavedToGallery;
+    if (state.isFailed) return l10n.downloadFailed;
+    if (state.isSaving) return l10n.downloadSaving;
+    if (state.progress > 0) {
+      return '${(state.progress * 100).round()}%';
+    }
+    return l10n.downloadPreparing;
   }
 }

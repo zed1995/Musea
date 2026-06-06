@@ -196,6 +196,8 @@
   "doneAction": "Done",
   "backToSizes": "Back to Sizes",
   "downloadInBackground": "Download in Background",
+  "downloadPreparing": "Preparing download...",
+  "downloadSaving": "Saving to gallery...",
   "imageSavedToGallery": "Image saved to gallery",
   "downloadFailed": "Download failed",
 

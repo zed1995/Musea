@@ -196,6 +196,8 @@
   "doneAction": "完成",
   "backToSizes": "返回尺寸选择",
   "downloadInBackground": "后台下载",
+  "downloadPreparing": "准备下载…",
+  "downloadSaving": "保存到相册…",
   "imageSavedToGallery": "图片已保存到相册",
   "downloadFailed": "下载失败",
 

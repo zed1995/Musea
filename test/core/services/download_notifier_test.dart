@@ -5,12 +5,16 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:musea/core/errors/failures.dart';
+import 'package:musea/core/services/download_local_datasource.dart';
 import 'package:musea/core/services/download_notifier.dart';
 import 'package:musea/features/discover/data/models/photo_model.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/repositories/photo_repository.dart';
 
 class MockPhotoRepository extends Mock implements PhotoRepository {}
+
+class MockDownloadLocalDataSource extends Mock
+    implements DownloadLocalDataSource {}
 
 Photo buildPhoto({
   int width = 6000,
@@ -140,7 +144,7 @@ void main() {
       await notifier.download('https://example.com/regular.jpg', buildPhoto());
 
       expect(saved, isTrue);
-      expect(notifier.state.statusText, isEmpty);
+      expect(notifier.state.isCompleted, isTrue);
     });
 
     test('adds completed task to task list after a successful download',
@@ -200,6 +204,66 @@ void main() {
         'https://example.com/regular.jpg',
       );
       expect(notifier.tasks.single.photo.id, 'photo-1');
+    });
+
+    group('Photo JSON serialization', () {
+      test('roundtrips through toJson/fromJson', () {
+        final photo = buildPhoto();
+        final json = photo.toJson();
+        final restored = Photo.fromJson(json);
+
+        expect(restored.id, photo.id);
+        expect(restored.description, photo.description);
+        expect(restored.altDescription, photo.altDescription);
+        expect(restored.urlRaw, photo.urlRaw);
+        expect(restored.urlFull, photo.urlFull);
+        expect(restored.urlRegular, photo.urlRegular);
+        expect(restored.urlSmall, photo.urlSmall);
+        expect(restored.urlThumb, photo.urlThumb);
+      });
+
+      test('preserves user fields', () {
+        final photo = buildPhoto();
+        final json = photo.toJson();
+        final restored = Photo.fromJson(json);
+
+        expect(restored.user.id, photo.user.id);
+        expect(restored.user.username, photo.user.username);
+        expect(restored.user.name, photo.user.name);
+        expect(restored.user.profileImageSmall,
+            photo.user.profileImageSmall);
+      });
+    });
+
+    group('DownloadTask JSON serialization', () {
+      test('roundtrips through toJson/fromJson', () {
+        final photo = buildPhoto();
+        final task = DownloadTask(
+          id: 'task-1',
+          photo: photo,
+          title: 'Quiet light',
+          subtitle: 'Regular',
+          url: 'https://example.com/regular.jpg',
+          progress: 1.0,
+          receivedBytes: 3000,
+          totalBytes: 3000,
+          status: DownloadTaskStatus.completed,
+        );
+
+        final json = task.toJson();
+        final restored = DownloadTask.fromJson(json);
+
+        expect(restored.id, task.id);
+        expect(restored.title, task.title);
+        expect(restored.subtitle, task.subtitle);
+        expect(restored.url, task.url);
+        expect(restored.progress, task.progress);
+        expect(restored.receivedBytes, task.receivedBytes);
+        expect(restored.totalBytes, task.totalBytes);
+        expect(restored.status, task.status);
+        expect(restored.photo.id, task.photo.id);
+        expect(restored.photo.urlThumb, task.photo.urlThumb);
+      });
     });
   });
 }

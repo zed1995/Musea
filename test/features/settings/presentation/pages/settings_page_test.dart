@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:musea/core/services/download_notifier.dart';
+import 'package:musea/core/services/providers.dart';
 import 'package:musea/features/auth/domain/entities/auth_session.dart';
 import 'package:musea/features/auth/domain/entities/auth_user.dart';
 import 'package:musea/features/auth/domain/repositories/auth_repository.dart';
@@ -105,6 +107,8 @@ void main() {
             .overrideWithValue(_FakeSettingsLocalDataSource()),
         appVersionProvider.overrideWith((ref) async => 'v1.0.0'),
         cacheBytesProvider.overrideWith((ref) async => 128 * 1024 * 1024),
+        downloadNotifierProvider
+            .overrideWith((ref) => DownloadNotifier.noop()),
       ],
       child: const MaterialApp(
         localizationsDelegates: AppLocalizations.localizationsDelegates,

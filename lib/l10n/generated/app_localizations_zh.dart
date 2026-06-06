@@ -486,6 +486,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get downloadInBackground => '后台下载';
 
   @override
+  String get downloadPreparing => '准备下载…';
+
+  @override
+  String get downloadSaving => '保存到相册…';
+
+  @override
   String get imageSavedToGallery => '图片已保存到相册';
 
   @override

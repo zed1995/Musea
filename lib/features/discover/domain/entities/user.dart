@@ -68,6 +68,95 @@ class User {
     this.downloads,
     this.meta,
   });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'updated_at': updatedAt?.toIso8601String(),
+        'username': username,
+        'name': name,
+        'first_name': firstName,
+        'last_name': lastName,
+        'bio': bio,
+        'location': location,
+        'portfolio_url': portfolioUrl,
+        'instagram_username': instagramUsername,
+        'twitter_username': twitterUsername,
+        'profile_image_small': profileImageSmall,
+        'profile_image_medium': profileImageMedium,
+        'profile_image_large': profileImageLarge,
+        'total_photos': totalPhotos,
+        'total_likes': totalLikes,
+        'total_collections': totalCollections,
+        'total_free_photos': totalFreePhotos,
+        'total_promoted_photos': totalPromotedPhotos,
+        'total_illustrations': totalIllustrations,
+        'total_free_illustrations': totalFreeIllustrations,
+        'total_promoted_illustrations': totalPromotedIllustrations,
+        'accepted_tos': acceptedTos,
+        'for_hire': forHire,
+        'links': links?.toJson(),
+        'social': social?.toJson(),
+        'photos_preview': photosPreview.map((p) => p.toJson()).toList(),
+        'tags': tags?.toJson(),
+        'allow_messages': allowMessages,
+        'followed_by_user': followedByUser,
+        'numeric_id': numericId,
+        'downloads': downloads,
+        'meta': meta?.toJson(),
+      };
+
+  factory User.fromJson(Map<String, dynamic> json) => User(
+        id: json['id'] as String,
+        updatedAt: json['updated_at'] != null
+            ? DateTime.parse(json['updated_at'] as String)
+            : null,
+        username: json['username'] as String,
+        name: json['name'] as String,
+        firstName: json['first_name'] as String?,
+        lastName: json['last_name'] as String?,
+        bio: json['bio'] as String?,
+        location: json['location'] as String?,
+        portfolioUrl: json['portfolio_url'] as String?,
+        instagramUsername: json['instagram_username'] as String?,
+        twitterUsername: json['twitter_username'] as String?,
+        profileImageSmall: json['profile_image_small'] as String,
+        profileImageMedium: json['profile_image_medium'] as String,
+        profileImageLarge: json['profile_image_large'] as String,
+        totalPhotos: (json['total_photos'] as num).toInt(),
+        totalLikes: (json['total_likes'] as num).toInt(),
+        totalCollections: (json['total_collections'] as num).toInt(),
+        totalFreePhotos: (json['total_free_photos'] as num?)?.toInt(),
+        totalPromotedPhotos:
+            (json['total_promoted_photos'] as num?)?.toInt(),
+        totalIllustrations: (json['total_illustrations'] as num?)?.toInt(),
+        totalFreeIllustrations:
+            (json['total_free_illustrations'] as num?)?.toInt(),
+        totalPromotedIllustrations:
+            (json['total_promoted_illustrations'] as num?)?.toInt(),
+        acceptedTos: json['accepted_tos'] as bool?,
+        forHire: json['for_hire'] as bool?,
+        links: json['links'] != null
+            ? UserLinks.fromJson(json['links'] as Map<String, dynamic>)
+            : null,
+        social: json['social'] != null
+            ? UserSocial.fromJson(json['social'] as Map<String, dynamic>)
+            : null,
+        photosPreview: (json['photos_preview'] as List<dynamic>?)
+                ?.map((p) =>
+                    UserPhotoPreview.fromJson(p as Map<String, dynamic>))
+                .toList() ??
+            [],
+        tags: json['tags'] != null
+            ? UserTags.fromJson(json['tags'] as Map<String, dynamic>)
+            : null,
+        allowMessages: json['allow_messages'] as bool?,
+        followedByUser: json['followed_by_user'] as bool?,
+        numericId: (json['numeric_id'] as num?)?.toInt(),
+        downloads: (json['downloads'] as num?)?.toInt(),
+        meta: json['meta'] != null
+            ? UserMeta.fromJson(json['meta'] as Map<String, dynamic>)
+            : null,
+      );
 }
 
 class UserLinks {
@@ -82,6 +171,20 @@ class UserLinks {
     this.photos,
     this.likes,
   });
+
+  Map<String, dynamic> toJson() => {
+        'self': self,
+        'html': html,
+        'photos': photos,
+        'likes': likes,
+      };
+
+  factory UserLinks.fromJson(Map<String, dynamic> json) => UserLinks(
+        self: json['self'] as String?,
+        html: json['html'] as String?,
+        photos: json['photos'] as String?,
+        likes: json['likes'] as String?,
+      );
 }
 
 class UserSocial {
@@ -96,6 +199,20 @@ class UserSocial {
     this.twitterUsername,
     this.paypalEmail,
   });
+
+  Map<String, dynamic> toJson() => {
+        'instagram_username': instagramUsername,
+        'portfolio_url': portfolioUrl,
+        'twitter_username': twitterUsername,
+        'paypal_email': paypalEmail,
+      };
+
+  factory UserSocial.fromJson(Map<String, dynamic> json) => UserSocial(
+        instagramUsername: json['instagram_username'] as String?,
+        portfolioUrl: json['portfolio_url'] as String?,
+        twitterUsername: json['twitter_username'] as String?,
+        paypalEmail: json['paypal_email'] as String?,
+      );
 }
 
 class UserPhotoPreview {
@@ -120,6 +237,35 @@ class UserPhotoPreview {
     required this.smallUrl,
     required this.regularUrl,
   });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'slug': slug,
+        'created_at': createdAt?.toIso8601String(),
+        'updated_at': updatedAt?.toIso8601String(),
+        'blur_hash': blurHash,
+        'asset_type': assetType,
+        'thumb_url': thumbUrl,
+        'small_url': smallUrl,
+        'regular_url': regularUrl,
+      };
+
+  factory UserPhotoPreview.fromJson(Map<String, dynamic> json) =>
+      UserPhotoPreview(
+        id: json['id'] as String,
+        slug: json['slug'] as String?,
+        createdAt: json['created_at'] != null
+            ? DateTime.parse(json['created_at'] as String)
+            : null,
+        updatedAt: json['updated_at'] != null
+            ? DateTime.parse(json['updated_at'] as String)
+            : null,
+        blurHash: json['blur_hash'] as String?,
+        assetType: json['asset_type'] as String?,
+        thumbUrl: json['thumb_url'] as String,
+        smallUrl: json['small_url'] as String,
+        regularUrl: json['regular_url'] as String,
+      );
 }
 
 class UserTags {
@@ -130,6 +276,24 @@ class UserTags {
     this.custom = const [],
     this.aggregated = const [],
   });
+
+  Map<String, dynamic> toJson() => {
+        'custom': custom.map((t) => t.toJson()).toList(),
+        'aggregated': aggregated.map((t) => t.toJson()).toList(),
+      };
+
+  factory UserTags.fromJson(Map<String, dynamic> json) => UserTags(
+        custom: (json['custom'] as List<dynamic>?)
+                ?.map(
+                    (t) => UserTagItem.fromJson(t as Map<String, dynamic>))
+                .toList() ??
+            [],
+        aggregated: (json['aggregated'] as List<dynamic>?)
+                ?.map(
+                    (t) => UserTagItem.fromJson(t as Map<String, dynamic>))
+                .toList() ??
+            [],
+      );
 }
 
 class UserTagItem {
@@ -140,6 +304,16 @@ class UserTagItem {
     required this.title,
     this.type,
   });
+
+  Map<String, dynamic> toJson() => {
+        'title': title,
+        'type': type,
+      };
+
+  factory UserTagItem.fromJson(Map<String, dynamic> json) => UserTagItem(
+        title: json['title'] as String,
+        type: json['type'] as String?,
+      );
 }
 
 class UserMeta {
@@ -148,4 +322,10 @@ class UserMeta {
   const UserMeta({
     this.index,
   });
+
+  Map<String, dynamic> toJson() => {'index': index};
+
+  factory UserMeta.fromJson(Map<String, dynamic> json) => UserMeta(
+        index: json['index'] as bool?,
+      );
 }

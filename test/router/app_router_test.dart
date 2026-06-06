@@ -5,6 +5,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:musea/app.dart';
+import 'package:musea/core/services/download_notifier.dart';
+import 'package:musea/core/services/providers.dart';
 import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/collections/presentation/pages/collection_detail_page.dart';
@@ -308,6 +310,8 @@ void main() {
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
           collectionsProvider(1).overrideWith((ref) => <Collection>[]),
+          downloadNotifierProvider
+              .overrideWith((ref) => DownloadNotifier.noop()),
         ],
         child: const MuseaApp(),
       ),
@@ -343,6 +347,8 @@ void main() {
           photosProvider(1).overrideWith((ref) => <Photo>[photo]),
           topicsProvider.overrideWith(() => TestTopicListNotifier(<Topic>[])),
           collectionsProvider(1).overrideWith((ref) => <Collection>[]),
+          downloadNotifierProvider
+              .overrideWith((ref) => DownloadNotifier.noop()),
         ],
         child: const MuseaApp(),
       ),
