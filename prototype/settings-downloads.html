@@ -99,13 +99,67 @@
             box-shadow: 0 14px 34px rgba(24,24,27,0.05);
             overflow: hidden;
         }
-        .task-row {
+        .task-list-stacked {
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            overflow: visible;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .swipe-row {
+            overflow: hidden;
+            background: #fff;
+        }
+        .task-list-stacked .swipe-row {
+            border-radius: 24px;
+            border: 1px solid #EEEBE6;
+            box-shadow: 0 14px 34px rgba(24,24,27,0.05);
+        }
+        .swipe-track {
+            width: calc(100% + 92px);
+            display: flex;
+            align-items: stretch;
+            transform: translateX(0);
+            transition: transform 180ms ease;
+        }
+        .swipe-actions {
+            width: 92px;
+            display: flex;
+            align-items: stretch;
+            justify-content: center;
+            flex: 0 0 92px;
+        }
+        .swipe-delete {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
+            color: #fff;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+        }
+        .swipe-content {
             display: flex;
             gap: 12px;
             padding: 12px 16px;
             background: rgba(255,255,255,0.9);
+            width: calc(100% - 92px);
+            flex: 0 0 calc(100% - 92px);
+            transition: box-shadow 180ms ease;
         }
-        .task-row + .task-row { border-top: 1px solid #F3F1ED; }
+        .swipe-row + .swipe-row { border-top: 1px solid #F3F1ED; }
+        .task-list-stacked .swipe-row + .swipe-row { border-top: 0; }
+        .swipe-row.is-revealed .swipe-track {
+            transform: translateX(-92px);
+        }
+        .swipe-row.is-revealed .swipe-content {
+            box-shadow: -12px 0 24px rgba(220, 38, 38, 0.08);
+        }
         .thumb {
             width: 64px;
             height: 64px;
@@ -189,42 +243,60 @@
         <div class="px-4 pt-6 space-y-5">
             <div>
                 <div class="task-section-label">Downloading</div>
-                <div class="task-list mt-3">
-                    <div class="task-row">
-                        <img class="thumb" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=200&q=80" alt="Forest path">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Forest Path</div>
-                                    <div class="mt-1 text-[12px] text-stone-500">Regular · 1080×1350</div>
+                <div class="task-list task-list-stacked mt-3">
+                    <div class="swipe-row">
+                        <div class="swipe-track">
+                            <div class="swipe-content">
+                                <img class="thumb" src="https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=200&q=80" alt="Forest path">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Forest Path</div>
+                                            <div class="mt-1 text-[12px] text-stone-500">Regular · 1080×1350</div>
+                                        </div>
+                                        <div class="status-pill status-active">58%</div>
+                                    </div>
+                                    <div class="mt-3 progress-rail">
+                                        <div class="progress-fill" style="width:58%"></div>
+                                    </div>
+                                    <div class="mt-2 text-[11px] text-stone-500">
+                                        5.8 MB / 10.0 MB
+                                    </div>
                                 </div>
-                                <div class="status-pill status-active">58%</div>
                             </div>
-                            <div class="mt-3 progress-rail">
-                                <div class="progress-fill" style="width:58%"></div>
-                            </div>
-                            <div class="mt-2 flex items-center justify-between text-[11px] text-stone-500">
-                                <span>5.8 MB / 10.0 MB</span>
-                                <span>12s left</span>
+                            <div class="swipe-actions" aria-hidden="true">
+                                <div class="swipe-delete">
+                                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 7h12"/><path d="M10 11v5"/><path d="M14 11v5"/><path d="M9 7V5h6v2"/><path d="M8 7l1 12h6l1-12"/></svg>
+                                    Delete
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="task-row">
-                        <img class="thumb" src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=200&q=80" alt="Sunset ridge">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Sunset Ridge</div>
-                                    <div class="mt-1 text-[12px] text-stone-500">Full · 3200×4000</div>
+                    <div class="swipe-row">
+                        <div class="swipe-track">
+                            <div class="swipe-content">
+                                <img class="thumb" src="https://images.unsplash.com/photo-1493246507139-91e8fad9978e?auto=format&fit=crop&w=200&q=80" alt="Sunset ridge">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Sunset Ridge</div>
+                                            <div class="mt-1 text-[12px] text-stone-500">Full · 3200×4000</div>
+                                        </div>
+                                        <div class="status-pill status-active">21%</div>
+                                    </div>
+                                    <div class="mt-3 progress-rail">
+                                        <div class="progress-fill" style="width:21%"></div>
+                                    </div>
+                                    <div class="mt-2 text-[11px] text-stone-500">
+                                        8.2 MB / 39.1 MB
+                                    </div>
                                 </div>
-                                <div class="status-pill status-active">21%</div>
                             </div>
-                            <div class="mt-3 progress-rail">
-                                <div class="progress-fill" style="width:21%"></div>
-                            </div>
-                            <div class="mt-2 flex items-center justify-between text-[11px] text-stone-500">
-                                <span>8.2 MB / 39.1 MB</span>
-                                <span>On Wi-Fi</span>
+                            <div class="swipe-actions" aria-hidden="true">
+                                <div class="swipe-delete">
+                                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 7h12"/><path d="M10 11v5"/><path d="M14 11v5"/><path d="M9 7V5h6v2"/><path d="M8 7l1 12h6l1-12"/></svg>
+                                    Delete
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -234,18 +306,28 @@
             <div>
                 <div class="task-section-label">Completed</div>
                 <div class="task-list mt-3">
-                    <div class="task-row">
-                        <img class="thumb" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=200&q=80" alt="Mountain lake">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Mountain Lake</div>
-                                    <div class="mt-1 text-[12px] text-stone-500">Small · 400×500</div>
+                    <div class="swipe-row is-revealed">
+                        <div class="swipe-track">
+                            <div class="swipe-content">
+                                <img class="thumb" src="https://images.unsplash.com/photo-1519681393784-d120267933ba?auto=format&fit=crop&w=200&q=80" alt="Mountain lake">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Mountain Lake</div>
+                                            <div class="mt-1 text-[12px] text-stone-500">Small · 400×500</div>
+                                        </div>
+                                        <div class="status-pill status-done">Saved</div>
+                                    </div>
+                                    <div class="mt-3 text-[11px] text-stone-500">
+                                        Saved today
+                                    </div>
                                 </div>
-                                <div class="status-pill status-done">Saved</div>
                             </div>
-                            <div class="mt-3 text-[11px] text-stone-500">
-                                Saved today
+                            <div class="swipe-actions" aria-hidden="true">
+                                <div class="swipe-delete">
+                                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 7h12"/><path d="M10 11v5"/><path d="M14 11v5"/><path d="M9 7V5h6v2"/><path d="M8 7l1 12h6l1-12"/></svg>
+                                    Delete
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -255,19 +337,29 @@
             <div>
                 <div class="task-section-label">Needs retry</div>
                 <div class="task-list mt-3">
-                    <div class="task-row">
-                        <img class="thumb" src="https://images.unsplash.com/photo-1511300636408-a63a89df3482?auto=format&fit=crop&w=200&q=80" alt="Night city">
-                        <div class="min-w-0 flex-1">
-                            <div class="flex items-start justify-between gap-3">
-                                <div class="min-w-0">
-                                    <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Night City</div>
-                                    <div class="mt-1 text-[12px] text-stone-500">Raw · Interrupted on unstable network</div>
+                    <div class="swipe-row">
+                        <div class="swipe-track">
+                            <div class="swipe-content">
+                                <img class="thumb" src="https://images.unsplash.com/photo-1511300636408-a63a89df3482?auto=format&fit=crop&w=200&q=80" alt="Night city">
+                                <div class="min-w-0 flex-1">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <div class="text-[14px] font-bold tracking-[-0.01em] text-zinc-900 truncate">Night City</div>
+                                            <div class="mt-1 text-[12px] text-stone-500">Raw · Interrupted on unstable network</div>
+                                        </div>
+                                        <div class="status-pill status-failed">Failed</div>
+                                    </div>
+                                    <div class="mt-3 flex items-center justify-between gap-3">
+                                        <div class="text-[11px] text-rose-600">Connection interrupted</div>
+                                        <button class="retry-btn">Retry</button>
+                                    </div>
                                 </div>
-                                <div class="status-pill status-failed">Failed</div>
                             </div>
-                            <div class="mt-3 flex items-center justify-between gap-3">
-                                <div class="text-[11px] text-rose-600">Connection interrupted</div>
-                                <button class="retry-btn">Retry</button>
+                            <div class="swipe-actions" aria-hidden="true">
+                                <div class="swipe-delete">
+                                    <svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 7h12"/><path d="M10 11v5"/><path d="M14 11v5"/><path d="M9 7V5h6v2"/><path d="M8 7l1 12h6l1-12"/></svg>
+                                    Delete
+                                </div>
                             </div>
                         </div>
                     </div>

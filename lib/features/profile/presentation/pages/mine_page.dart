@@ -815,9 +815,19 @@ class _MineHero extends StatelessWidget {
                       ),
                     ],
                   ),
-                  _TopBarIconButton(
-                    icon: Icons.tune_rounded,
-                    onTap: () => context.push('/settings'),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _TopBarIconButton(
+                        icon: Icons.edit_outlined,
+                        onTap: () {},
+                      ),
+                      const SizedBox(width: 8),
+                      _TopBarIconButton(
+                        icon: Icons.tune_rounded,
+                        onTap: () => context.push('/settings'),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -891,33 +901,6 @@ class _MineHero extends StatelessWidget {
                     ),
                   ),
                 ],
-              ),
-              const SizedBox(height: 14),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    _QuickActionChip(
-                      icon: Icons.edit_outlined,
-                      label: l10n.editProfile,
-                      onTap: () {},
-                    ),
-                    const SizedBox(width: 8),
-                    _QuickActionChip(
-                      icon: Icons.bookmark_border_rounded,
-                      label: l10n.saved,
-                      onTap: () {
-                        DefaultTabController.of(context);
-                      },
-                    ),
-                    const SizedBox(width: 8),
-                    _QuickActionChip(
-                      icon: Icons.download_outlined,
-                      label: l10n.downloads,
-                      onTap: () {},
-                    ),
-                  ],
-                ),
               ),
               const SizedBox(height: 14),
               Text(
@@ -1071,10 +1054,11 @@ class _MetricCard extends StatelessWidget {
         ],
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
             value,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.w800,
@@ -1085,6 +1069,7 @@ class _MetricCard extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             label,
+            textAlign: TextAlign.center,
             style: const TextStyle(
               fontSize: 11,
               letterSpacing: 1.1,

@@ -166,6 +166,9 @@ void main() {
     expect(find.text('Photos'), findsWidgets);
     expect(find.text('Collections'), findsWidgets);
     expect(find.text('Likes'), findsWidgets);
+    expect(find.byIcon(Icons.edit_outlined), findsOneWidget);
+    expect(find.byIcon(Icons.tune_rounded), findsOneWidget);
+    expect(find.text('Edit profile'), findsNothing);
     expect(find.text('Continue with Unsplash'), findsNothing);
   });
 

@@ -72,20 +72,12 @@
             background: #fff;
             border: 1px solid #F4F4F5;
             box-shadow: 0 10px 24px rgba(24,24,27,0.04);
+            text-align: center;
         }
-        .quick-action {
-            min-height: 44px;
-            padding: 0 14px;
-            border-radius: 999px;
-            background: #fff;
-            border: 1px solid #EAEAF0;
-            color: #18181B;
-            display: inline-flex;
+        .topbar-actions {
+            display: flex;
             align-items: center;
             gap: 8px;
-            font-size: 12px;
-            font-weight: 700;
-            cursor: pointer;
         }
         .segment {
             min-height: 40px;
@@ -185,9 +177,14 @@
                     <div class="topbar-kicker">Workspace</div>
                     <h1 class="topbar-title">Mine</h1>
                 </div>
-                <button class="topbar-icon-btn">
-                    <svg class="icon text-zinc-700" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0 3 3 3 3 0 0 0 3 3 3 3 0 0 0-3 3 3 3 0 0 0-3 3 3 3 0 0 0-3-3 3 3 0 0 0-3-3 3 3 0 0 0 3-3 3 3 0 0 0 3-3Z"/><path d="M19 21H5"/></svg>
-                </button>
+                <div class="topbar-actions">
+                    <button class="topbar-icon-btn">
+                        <svg class="icon text-zinc-700" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>
+                    </button>
+                    <button class="topbar-icon-btn">
+                        <svg class="icon text-zinc-700" viewBox="0 0 24 24"><path d="M12 3a3 3 0 0 0 3 3 3 3 0 0 0 3 3 3 3 0 0 0-3 3 3 3 0 0 0-3 3 3 3 0 0 0-3-3 3 3 0 0 0-3-3 3 3 0 0 0 3-3 3 3 0 0 0 3-3Z"/><path d="M19 21H5"/></svg>
+                    </button>
+                </div>
             </div>
 
             <div class="mt-4 flex items-start gap-3">
@@ -214,12 +211,6 @@
                     <div class="text-lg font-extrabold tracking-[-0.03em] text-zinc-900">114k</div>
                     <div class="mt-1 text-[11px] font-semibold text-zinc-400 uppercase tracking-[0.10em]">Likes</div>
                 </div>
-            </div>
-
-            <div class="mt-4 flex gap-2 overflow-x-auto scrollbar-hide">
-                <button class="quick-action"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L7 19l-4 1 1-4Z"/></svg>Edit profile</button>
-                <button class="quick-action"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M6 4h12v17l-6-4-6 4z"/></svg>Saved</button>
-                <button class="quick-action"><svg class="icon icon-sm" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>Downloads</button>
             </div>
         </div>
 

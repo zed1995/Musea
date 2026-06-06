@@ -148,9 +148,10 @@ void main() {
 
     expect(find.text('Downloading'), findsOneWidget);
     expect(find.text('Completed'), findsOneWidget);
-    expect(find.text('Failed'), findsOneWidget);
+    expect(find.text('Failed'), findsWidgets);
     expect(find.textContaining('40%'), findsOneWidget);
-    expect(find.textContaining('400 B / 1000 B'), findsOneWidget);
+    expect(find.text('400 B / 1000 B'), findsOneWidget);
+    expect(find.text('Active'), findsNothing);
     expect(find.text('Retry'), findsOneWidget);
 
     notifier.cancel();
@@ -211,11 +212,40 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(
+        find.byKey(const ValueKey('download-card-completed')), findsOneWidget);
+    expect(find.byKey(const ValueKey('download-card-failed')), findsOneWidget);
     expect(find.text('Quiet light'), findsOneWidget);
     expect(find.text('Quiet light 2'), findsOneWidget);
 
+    final closedSurface = tester.widget<Container>(
+      find.byKey(const ValueKey('download-surface-completed')),
+    );
+    final closedDecoration = closedSurface.decoration! as BoxDecoration;
+    expect(
+      closedDecoration.borderRadius,
+      BorderRadius.circular(24),
+    );
+
     await tester.drag(find.text('Quiet light'), const Offset(-200, 0));
     await tester.pumpAndSettle();
+    expect(
+        find.byKey(const ValueKey('delete-surface-completed')), findsOneWidget);
+    final openSurface = tester.widget<Container>(
+      find.byKey(const ValueKey('download-surface-completed')),
+    );
+    final openDecoration = openSurface.decoration! as BoxDecoration;
+    expect(
+      openDecoration.borderRadius,
+      const BorderRadius.only(
+        topLeft: Radius.circular(24),
+        bottomLeft: Radius.circular(24),
+      ),
+    );
+    final openPadding = tester.widget<AnimatedPadding>(
+      find.byKey(const ValueKey('swipe-padding-completed')),
+    );
+    expect(openPadding.padding, EdgeInsets.zero);
     await tester.tap(find.byKey(const ValueKey('delete-task-completed')));
     await tester.pumpAndSettle();
 
@@ -224,7 +254,7 @@ void main() {
     expect(find.text('Task removed'), findsOneWidget);
   });
 
-  testWidgets('shows cleanup hint and clears completed records from app bar',
+  testWidgets('clears completed records from the downloads hero menu',
       (tester) async {
     final photo = _buildPhoto();
     final notifier = DownloadNotifier(
@@ -272,12 +302,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(
-      find.text(
-        'Deleting a task removes only the record here. Saved images stay in your gallery.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Downloads'), findsOneWidget);
+    expect(find.text('Completed'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.more_horiz_rounded));
     await tester.pumpAndSettle();
