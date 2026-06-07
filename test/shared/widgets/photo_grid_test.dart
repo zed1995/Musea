@@ -4,6 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
+import 'package:musea/shared/widgets/progressive_network_photo.dart';
 
 User _user() => const User(
       id: 'user-1',
@@ -23,11 +24,11 @@ Photo _photo({required bool likedByUser, int likes = 42}) => Photo(
       width: 1200,
       height: 1600,
       color: '#AABBCC',
-      urlRaw: '',
-      urlFull: '',
-      urlRegular: '',
-      urlSmall: '',
-      urlThumb: '',
+      urlRaw: 'https://example.com/raw.jpg',
+      urlFull: 'https://example.com/full.jpg',
+      urlRegular: 'https://example.com/regular.jpg',
+      urlSmall: 'https://example.com/small.jpg',
+      urlThumb: 'https://example.com/thumb.jpg',
       likes: likes,
       downloads: 20,
       likedByUser: likedByUser,
@@ -57,5 +58,22 @@ void main() {
 
     expect(likeIcon.color, const Color(0xFFE11D48));
     expect(likeCount.style?.color, Colors.white);
+  });
+
+  testWidgets('PhotoGrid tiles use the shared progressive photo widget',
+      (tester) async {
+    await tester.pumpWidget(
+      ProviderScope(
+        child: MaterialApp(
+          home: Scaffold(
+            body: PhotoGrid(
+              photos: [_photo(likedByUser: false)],
+            ),
+          ),
+        ),
+      ),
+    );
+
+    expect(find.byType(ProgressiveNetworkPhoto), findsOneWidget);
   });
 }

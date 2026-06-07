@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:musea/shared/widgets/photo_card.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/shared/widgets/photo_card.dart';
+import 'package:musea/shared/widgets/progressive_network_photo.dart';
 
 User createTestUser() => const User(
       id: 'user1',
@@ -29,11 +30,11 @@ Photo createTestPhoto({
       height: 3000,
       color: '#ABCDEF',
       blurHash: null,
-      urlRaw: '',
-      urlFull: '',
-      urlRegular: '',
-      urlSmall: '',
-      urlThumb: '',
+      urlRaw: 'https://example.com/raw.jpg',
+      urlFull: 'https://example.com/full.jpg',
+      urlRegular: 'https://example.com/regular.jpg',
+      urlSmall: 'https://example.com/small.jpg',
+      urlThumb: 'https://example.com/thumb.jpg',
       likes: likes,
       downloads: downloads,
       likedByUser: likedByUser,
@@ -63,6 +64,15 @@ void main() {
     ));
 
     expect(find.byIcon(Icons.bookmark_border), findsOneWidget);
+  });
+
+  testWidgets('PhotoCard uses the shared progressive photo widget',
+      (tester) async {
+    final photo = createTestPhoto();
+
+    await tester.pumpWidget(wrapApp(PhotoCard(photo: photo)));
+
+    expect(find.byType(ProgressiveNetworkPhoto), findsOneWidget);
   });
 
   testWidgets('PhotoCard shows filled red like button for liked photo',

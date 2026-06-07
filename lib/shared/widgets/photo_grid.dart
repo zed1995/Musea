@@ -7,6 +7,7 @@ import 'package:musea/core/theme/text_styles.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 import 'package:musea/router/detail_route_extras.dart';
+import 'package:musea/shared/widgets/progressive_network_photo.dart';
 
 const _likedColor = Color(0xFFE11D48);
 
@@ -71,12 +72,11 @@ class PhotoGridTile extends ConsumerWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            CachedNetworkImage(
-              imageUrl: photo.urlSmall,
+            ProgressiveNetworkPhoto(
+              thumbUrl: photo.urlThumb,
+              imageUrl: photo.urlRegular,
               fit: BoxFit.cover,
-              errorWidget: (context, url, error) => Container(
-                color: AppColors.gray100,
-              ),
+              backgroundColor: AppColors.gray100,
             ),
             DecoratedBox(
               decoration: BoxDecoration(

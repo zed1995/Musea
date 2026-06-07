@@ -1,10 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_blurhash/flutter_blurhash.dart';
-import 'package:musea/core/theme/colors.dart';
+import 'package:flutter/material.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
+import 'package:musea/shared/widgets/progressive_network_photo.dart';
 
 class PhotoCard extends ConsumerWidget {
   const PhotoCard({
@@ -62,31 +61,13 @@ class PhotoCard extends ConsumerWidget {
 
     return AspectRatio(
       aspectRatio: aspectRatio,
-      child: photo.blurHash != null
-          ? CachedNetworkImage(
-              imageUrl: photo.urlRegular,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              placeholder: (context, url) => BlurHash(hash: photo.blurHash!),
-              errorWidget: (context, url, error) => Container(
-                color: Color(int.parse(photo.color.replaceFirst('#', '0xFF'))),
-                child: const Icon(Icons.broken_image, color: Colors.white54),
-              ),
-            )
-          : CachedNetworkImage(
-              imageUrl: photo.urlSmall,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              placeholder: (context, url) => Container(
-                color: Color(int.parse(photo.color.replaceFirst('#', '0xFF'))),
-                child: const Center(
-                    child: CircularProgressIndicator(strokeWidth: 2)),
-              ),
-              errorWidget: (context, url, error) => Container(
-                color: AppColors.gray200,
-                child: const Icon(Icons.broken_image),
-              ),
-            ),
+      child: ProgressiveNetworkPhoto(
+        thumbUrl: photo.urlThumb,
+        imageUrl: photo.urlRegular,
+        fit: BoxFit.cover,
+        backgroundColor:
+            Color(int.parse(photo.color.replaceFirst('#', '0xFF'))),
+      ),
     );
   }
 
