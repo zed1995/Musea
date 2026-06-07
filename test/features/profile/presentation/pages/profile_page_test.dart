@@ -13,6 +13,7 @@ import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/shared/widgets/android_top_bar.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 
@@ -119,7 +120,8 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Paula Poeira'), findsOneWidget);
+    expect(find.byType(AndroidTopBar), findsOneWidget);
+    expect(find.text('Paula Poeira'), findsAtLeastNWidgets(1));
     expect(find.text('Follow'), findsOneWidget);
     expect(find.text('Photos'), findsAtLeastNWidgets(1));
     expect(find.text('Collections'), findsAtLeastNWidgets(1));
@@ -156,7 +158,7 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Blank User'), findsOneWidget);
+    expect(find.text('Blank User'), findsAtLeastNWidgets(1));
     expect(find.textContaining('@blank'), findsOneWidget);
     expect(find.text('No public photos yet'), findsOneWidget);
     expect(find.text('Costa da Caparica'), findsNothing);
@@ -232,7 +234,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Preview Name'), findsOneWidget);
+    expect(find.text('Preview Name'), findsAtLeastNWidgets(1));
     expect(find.text('Preview bio'), findsOneWidget);
     expect(find.textContaining('@preview'), findsOneWidget);
     expect(find.textContaining('Preview City'), findsOneWidget);
@@ -265,7 +267,7 @@ void main() {
     failingUser.completeError(Exception('network error'));
     await tester.pump();
 
-    expect(find.text('Offline User'), findsOneWidget);
+    expect(find.text('Offline User'), findsAtLeastNWidgets(1));
     expect(find.textContaining('@offline'), findsOneWidget);
     expect(find.byType(LoadingIndicator), findsNothing);
   });
@@ -319,13 +321,13 @@ void main() {
       ),
     );
 
-    expect(find.text('Placeholder'), findsOneWidget);
+    expect(find.text('Placeholder'), findsAtLeastNWidgets(1));
     expect(find.text('Fresh bio from API'), findsNothing);
 
     pendingUser.complete(hydratedUser);
     await tester.pump();
 
-    expect(find.text('Hydrated Name'), findsOneWidget);
+    expect(find.text('Hydrated Name'), findsAtLeastNWidgets(1));
     expect(find.text('Fresh bio from API'), findsOneWidget);
     expect(find.text('Placeholder'), findsNothing);
   });

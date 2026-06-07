@@ -11,6 +11,7 @@ import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/presentation/providers/profile_controller.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/features/search/presentation/providers/search_controller.dart';
+import 'package:musea/shared/widgets/android_top_bar.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
@@ -130,13 +131,21 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AndroidTopBar(
+        titleText: user.name,
+        showBackButton: true,
+        onBack: () => context.pop(),
+        trailing: IconButton(
+          onPressed: () {},
+          icon: const Icon(Icons.ios_share_rounded),
+        ),
+      ),
       body: CustomScrollView(
         controller: _scrollController,
         slivers: [
           SliverToBoxAdapter(
             child: _ProfileHero(
               user: user,
-              onBack: () => context.pop(),
             ),
           ),
           SliverPersistentHeader(
@@ -262,11 +271,9 @@ enum _ProfileSegment { photos, collections, likes }
 class _ProfileHero extends StatelessWidget {
   const _ProfileHero({
     required this.user,
-    required this.onBack,
   });
 
   final User user;
-  final VoidCallback onBack;
 
   @override
   Widget build(BuildContext context) {
@@ -278,38 +285,15 @@ class _ProfileHero extends StatelessWidget {
 
     return Container(
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Color(0xFFFCFCFD),
-            Color(0xFFF6F6F8),
-          ],
-        ),
-        border: Border(
-          bottom: BorderSide(color: Color(0xFFF1F1F2)),
-        ),
+        color: Colors.white,
       ),
       child: SafeArea(
+        top: false,
         bottom: false,
         child: Padding(
-          padding: const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
           child: Column(
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _CircleActionButton(
-                    icon: Icons.arrow_back_rounded,
-                    onPressed: onBack,
-                  ),
-                  _CircleActionButton(
-                    icon: Icons.ios_share_rounded,
-                    onPressed: () {},
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
               _AvatarImage(
                 imageUrl: _bestProfileImage(user),
                 size: 84,
@@ -555,38 +539,6 @@ class _MetricCard extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _CircleActionButton extends StatelessWidget {
-  const _CircleActionButton({
-    required this.icon,
-    required this.onPressed,
-  });
-
-  final IconData icon;
-  final VoidCallback onPressed;
-
-  @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 40,
-      height: 40,
-      child: OutlinedButton(
-        onPressed: onPressed,
-        style: OutlinedButton.styleFrom(
-          padding: EdgeInsets.zero,
-          side: const BorderSide(color: Color(0xFFE4E4E7)),
-          backgroundColor: Colors.white,
-          shape: const CircleBorder(),
-        ),
-        child: Icon(
-          icon,
-          size: 18,
-          color: AppColors.gray700,
-        ),
       ),
     );
   }
