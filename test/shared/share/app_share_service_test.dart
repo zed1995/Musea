@@ -91,6 +91,31 @@ void main() {
     );
   });
 
+  test('shareUrl returns failure and does not invoke proxy for null url',
+      () async {
+    final sharePlus = _FakeSharePlusProxy();
+    final service = AppShareService(sharePlus: sharePlus);
+
+    final result = await service.shareUrl(null);
+
+    expect(result, const ShareResolutionFailure.missingUrl());
+    expect(sharePlus.sharedTexts, isEmpty);
+  });
+
+  test(
+      'shareUrl returns failure and does not invoke proxy for blank and whitespace-only urls',
+      () async {
+    final sharePlus = _FakeSharePlusProxy();
+    final service = AppShareService(sharePlus: sharePlus);
+
+    final blankResult = await service.shareUrl('');
+    final whitespaceResult = await service.shareUrl('   ');
+
+    expect(blankResult, const ShareResolutionFailure.missingUrl());
+    expect(whitespaceResult, const ShareResolutionFailure.missingUrl());
+    expect(sharePlus.sharedTexts, isEmpty);
+  });
+
   test('copyUrl copies validated url', () async {
     final clipboard = _FakeClipboardProxy();
     final service = AppShareService(clipboard: clipboard);
@@ -103,6 +128,31 @@ void main() {
           .having((value) => value.url, 'url', 'https://unsplash.com/@spaciba'),
     );
     expect(clipboard.copiedTexts, ['https://unsplash.com/@spaciba']);
+  });
+
+  test('copyUrl returns failure and does not invoke proxy for null url',
+      () async {
+    final clipboard = _FakeClipboardProxy();
+    final service = AppShareService(clipboard: clipboard);
+
+    final result = await service.copyUrl(null);
+
+    expect(result, const ShareResolutionFailure.missingUrl());
+    expect(clipboard.copiedTexts, isEmpty);
+  });
+
+  test(
+      'copyUrl returns failure and does not invoke proxy for blank and whitespace-only urls',
+      () async {
+    final clipboard = _FakeClipboardProxy();
+    final service = AppShareService(clipboard: clipboard);
+
+    final blankResult = await service.copyUrl('');
+    final whitespaceResult = await service.copyUrl('   ');
+
+    expect(blankResult, const ShareResolutionFailure.missingUrl());
+    expect(whitespaceResult, const ShareResolutionFailure.missingUrl());
+    expect(clipboard.copiedTexts, isEmpty);
   });
 }
 
