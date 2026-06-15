@@ -17,6 +17,7 @@ class Photo {
   final String urlRegular;
   final String urlSmall;
   final String urlThumb;
+  final String? htmlLink;
   final String? downloadLink;
   final String? downloadLocation;
   final int likes;
@@ -47,6 +48,7 @@ class Photo {
     required this.urlRegular,
     required this.urlSmall,
     required this.urlThumb,
+    this.htmlLink,
     this.downloadLink,
     this.downloadLocation,
     required this.likes,
@@ -84,6 +86,7 @@ class Photo {
         'url_regular': urlRegular,
         'url_small': urlSmall,
         'url_thumb': urlThumb,
+        'html_link': htmlLink,
         'download_link': downloadLink,
         'download_location': downloadLocation,
         'likes': likes,
@@ -119,6 +122,7 @@ class Photo {
         urlRegular: json['url_regular'] as String,
         urlSmall: json['url_small'] as String,
         urlThumb: json['url_thumb'] as String,
+        htmlLink: json['html_link'] as String?,
         downloadLink: json['download_link'] as String?,
         downloadLocation: json['download_location'] as String?,
         likes: (json['likes'] as num).toInt(),

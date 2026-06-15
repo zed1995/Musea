@@ -55,6 +55,7 @@ class PhotoModel with _$PhotoModel {
         urlRegular: urls.regular,
         urlSmall: urls.small,
         urlThumb: urls.thumb,
+        htmlLink: links?.html,
         downloadLink: links?.download,
         downloadLocation: links?.downloadLocation,
         likes: likes,

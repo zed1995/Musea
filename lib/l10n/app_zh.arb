@@ -47,6 +47,10 @@
   "english": "English",
   "simplifiedChinese": "简体中文",
   "github": "GitHub",
+  "share": "分享",
+  "copyLink": "复制链接",
+  "shareUnavailable": "当前内容暂时无法分享。",
+  "linkCopied": "链接已复制。",
 
   "@@_PAGE_NAV": "导航",
   "discoverNavLabel": "发现",

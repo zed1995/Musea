@@ -326,6 +326,30 @@ abstract class AppLocalizations {
   /// **'GitHub'**
   String get github;
 
+  /// No description provided for @share.
+  ///
+  /// In en, this message translates to:
+  /// **'share'**
+  String get share;
+
+  /// No description provided for @copyLink.
+  ///
+  /// In en, this message translates to:
+  /// **'copyLink'**
+  String get copyLink;
+
+  /// No description provided for @shareUnavailable.
+  ///
+  /// In en, this message translates to:
+  /// **'Current content is temporarily unavailable to share.'**
+  String get shareUnavailable;
+
+  /// No description provided for @linkCopied.
+  ///
+  /// In en, this message translates to:
+  /// **'Link copied.'**
+  String get linkCopied;
+
   /// No description provided for @discoverNavLabel.
   ///
   /// In en, this message translates to:

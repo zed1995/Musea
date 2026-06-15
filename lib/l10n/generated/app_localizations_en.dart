@@ -134,6 +134,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get github => 'GitHub';
 
   @override
+  String get share => 'share';
+
+  @override
+  String get copyLink => 'copyLink';
+
+  @override
+  String get shareUnavailable =>
+      'Current content is temporarily unavailable to share.';
+
+  @override
+  String get linkCopied => 'Link copied.';
+
+  @override
   String get discoverNavLabel => 'Discover';
 
   @override

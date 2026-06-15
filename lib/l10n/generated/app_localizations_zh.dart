@@ -131,6 +131,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get github => 'GitHub';
 
   @override
+  String get share => '分享';
+
+  @override
+  String get copyLink => '复制链接';
+
+  @override
+  String get shareUnavailable => '当前内容暂时无法分享。';
+
+  @override
+  String get linkCopied => '链接已复制。';
+
+  @override
   String get discoverNavLabel => '发现';
 
   @override
