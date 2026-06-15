@@ -177,6 +177,39 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('PhotoDetailPage share icon opens share action sheet',
+      (tester) async {
+    final photo = buildPhoto(
+      id: 'photo-share',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photoDetailProvider('photo-share').overrideWith((ref) => photo),
+          userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const PhotoDetailPage(photoId: 'photo-share'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    await tester.tap(find.byIcon(Icons.ios_share_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(find.text('Share'), findsOneWidget);
+    expect(find.text('Copy link'), findsOneWidget);
+  });
+
   testWidgets(
       'PhotoDetailPage renders color palette and long exif can open full text',
       (tester) async {

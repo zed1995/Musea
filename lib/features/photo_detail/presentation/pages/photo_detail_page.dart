@@ -13,6 +13,8 @@ import 'package:musea/features/photo_detail/presentation/widgets/color_palette_b
 import 'package:musea/features/photo_detail/presentation/widgets/download_sheet.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/router/detail_route_extras.dart';
+import 'package:musea/shared/share/app_share_service.dart';
+import 'package:musea/shared/share/share_action_sheet.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/shared/widgets/immersive_hero_app_bar.dart';
@@ -124,6 +126,11 @@ class _PhotoDetailContent extends ConsumerWidget {
               photo: heroPhoto,
               onTap: onHeroTap,
               onBookmarkTap: handleBookmark,
+              onShareTap: () => showShareActionSheet(
+                context,
+                ref,
+                shareUrl: AppShareService.resolvePhotoUrl(photo),
+              ),
             ),
           ),
           SliverToBoxAdapter(
@@ -298,11 +305,13 @@ class _PhotoHero extends StatefulWidget {
     required this.photo,
     this.onTap,
     this.onBookmarkTap,
+    this.onShareTap,
   });
 
   final Photo photo;
   final VoidCallback? onTap;
   final VoidCallback? onBookmarkTap;
+  final VoidCallback? onShareTap;
 
   @override
   State<_PhotoHero> createState() => _PhotoHeroState();
@@ -391,7 +400,7 @@ class _PhotoHeroState extends State<_PhotoHero> {
               ),
             ),
             IconButton(
-              onPressed: () {},
+              onPressed: widget.onShareTap,
               icon: const Icon(
                 Icons.ios_share_rounded,
                 color: Colors.white,

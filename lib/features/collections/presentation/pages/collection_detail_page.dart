@@ -14,6 +14,8 @@ import 'package:musea/features/collections/presentation/widgets/collection_manag
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/router/detail_route_extras.dart';
+import 'package:musea/shared/share/app_share_service.dart';
+import 'package:musea/shared/share/share_action_sheet.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
@@ -61,6 +63,11 @@ class CollectionDetailPage extends ConsumerWidget {
         collection: resolvedCollection,
         photosAsync: photosAsync,
         isOwner: isOwner,
+        onShareTap: () => showShareActionSheet(
+          context,
+          ref,
+          shareUrl: AppShareService.resolveCollectionUrl(resolvedCollection),
+        ),
         allowPhotoFeedPreviewFallback: !isUsingInitialCollection,
         onRetryFeed: () =>
             ref.invalidate(collectionPhotosProvider(collectionId)),
@@ -84,6 +91,11 @@ class CollectionDetailPage extends ConsumerWidget {
           collection: collection,
           photosAsync: photosAsync,
           isOwner: dataIsOwner,
+          onShareTap: () => showShareActionSheet(
+            context,
+            ref,
+            shareUrl: AppShareService.resolveCollectionUrl(collection),
+          ),
           onRetryFeed: () =>
               ref.invalidate(collectionPhotosProvider(collectionId)),
         );
@@ -117,6 +129,7 @@ class _CollectionDetailContent extends StatelessWidget {
     required this.collection,
     required this.photosAsync,
     this.isOwner = false,
+    this.onShareTap,
     this.allowPhotoFeedPreviewFallback = true,
     required this.onRetryFeed,
     this.showDeferredPreviewSkeleton = false,
@@ -129,6 +142,7 @@ class _CollectionDetailContent extends StatelessWidget {
   final Collection collection;
   final AsyncValue<List<Photo>> photosAsync;
   final bool isOwner;
+  final VoidCallback? onShareTap;
   final bool allowPhotoFeedPreviewFallback;
   final VoidCallback onRetryFeed;
   final bool showDeferredPreviewSkeleton;
@@ -172,6 +186,7 @@ class _CollectionDetailContent extends StatelessWidget {
               coverUrl: _coverUrl(collection),
               isOwner: isOwner,
               onManageTap: () => _showManageSheet(context),
+              onShareTap: onShareTap,
             ),
           ),
           SliverToBoxAdapter(
@@ -292,12 +307,14 @@ class _CollectionHero extends StatelessWidget {
     required this.coverUrl,
     this.isOwner = false,
     this.onManageTap,
+    this.onShareTap,
   });
 
   final Collection collection;
   final String? coverUrl;
   final bool isOwner;
   final VoidCallback? onManageTap;
+  final VoidCallback? onShareTap;
 
   @override
   Widget build(BuildContext context) {
@@ -348,7 +365,7 @@ class _CollectionHero extends StatelessWidget {
                     topPadding: 0,
                     actions: [
                       IconButton(
-                        onPressed: () {},
+                        onPressed: onShareTap,
                         icon: const Icon(
                           Icons.ios_share_rounded,
                           color: Colors.white,

@@ -102,6 +102,47 @@ void main() {
     expect(find.byIcon(Icons.ios_share_rounded), findsOneWidget);
   });
 
+  testWidgets('CollectionDetailPage share icon opens share action sheet',
+      (tester) async {
+    const collection = Collection(
+      id: 'collection-share',
+      title: 'United States',
+      description: 'Curated travel references.',
+      totalPhotos: 316,
+      links: CollectionLinks(
+        html: 'https://unsplash.com/collections/2208769/united-states',
+      ),
+      user: curator,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
+          collectionDetailProvider('collection-share').overrideWith(
+            (ref) => collection,
+          ),
+          collectionPhotosProvider('collection-share').overrideWith(
+            (ref) => <Photo>[],
+          ),
+        ],
+        child: MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: const CollectionDetailPage(collectionId: 'collection-share'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    await tester.tap(find.byIcon(Icons.ios_share_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Share'), findsOneWidget);
+    expect(find.text('Copy link'), findsOneWidget);
+  });
+
   testWidgets(
       'CollectionDetailPage renders initial collection immediately while detail hydrates',
       (tester) async {
