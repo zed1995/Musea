@@ -11,6 +11,8 @@ import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/features/profile/presentation/providers/profile_controller.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/features/search/presentation/providers/search_controller.dart';
+import 'package:musea/shared/share/app_share_service.dart';
+import 'package:musea/shared/share/share_action_sheet.dart';
 import 'package:musea/shared/widgets/android_top_bar.dart';
 import 'package:musea/shared/widgets/collection_card.dart';
 import 'package:musea/shared/widgets/error_state.dart';
@@ -136,7 +138,11 @@ class _ProfileContentState extends ConsumerState<_ProfileContent> {
         showBackButton: true,
         onBack: () => context.pop(),
         trailing: IconButton(
-          onPressed: () {},
+          onPressed: () => showShareActionSheet(
+            context,
+            ref,
+            shareUrl: AppShareService.resolveUserUrl(user),
+          ),
           icon: const Icon(Icons.ios_share_rounded),
         ),
       ),

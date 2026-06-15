@@ -83,7 +83,7 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-1'),
@@ -126,10 +126,10 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const CollectionDetailPage(collectionId: 'collection-share'),
+          home: CollectionDetailPage(collectionId: 'collection-share'),
         ),
       ),
     );
@@ -139,8 +139,51 @@ void main() {
     await tester.tap(find.byIcon(Icons.ios_share_rounded));
     await tester.pumpAndSettle();
 
-    expect(find.text('Share'), findsOneWidget);
-    expect(find.text('Copy link'), findsOneWidget);
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+    expect(find.text(l10n.share), findsOneWidget);
+    expect(find.text(l10n.copyLink), findsOneWidget);
+  });
+
+  testWidgets(
+      'CollectionDetailPage shows missing-link feedback from share sheet',
+      (tester) async {
+    const collection = Collection(
+      id: 'collection-missing-link',
+      title: 'United States',
+      description: 'Curated travel references.',
+      totalPhotos: 316,
+      user: curator,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
+          collectionDetailProvider('collection-missing-link').overrideWith(
+            (ref) => collection,
+          ),
+          collectionPhotosProvider('collection-missing-link').overrideWith(
+            (ref) => <Photo>[],
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: CollectionDetailPage(collectionId: 'collection-missing-link'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+    await tester.tap(find.byIcon(Icons.ios_share_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.copyLink));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.shareUnavailable), findsOneWidget);
   });
 
   testWidgets(
@@ -166,7 +209,7 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(
@@ -209,7 +252,7 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-deep-link'),
@@ -250,7 +293,7 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-root'),
@@ -294,7 +337,7 @@ void main() {
             ],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(
@@ -365,7 +408,7 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(
@@ -432,7 +475,7 @@ void main() {
             ],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(
@@ -480,7 +523,7 @@ void main() {
             },
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-feed-retry'),
@@ -529,7 +572,7 @@ void main() {
             (ref) => photos,
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-feed'),
@@ -577,7 +620,7 @@ void main() {
             (ref) => photos,
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-liked-feed'),
@@ -614,7 +657,7 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-2'),
@@ -649,7 +692,7 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-3'),
@@ -724,7 +767,7 @@ void main() {
             (ref) => <Photo>[],
           ),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
           home: CollectionDetailPage(collectionId: 'collection-5'),

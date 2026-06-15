@@ -157,10 +157,10 @@ void main() {
           photoDetailProvider('photo-1').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const PhotoDetailPage(photoId: 'photo-1'),
+          home: PhotoDetailPage(photoId: 'photo-1'),
         ),
       ),
     );
@@ -192,10 +192,10 @@ void main() {
           photoDetailProvider('photo-share').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const PhotoDetailPage(photoId: 'photo-share'),
+          home: PhotoDetailPage(photoId: 'photo-share'),
         ),
       ),
     );
@@ -206,8 +206,46 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 250));
 
-    expect(find.text('Share'), findsOneWidget);
-    expect(find.text('Copy link'), findsOneWidget);
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+    expect(find.text(l10n.share), findsOneWidget);
+    expect(find.text(l10n.copyLink), findsOneWidget);
+  });
+
+  testWidgets('PhotoDetailPage shows missing-link feedback from share sheet',
+      (tester) async {
+    final photo = buildPhoto(
+      id: 'photo-missing-link',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photoDetailProvider('photo-missing-link').overrideWith((ref) => photo),
+          userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: PhotoDetailPage(photoId: 'photo-missing-link'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+    await tester.tap(find.byIcon(Icons.ios_share_rounded));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.tap(find.text(l10n.copyLink));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(find.text(l10n.shareUnavailable), findsOneWidget);
   });
 
   testWidgets(
@@ -233,10 +271,10 @@ void main() {
           photoDetailProvider('photo-main').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const PhotoDetailPage(photoId: 'photo-main'),
+          home: PhotoDetailPage(photoId: 'photo-main'),
         ),
       ),
     );
@@ -279,10 +317,10 @@ void main() {
           photoDetailProvider('photo-liked').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const PhotoDetailPage(photoId: 'photo-liked'),
+          home: PhotoDetailPage(photoId: 'photo-liked'),
         ),
       ),
     );
@@ -346,10 +384,10 @@ void main() {
           photoDetailProvider('photo-toggle-like').overrideWith((ref) => photo),
           userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
         ],
-        child: MaterialApp(
+        child: const MaterialApp(
           localizationsDelegates: AppLocalizations.localizationsDelegates,
           supportedLocales: AppLocalizations.supportedLocales,
-          home: const PhotoDetailPage(photoId: 'photo-toggle-like'),
+          home: PhotoDetailPage(photoId: 'photo-toggle-like'),
         ),
       ),
     );

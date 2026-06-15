@@ -13,6 +13,7 @@ import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
+import 'package:musea/shared/share/app_share_service.dart';
 import 'package:musea/shared/widgets/android_top_bar.dart';
 import 'package:musea/shared/widgets/error_state.dart';
 import 'package:musea/shared/widgets/loading_indicator.dart';
@@ -34,6 +35,23 @@ void main() {
     totalPhotos: 14,
     totalLikes: 114769,
     totalCollections: 58,
+  );
+
+  const shareableUser = User(
+    id: 'user-share',
+    username: 'spaciba',
+    name: 'Paula Poeira',
+    bio: 'Visual storyteller',
+    location: 'Costa da Caparica',
+    profileImageSmall: 'https://example.com/small.jpg',
+    profileImageMedium: 'https://example.com/medium.jpg',
+    profileImageLarge: 'https://example.com/large.jpg',
+    totalPhotos: 14,
+    totalLikes: 114769,
+    totalCollections: 58,
+    links: UserLinks(
+      html: 'https://unsplash.com/@spaciba',
+    ),
   );
 
   const collection = Collection(
@@ -82,9 +100,12 @@ void main() {
     required String username,
     User? initialUser,
     Object? profileValue,
+    AppShareService? shareService,
   }) {
     final overrides = <Override>[
       profileRepositoryProvider.overrideWithValue(mockProfileRepository),
+      if (shareService != null)
+        appShareServiceProvider.overrideWithValue(shareService),
     ];
 
     if (profileValue is User) {
@@ -207,6 +228,73 @@ void main() {
     expect(find.text('Curated groupings'), findsNothing);
     expect(find.text('Saved inspiration'), findsNothing);
     expect(find.text('No liked photos yet'), findsNothing);
+  });
+
+  testWidgets('ProfilePage share icon opens share action sheet',
+      (tester) async {
+    await tester.pumpWidget(
+      buildApp(
+        username: 'spaciba',
+        profileValue: shareableUser,
+      ),
+    );
+
+    await tester.pump();
+
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+    await tester.tap(find.byIcon(Icons.ios_share_rounded));
+    await tester.pumpAndSettle();
+
+    expect(find.text(l10n.share), findsOneWidget);
+    expect(find.text(l10n.copyLink), findsOneWidget);
+  });
+
+  testWidgets('ProfilePage shows link-copied feedback from share sheet',
+      (tester) async {
+    final shareService = AppShareService(clipboard: _FakeClipboardProxy());
+
+    await tester.pumpWidget(
+      buildApp(
+        username: 'spaciba',
+        profileValue: shareableUser,
+        shareService: shareService,
+      ),
+    );
+
+    await tester.pump();
+
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+    await tester.tap(find.byIcon(Icons.ios_share_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.copyLink));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(find.text(l10n.linkCopied), findsOneWidget);
+  });
+
+  testWidgets('ProfilePage shows missing-link feedback from share sheet',
+      (tester) async {
+    await tester.pumpWidget(
+      buildApp(
+        username: 'spaciba',
+        profileValue: user,
+      ),
+    );
+
+    await tester.pump();
+
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+    await tester.tap(find.byIcon(Icons.ios_share_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.copyLink));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(find.text(l10n.shareUnavailable), findsOneWidget);
   });
 
   testWidgets('ProfilePage renders initialUser immediately while API loads',
@@ -356,4 +444,9 @@ void main() {
     expect(find.text('Oops! Something went wrong'), findsOneWidget);
     expect(find.textContaining('photo failure'), findsOneWidget);
   });
+}
+
+class _FakeClipboardProxy extends ClipboardProxy {
+  @override
+  Future<void> setData(String text) async {}
 }
