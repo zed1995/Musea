@@ -134,10 +134,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get github => 'GitHub';
 
   @override
-  String get share => 'share';
+  String get share => 'Share';
 
   @override
-  String get copyLink => 'copyLink';
+  String get copyLink => 'Copy link';
 
   @override
   String get shareUnavailable =>

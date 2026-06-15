@@ -329,13 +329,13 @@ abstract class AppLocalizations {
   /// No description provided for @share.
   ///
   /// In en, this message translates to:
-  /// **'share'**
+  /// **'Share'**
   String get share;
 
   /// No description provided for @copyLink.
   ///
   /// In en, this message translates to:
-  /// **'copyLink'**
+  /// **'Copy link'**
   String get copyLink;
 
   /// No description provided for @shareUnavailable.
