@@ -55,8 +55,12 @@ class AppShareService {
       return result;
     }
 
-    await _sharePlus.share((result as ShareResolutionSuccess).url);
-    return result;
+    try {
+      await _sharePlus.share((result as ShareResolutionSuccess).url);
+      return result;
+    } catch (_) {
+      return const ShareResolutionFailure.missingUrl();
+    }
   }
 
   Future<ShareResolutionResult> copyUrl(String? url) async {
@@ -65,8 +69,12 @@ class AppShareService {
       return result;
     }
 
-    await _clipboard.setData((result as ShareResolutionSuccess).url);
-    return result;
+    try {
+      await _clipboard.setData((result as ShareResolutionSuccess).url);
+      return result;
+    } catch (_) {
+      return const ShareResolutionFailure.missingUrl();
+    }
   }
 }
 

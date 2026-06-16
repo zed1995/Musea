@@ -116,6 +116,15 @@ void main() {
     expect(sharePlus.sharedTexts, isEmpty);
   });
 
+  test('shareUrl returns failure when share proxy throws', () async {
+    final sharePlus = _ThrowingSharePlusProxy();
+    final service = AppShareService(sharePlus: sharePlus);
+
+    final result = await service.shareUrl('https://unsplash.com/photos/photo-1');
+
+    expect(result, const ShareResolutionFailure.missingUrl());
+  });
+
   test('copyUrl copies validated url', () async {
     final clipboard = _FakeClipboardProxy();
     final service = AppShareService(clipboard: clipboard);
@@ -154,6 +163,15 @@ void main() {
     expect(whitespaceResult, const ShareResolutionFailure.missingUrl());
     expect(clipboard.copiedTexts, isEmpty);
   });
+
+  test('copyUrl returns failure when clipboard proxy throws', () async {
+    final clipboard = _ThrowingClipboardProxy();
+    final service = AppShareService(clipboard: clipboard);
+
+    final result = await service.copyUrl('https://unsplash.com/@spaciba');
+
+    expect(result, const ShareResolutionFailure.missingUrl());
+  });
 }
 
 class _FakeSharePlusProxy extends SharePlusProxy {
@@ -171,5 +189,19 @@ class _FakeClipboardProxy extends ClipboardProxy {
   @override
   Future<void> setData(String text) async {
     copiedTexts.add(text);
+  }
+}
+
+class _ThrowingSharePlusProxy extends SharePlusProxy {
+  @override
+  Future<void> share(String text) {
+    throw Exception('share failed');
+  }
+}
+
+class _ThrowingClipboardProxy extends ClipboardProxy {
+  @override
+  Future<void> setData(String text) {
+    throw Exception('copy failed');
   }
 }

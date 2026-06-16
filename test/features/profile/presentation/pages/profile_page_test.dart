@@ -297,6 +297,33 @@ void main() {
     expect(find.text(l10n.shareUnavailable), findsOneWidget);
   });
 
+  testWidgets(
+      'ProfilePage share action failure shows fallback feedback without throwing',
+      (tester) async {
+    final shareService = AppShareService(sharePlus: _ThrowingSharePlusProxy());
+
+    await tester.pumpWidget(
+      buildApp(
+        username: 'spaciba',
+        profileValue: shareableUser,
+        shareService: shareService,
+      ),
+    );
+
+    await tester.pump();
+
+    final l10n = await AppLocalizations.delegate.load(const Locale('en'));
+
+    await tester.tap(find.byIcon(Icons.ios_share_rounded));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text(l10n.share));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 250));
+
+    expect(find.text(l10n.shareUnavailable), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('ProfilePage renders initialUser immediately while API loads',
       (tester) async {
     final pendingUser = Completer<User>();
@@ -449,4 +476,11 @@ void main() {
 class _FakeClipboardProxy extends ClipboardProxy {
   @override
   Future<void> setData(String text) async {}
+}
+
+class _ThrowingSharePlusProxy extends SharePlusProxy {
+  @override
+  Future<void> share(String text) {
+    throw Exception('share failed');
+  }
 }
