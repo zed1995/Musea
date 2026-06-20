@@ -6,10 +6,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:musea/core/errors/failures.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
+import 'package:musea/features/follow/presentation/widgets/follow_button.dart';
 import 'package:musea/features/profile/domain/repositories/profile_repository.dart';
 import 'package:musea/features/profile/presentation/pages/profile_page.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
@@ -103,6 +105,10 @@ void main() {
     AppShareService? shareService,
   }) {
     final overrides = <Override>[
+      authBootstrapSessionProvider.overrideWithValue(null),
+      authRedirectUriProvider.overrideWithValue(
+        Uri.parse('musea://auth/callback'),
+      ),
       profileRepositoryProvider.overrideWithValue(mockProfileRepository),
       if (shareService != null)
         appShareServiceProvider.overrideWithValue(shareService),
@@ -470,6 +476,19 @@ void main() {
     expect(find.byType(ErrorState), findsOneWidget);
     expect(find.text('Oops! Something went wrong'), findsOneWidget);
     expect(find.textContaining('photo failure'), findsOneWidget);
+  });
+
+  testWidgets('ProfilePage shows FollowButton when viewing another user',
+      (tester) async {
+    await tester.pumpWidget(
+      buildApp(
+        username: 'spaciba',
+        profileValue: user,
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(FollowButton), findsOneWidget);
   });
 }
 

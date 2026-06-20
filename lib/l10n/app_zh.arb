@@ -159,6 +159,7 @@
   },
   "follow": "关注",
   "following": "已关注",
+  "followReadOnlyHint": "请在 unsplash.com 上关注该摄影师",
 
   "@@_PAGE_PHOTO_DETAIL": "图片详情",
   "cameraInfo": "相机信息",

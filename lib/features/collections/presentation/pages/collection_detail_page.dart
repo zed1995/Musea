@@ -14,6 +14,7 @@ import 'package:musea/features/collections/presentation/widgets/collection_edit_
 import 'package:musea/features/collections/presentation/widgets/collection_manage_sheet.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/features/follow/presentation/widgets/follow_button.dart';
 import 'package:musea/router/detail_route_extras.dart';
 import 'package:musea/shared/share/app_share_service.dart';
 import 'package:musea/shared/share/share_action_sheet.dart';
@@ -575,28 +576,19 @@ class _CollectionHero extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 12),
-                        SizedBox(
-                          height: 36,
-                          child: FilledButton(
-                            onPressed: () {},
-                            style: FilledButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: AppColors.gray900,
-                              padding:
-                                  const EdgeInsets.symmetric(horizontal: 16),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(999),
-                              ),
-                            ),
-                            child: Text(
-                              l10n.follow,
-                              style: AppTextStyles.caption.copyWith(
-                                color: AppColors.gray900,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
+                        if (curator != null)
+                          Consumer(
+                            builder: (context, ref, _) {
+                              final auth = ref.watch(authControllerProvider);
+                              final isSelf = auth.session?.user.username ==
+                                  curator.username;
+                              if (isSelf) return const SizedBox.shrink();
+                              return FollowButton(
+                                user: curator,
+                                size: FollowButtonSize.regular,
+                              );
+                            },
                           ),
-                        ),
                       ],
                     ),
                   ],

@@ -14,6 +14,7 @@ import 'package:musea/features/discover/presentation/providers/photos_provider.d
 import 'package:musea/features/photo_detail/presentation/pages/photo_detail_page.dart';
 import 'package:musea/features/photo_detail/presentation/pages/photo_viewer_page.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/color_palette_bar.dart';
+import 'package:musea/features/follow/presentation/widgets/follow_button.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/router/detail_route_extras.dart';
@@ -640,5 +641,36 @@ void main() {
 
     expect(bar().progress, 1.0);
     expect(bar().scrolled, isTrue);
+  });
+
+  testWidgets('PhotoDetailPage shows the FollowButton next to the photographer',
+      (tester) async {
+    final photo = buildPhoto(
+      id: 'photo-follow',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authBootstrapSessionProvider.overrideWithValue(null),
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
+          photoDetailProvider('photo-follow').overrideWith((ref) => photo),
+          userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: PhotoDetailPage(photoId: 'photo-follow'),
+        ),
+      ),
+    );
+    await tester.pump();
+
+    expect(find.byType(FollowButton), findsOneWidget);
   });
 }

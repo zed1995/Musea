@@ -159,6 +159,7 @@
   },
   "follow": "Follow",
   "following": "Following",
+  "followReadOnlyHint": "Follow this photographer on unsplash.com",
 
   "@@_PAGE_PHOTO_DETAIL": "Photo Detail",
   "cameraInfo": "CAMERA INFO",

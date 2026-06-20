@@ -10,6 +10,7 @@ import 'package:musea/features/collections/presentation/widgets/save_to_collecti
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/presentation/providers/photo_like_provider.dart';
 import 'package:musea/features/discover/presentation/providers/photos_provider.dart';
+import 'package:musea/features/follow/presentation/widgets/follow_button.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/color_palette_bar.dart';
 import 'package:musea/features/photo_detail/presentation/widgets/download_sheet.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
@@ -468,7 +469,6 @@ class _UserRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
         GestureDetector(
@@ -505,23 +505,9 @@ class _UserRow extends StatelessWidget {
             ],
           ),
         ),
-        Container(
-          height: 32,
-          padding: const EdgeInsets.symmetric(horizontal: 15),
-          decoration: BoxDecoration(
-            color: const Color(0xFF111111),
-            borderRadius: BorderRadius.circular(999),
-          ),
-          child: Center(
-            child: Text(
-              l10n.follow,
-              style: const TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-              ),
-            ),
-          ),
+        FollowButton(
+          user: photo.user,
+          size: FollowButtonSize.compact,
         ),
       ],
     );

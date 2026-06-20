@@ -8,6 +8,8 @@ import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/features/collections/domain/entities/collection.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/features/auth/presentation/providers/auth_provider.dart';
+import 'package:musea/features/follow/presentation/widgets/follow_button.dart';
 import 'package:musea/features/profile/presentation/providers/profile_controller.dart';
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/features/search/presentation/providers/search_controller.dart';
@@ -341,25 +343,13 @@ class _ProfileHero extends StatelessWidget {
                 ),
               ],
               const SizedBox(height: 16),
-              SizedBox(
-                width: 152,
-                height: 42,
-                child: FilledButton(
-                  onPressed: () {},
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppColors.gray900,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                  ),
-                  child: Text(
-                    l10n.follow,
-                    style: AppTextStyles.button.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                ),
+              Consumer(
+                builder: (context, ref, _) {
+                  final auth = ref.watch(authControllerProvider);
+                  final isSelf = auth.session?.user.username == user.username;
+                  if (isSelf) return const SizedBox.shrink();
+                  return FollowButton(user: user, size: FollowButtonSize.regular);
+                },
               ),
               const SizedBox(height: 16),
               Row(

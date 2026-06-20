@@ -10,6 +10,7 @@ import 'package:musea/features/collections/presentation/pages/collection_detail_
 import 'package:musea/features/collections/presentation/providers/collections_provider.dart';
 import 'package:musea/features/discover/domain/entities/photo.dart';
 import 'package:musea/features/discover/domain/entities/user.dart';
+import 'package:musea/features/follow/presentation/widgets/follow_button.dart';
 import 'package:musea/shared/widgets/photo_grid.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
 
@@ -75,6 +76,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-1').overrideWith(
             (ref) => collection,
@@ -118,6 +122,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-share').overrideWith(
             (ref) => collection,
@@ -158,6 +165,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-missing-link').overrideWith(
             (ref) => collection,
@@ -201,6 +211,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-progressive').overrideWith(
             (ref) => pending.future,
@@ -244,6 +257,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-deep-link').overrideWith(
             (ref) => pending.future,
@@ -285,6 +301,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-root').overrideWith(
             (ref) => collection,
@@ -325,6 +344,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-error')
               .overrideWith((ref) async {
@@ -400,6 +422,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-hydrate-success').overrideWith(
             (ref) => pending.future,
@@ -463,6 +488,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-preview-error')
               .overrideWith((ref) async {
@@ -512,6 +540,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-feed-retry').overrideWith(
             (ref) => collection,
@@ -564,6 +595,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-feed').overrideWith(
             (ref) => collection,
@@ -612,6 +646,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-liked-feed').overrideWith(
             (ref) => collection,
@@ -649,6 +686,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-2').overrideWith(
             (ref) => collection,
@@ -684,6 +724,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-3').overrideWith(
             (ref) => collection,
@@ -759,6 +802,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
           currentAuthStateProvider.overrideWithValue(const AuthState()),
           collectionDetailProvider('collection-5').overrideWith(
             (ref) => collection,
@@ -798,6 +844,9 @@ void main() {
           path: '/',
           builder: (context, state) => ProviderScope(
             overrides: [
+              authRedirectUriProvider.overrideWithValue(
+                Uri.parse('musea://auth/callback'),
+              ),
               currentAuthStateProvider.overrideWithValue(const AuthState()),
               collectionDetailProvider('collection-4').overrideWith(
                 (ref) => collection,
@@ -832,5 +881,42 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('profile:spaciba'), findsOneWidget);
+  });
+
+  testWidgets(
+      'CollectionDetailPage shows FollowButton for non-self curator in the hero',
+      (tester) async {
+    const collection = Collection(
+      id: 'collection-follow',
+      title: 'Followable Curator',
+      totalPhotos: 4,
+      user: curator,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          authRedirectUriProvider.overrideWithValue(
+            Uri.parse('musea://auth/callback'),
+          ),
+          authBootstrapSessionProvider.overrideWithValue(null),
+          currentAuthStateProvider.overrideWithValue(const AuthState()),
+          collectionDetailProvider('collection-follow').overrideWith(
+            (ref) => collection,
+          ),
+          collectionPhotosProvider('collection-follow').overrideWith(
+            (ref) => <Photo>[],
+          ),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: CollectionDetailPage(collectionId: 'collection-follow'),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(FollowButton), findsOneWidget);
   });
 }

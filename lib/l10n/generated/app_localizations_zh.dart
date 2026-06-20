@@ -393,6 +393,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get following => '已关注';
 
   @override
+  String get followReadOnlyHint => '请在 unsplash.com 上关注该摄影师';
+
+  @override
   String get cameraInfo => '相机信息';
 
   @override

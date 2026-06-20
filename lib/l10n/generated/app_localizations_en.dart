@@ -409,6 +409,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get following => 'Following';
 
   @override
+  String get followReadOnlyHint =>
+      'Follow this photographer on unsplash.com';
+
+  @override
   String get cameraInfo => 'CAMERA INFO';
 
   @override

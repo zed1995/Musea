@@ -842,6 +842,12 @@ abstract class AppLocalizations {
   /// **'Following'**
   String get following;
 
+  /// No description provided for @followReadOnlyHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Follow this photographer on unsplash.com'**
+  String get followReadOnlyHint;
+
   /// No description provided for @cameraInfo.
   ///
   /// In en, this message translates to:
