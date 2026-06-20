@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
@@ -124,7 +125,7 @@ class CollectionDetailPage extends ConsumerWidget {
   }
 }
 
-class _CollectionDetailContent extends StatelessWidget {
+class _CollectionDetailContent extends StatefulWidget {
   const _CollectionDetailContent({
     required this.collection,
     required this.photosAsync,
@@ -151,17 +152,63 @@ class _CollectionDetailContent extends StatelessWidget {
   final bool showDeferredFactRetry;
   final VoidCallback? onRetryDeferred;
 
+  @override
+  State<_CollectionDetailContent> createState() =>
+      _CollectionDetailContentState();
+}
+
+class _CollectionDetailContentState extends State<_CollectionDetailContent> {
+  final ScrollController _controller = ScrollController();
+  double? _heroHeight;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_handleScroll);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleScroll);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  double get _progress {
+    if (!_controller.hasClients) return 0.0;
+    final heroHeight =
+        _heroHeight ?? MediaQuery.sizeOf(context).height * 0.55;
+    if (heroHeight <= 0) return 0.0;
+    return (_controller.offset / heroHeight).clamp(0.0, 1.0);
+  }
+
+  bool get _scrolled => _progress >= 0.5;
+
+  void _onHeroHeightLocked(double height) {
+    if (_heroHeight == null && height > 0) {
+      setState(() {
+        _heroHeight = height;
+      });
+    }
+  }
+
   void _showManageSheet(BuildContext context) {
     showCollectionManageSheet(
       context,
-      collection: collection,
-      onEdit: () => showCollectionEditSheet(context, collection: collection),
+      collection: widget.collection,
+      onEdit: () =>
+          showCollectionEditSheet(context, collection: widget.collection),
       onRemovePhotos: () => context.push(
-        '/collection/${collection.id}/remove',
-        extra: collection.title,
+        '/collection/${widget.collection.id}/remove',
+        extra: widget.collection.title,
       ),
       onDelete: () =>
-          showCollectionDeleteSheet(context, collection: collection),
+          showCollectionDeleteSheet(context, collection: widget.collection),
     );
   }
 
@@ -169,133 +216,180 @@ class _CollectionDetailContent extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
     final locale = Localizations.localeOf(context).toLanguageTag();
+    final collection = widget.collection;
     final factRows = _buildFactRows(collection, l10n, locale);
     final previewUrls = _previewUrls(
       collection.previewPhotos,
-      photosAsync,
-      allowPhotosFallback: allowPhotoFeedPreviewFallback,
+      widget.photosAsync,
+      allowPhotosFallback: widget.allowPhotoFeedPreviewFallback,
     );
+    final progress = _progress;
+    final scrolled = _scrolled;
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: _CollectionHero(
-              collection: collection,
-              coverUrl: _coverUrl(collection),
-              isOwner: isOwner,
-              onManageTap: () => _showManageSheet(context),
-              onShareTap: onShareTap,
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: scrolled
+          ? const SystemUiOverlayStyle(
+              statusBarColor: AppColors.gray50,
+              statusBarIconBrightness: Brightness.dark,
+              statusBarBrightness: Brightness.light,
+            )
+          : const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+              statusBarBrightness: Brightness.light,
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _SectionCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _sectionEyebrow(l10n.collectionSummary),
-                        const SizedBox(height: 8),
-                        Text(
-                          _summaryText(collection, l10n),
-                          style: AppTextStyles.bodyMedium.copyWith(
-                            color: AppColors.gray600,
-                            height: 1.5,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: _buildMetaPills(collection, l10n, locale),
-                          ),
-                        ),
-                      ],
-                    ),
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: Stack(
+          children: [
+            CustomScrollView(
+              controller: _controller,
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _CollectionHero(
+                    collection: collection,
+                    coverUrl: _coverUrl(collection),
+                    isOwner: widget.isOwner,
+                    onManageTap: () => _showManageSheet(context),
+                    onShareTap: widget.onShareTap,
+                    onHeightLocked: _onHeroHeightLocked,
                   ),
-                  const SizedBox(height: 12),
-                  _SectionCard(
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _DetailSectionHeader(
-                          eyebrow: l10n.preview,
-                          title: l10n.firstFourPhotos,
-                          actionLabel: l10n.openGrid,
-                        ),
-                        const SizedBox(height: 12),
-                        if (previewUrls.isNotEmpty)
-                          _PreviewGrid(
-                            previewUrls: previewUrls,
-                            remainingCount:
-                                (collection.totalPhotos - 4).clamp(0, 999999),
-                          )
-                        else if (showDeferredPreviewSkeleton)
-                          const _PreviewSectionSkeleton(
-                            key: ValueKey('collection-detail-preview-skeleton'),
-                          )
-                        else if (showDeferredPreviewRetry)
-                          Column(
+                        _SectionCard(
+                          child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              _DeferredRetryBanner(onRetry: onRetryDeferred),
+                              _sectionEyebrow(l10n.collectionSummary),
+                              const SizedBox(height: 8),
+                              Text(
+                                _summaryText(collection, l10n),
+                                style: AppTextStyles.bodyMedium.copyWith(
+                                  color: AppColors.gray600,
+                                  height: 1.5,
+                                ),
+                              ),
                               const SizedBox(height: 12),
-                              _DeferredSectionPlaceholder(
-                                message: l10n.previewUnavailable,
+                              SingleChildScrollView(
+                                scrollDirection: Axis.horizontal,
+                                child: Row(
+                                  children: _buildMetaPills(
+                                      collection, l10n, locale),
+                                ),
                               ),
                             ],
-                          )
-                        else
-                          _EmptyFeedCard(
-                            message: l10n.previewWillAppear,
                           ),
+                        ),
+                        const SizedBox(height: 12),
+                        _SectionCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _DetailSectionHeader(
+                                eyebrow: l10n.preview,
+                                title: l10n.firstFourPhotos,
+                                actionLabel: l10n.openGrid,
+                              ),
+                              const SizedBox(height: 12),
+                              if (previewUrls.isNotEmpty)
+                                _PreviewGrid(
+                                  previewUrls: previewUrls,
+                                  remainingCount:
+                                      (collection.totalPhotos - 4)
+                                          .clamp(0, 999999),
+                                )
+                              else if (widget.showDeferredPreviewSkeleton)
+                                const _PreviewSectionSkeleton(
+                                  key: ValueKey(
+                                      'collection-detail-preview-skeleton'),
+                                )
+                              else if (widget.showDeferredPreviewRetry)
+                                Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.start,
+                                  children: [
+                                    _DeferredRetryBanner(
+                                        onRetry: widget.onRetryDeferred),
+                                    const SizedBox(height: 12),
+                                    _DeferredSectionPlaceholder(
+                                      message: l10n.previewUnavailable,
+                                    ),
+                                  ],
+                                )
+                              else
+                                _EmptyFeedCard(
+                                  message: l10n.previewWillAppear,
+                                ),
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _SectionCard(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _sectionEyebrow(l10n.collectionFacts),
+                              const SizedBox(height: 10),
+                              ...factRows,
+                              if (widget.showDeferredFactSkeleton) ...[
+                                const SizedBox(height: 8),
+                                const _DeferredSectionSkeleton(
+                                  key: ValueKey(
+                                      'collection-detail-facts-skeleton'),
+                                  lines: 2,
+                                ),
+                              ] else if (widget.showDeferredFactRetry) ...[
+                                const SizedBox(height: 8),
+                                _DeferredRetryBanner(
+                                    onRetry: widget.onRetryDeferred),
+                                const SizedBox(height: 12),
+                                _DeferredSectionPlaceholder(
+                                  message: l10n.factsWillAppear,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        _SectionCard(
+                          child: _ContinueExploringSection(
+                              collection: collection),
+                        ),
+                        const SizedBox(height: 12),
+                        _FeedSection(
+                          photosAsync: widget.photosAsync,
+                          onRetry: widget.onRetryFeed,
+                        ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
-                  _SectionCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _sectionEyebrow(l10n.collectionFacts),
-                        const SizedBox(height: 10),
-                        ...factRows,
-                        if (showDeferredFactSkeleton) ...[
-                          const SizedBox(height: 8),
-                          const _DeferredSectionSkeleton(
-                            key: ValueKey('collection-detail-facts-skeleton'),
-                            lines: 2,
-                          ),
-                        ] else if (showDeferredFactRetry) ...[
-                          const SizedBox(height: 8),
-                          _DeferredRetryBanner(onRetry: onRetryDeferred),
-                          const SizedBox(height: 12),
-                          _DeferredSectionPlaceholder(
-                            message: l10n.factsWillAppear,
-                          ),
-                        ],
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  _SectionCard(
-                    child: _ContinueExploringSection(collection: collection),
-                  ),
-                  const SizedBox(height: 12),
-                  _FeedSection(
-                    photosAsync: photosAsync,
-                    onRetry: onRetryFeed,
+                ),
+              ],
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ImmersiveHeroAppBar(
+                progress: progress,
+                scrolled: scrolled,
+                title: collection.title,
+                onBack: () => Navigator.maybePop(context),
+                actions: [
+                  IconButton(
+                    onPressed: widget.onShareTap,
+                    icon: const Icon(Icons.ios_share_rounded),
                   ),
                 ],
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -308,6 +402,7 @@ class _CollectionHero extends StatelessWidget {
     this.isOwner = false,
     this.onManageTap,
     this.onShareTap,
+    this.onHeightLocked,
   });
 
   final Collection collection;
@@ -315,6 +410,7 @@ class _CollectionHero extends StatelessWidget {
   final bool isOwner;
   final VoidCallback? onManageTap;
   final VoidCallback? onShareTap;
+  final ValueChanged<double>? onHeightLocked;
 
   @override
   Widget build(BuildContext context) {
@@ -325,185 +421,179 @@ class _CollectionHero extends StatelessWidget {
     final canOpenProfile =
         curatorUsername != null && curatorUsername.isNotEmpty;
 
-    return SizedBox(
-      height: 328 + topPadding,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          if (coverUrl != null && coverUrl!.isNotEmpty)
-            CachedNetworkImage(
-              imageUrl: coverUrl!,
-              fit: BoxFit.cover,
-              errorWidget: (context, url, error) => Container(
-                color: AppColors.gray300,
-              ),
-            )
-          else
-            Container(color: AppColors.gray300),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.black.withValues(alpha: 0.12),
-                  Colors.black.withValues(alpha: 0.28),
-                  Colors.black.withValues(alpha: 0.68),
-                ],
+    return _HeroFrame(
+      onHeightLocked: onHeightLocked ?? _noop,
+      child: SizedBox(
+        height: 328 + topPadding,
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            if (coverUrl != null && coverUrl!.isNotEmpty)
+              CachedNetworkImage(
+                imageUrl: coverUrl!,
+                fit: BoxFit.cover,
+                errorWidget: (context, url, error) => Container(
+                  color: AppColors.gray300,
+                ),
+              )
+            else
+              Container(color: AppColors.gray300),
+            DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withValues(alpha: 0.12),
+                    Colors.black.withValues(alpha: 0.28),
+                    Colors.black.withValues(alpha: 0.68),
+                  ],
+                ),
               ),
             ),
-          ),
-          SafeArea(
-            bottom: false,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ImmersiveHeroAppBar(
-                    onBack: () => Navigator.maybePop(context),
-                    topPadding: 0,
-                    actions: [
-                      IconButton(
-                        onPressed: onShareTap,
-                        icon: const Icon(
-                          Icons.ios_share_rounded,
-                          color: Colors.white,
+            SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Spacer(),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          _GlassChip(
+                              label: l10n.photoCount(collection.totalPhotos)),
+                          const SizedBox(width: 8),
+                          _GlassChip(label: l10n.photoCollection),
+                          const SizedBox(width: 8),
+                          _GlassChip(
+                            label: _collectionIsPrivate(collection)
+                                ? l10n.private
+                                : l10n.public,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      collection.title,
+                      style: AppTextStyles.heading1.copyWith(
+                        color: Colors.white,
+                        fontSize: 28,
+                        height: 1.04,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: -0.9,
+                      ),
+                    ),
+                    if (isOwner) ...[
+                      const SizedBox(height: 12),
+                      TextButton.icon(
+                        onPressed: onManageTap ?? () {},
+                        style: TextButton.styleFrom(
+                          foregroundColor: Colors.white,
+                          backgroundColor:
+                              Colors.white.withValues(alpha: 0.12),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(999),
+                          ),
                         ),
+                        icon: const Icon(Icons.grid_view_rounded, size: 18),
+                        label: Text(l10n.manageCollection),
                       ),
                     ],
-                  ),
-                  const Spacer(),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
+                    const SizedBox(height: 14),
+                    Row(
                       children: [
-                        _GlassChip(
-                            label: l10n.photoCount(collection.totalPhotos)),
-                        const SizedBox(width: 8),
-                        _GlassChip(label: l10n.photoCollection),
-                        const SizedBox(width: 8),
-                        _GlassChip(
-                          label: _collectionIsPrivate(collection)
-                              ? l10n.private
-                              : l10n.public,
+                        Expanded(
+                          child: InkWell(
+                            onTap: canOpenProfile
+                                ? () => context.push(
+                                      '/profile/$curatorUsername',
+                                      extra: ProfileDetailExtra(
+                                          user: collection.user!),
+                                    )
+                                : null,
+                            borderRadius: BorderRadius.circular(16),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(vertical: 4),
+                              child: Row(
+                                children: [
+                                  _CuratorAvatar(user: curator, size: 40),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          curator?.name ??
+                                              l10n.unknownCurator,
+                                          style: AppTextStyles.bodyMedium
+                                              .copyWith(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          _curatorMeta(curator, l10n),
+                                          style:
+                                              AppTextStyles.caption.copyWith(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.96,
+                                            ),
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        SizedBox(
+                          height: 36,
+                          child: FilledButton(
+                            onPressed: () {},
+                            style: FilledButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: AppColors.gray900,
+                              padding:
+                                  const EdgeInsets.symmetric(horizontal: 16),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(999),
+                              ),
+                            ),
+                            child: Text(
+                              l10n.follow,
+                              style: AppTextStyles.caption.copyWith(
+                                color: AppColors.gray900,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    collection.title,
-                    style: AppTextStyles.heading1.copyWith(
-                      color: Colors.white,
-                      fontSize: 28,
-                      height: 1.04,
-                      fontWeight: FontWeight.w600,
-                      letterSpacing: -0.9,
-                    ),
-                  ),
-                  if (isOwner) ...[
-                    const SizedBox(height: 12),
-                    TextButton.icon(
-                      onPressed: onManageTap ?? () {},
-                      style: TextButton.styleFrom(
-                        foregroundColor: Colors.white,
-                        backgroundColor: Colors.white.withValues(alpha: 0.12),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                      ),
-                      icon: const Icon(Icons.grid_view_rounded, size: 18),
-                      label: Text(l10n.manageCollection),
-                    ),
                   ],
-                  const SizedBox(height: 14),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: InkWell(
-                          onTap: canOpenProfile
-                              ? () => context.push(
-                                    '/profile/$curatorUsername',
-                                    extra: ProfileDetailExtra(
-                                        user: collection.user!),
-                                  )
-                              : null,
-                          borderRadius: BorderRadius.circular(16),
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(vertical: 4),
-                            child: Row(
-                              children: [
-                                _CuratorAvatar(user: curator, size: 40),
-                                const SizedBox(width: 12),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        curator?.name ?? l10n.unknownCurator,
-                                        style:
-                                            AppTextStyles.bodyMedium.copyWith(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        _curatorMeta(curator, l10n),
-                                        style: AppTextStyles.caption.copyWith(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.96,
-                                          ),
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      SizedBox(
-                        height: 36,
-                        child: FilledButton(
-                          onPressed: () {},
-                          style: FilledButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: AppColors.gray900,
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(999),
-                            ),
-                          ),
-                          child: Text(
-                            l10n.follow,
-                            style: AppTextStyles.caption.copyWith(
-                              color: AppColors.gray900,
-                              fontWeight: FontWeight.w700,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -1387,4 +1477,53 @@ String _bestProfileImage(User user) {
 bool _collectionIsPrivate(Collection collection) {
   final dynamic value = (collection as dynamic).isPrivate;
   return value == true;
+}
+
+void _noop(double _) {}
+
+class _HeroFrame extends StatefulWidget {
+  const _HeroFrame({
+    required this.child,
+    required this.onHeightLocked,
+  });
+
+  final Widget child;
+  final ValueChanged<double> onHeightLocked;
+
+  @override
+  State<_HeroFrame> createState() => _HeroFrameState();
+}
+
+class _HeroFrameState extends State<_HeroFrame> {
+  final GlobalKey _key = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(_reportHeight);
+  }
+
+  @override
+  void didUpdateWidget(covariant _HeroFrame oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback(_reportHeight);
+  }
+
+  void _reportHeight(Duration _) {
+    if (!mounted) return;
+    final box = _key.currentContext?.findRenderObject() as RenderBox?;
+    final height = box?.size.height;
+    if (height != null && height > 0) {
+      widget.onHeightLocked(height);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      key: _key,
+      width: double.infinity,
+      child: widget.child,
+    );
+  }
 }

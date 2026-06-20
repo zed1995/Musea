@@ -93,7 +93,7 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('United States'), findsOneWidget);
+    expect(find.text('United States'), findsAtLeastNWidgets(1));
     expect(find.text('Collection Summary'), findsOneWidget);
     expect(find.text('Preview'), findsOneWidget);
     expect(find.text('Collection Facts'), findsOneWidget);
@@ -222,7 +222,7 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('United States'), findsOneWidget);
+    expect(find.text('United States'), findsAtLeastNWidgets(1));
     expect(find.text('Curated travel references.'), findsOneWidget);
     expect(find.byType(PhotoGrid), findsNothing);
     expect(find.byType(CircularProgressIndicator), findsNothing);
@@ -306,7 +306,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(tester.takeException(), isNull);
-    expect(find.text('Root Entry'), findsOneWidget);
+    expect(find.text('Root Entry'), findsAtLeastNWidgets(1));
   });
 
   testWidgets(
@@ -351,7 +351,7 @@ void main() {
     await tester.pump();
     await tester.pump();
 
-    expect(find.text('United States'), findsOneWidget);
+    expect(find.text('United States'), findsAtLeastNWidgets(1));
     expect(find.text('Curated travel references.'), findsOneWidget);
     expect(find.text('Inside the collection'), findsOneWidget);
     expect(find.byType(PhotoGrid), findsOneWidget);
@@ -777,7 +777,7 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Sparse Detail'), findsOneWidget);
+    expect(find.text('Sparse Detail'), findsAtLeastNWidgets(1));
     expect(find.text('0 photos'), findsAtLeastNWidgets(1));
     expect(find.text('Sparse User'), findsOneWidget);
   });
