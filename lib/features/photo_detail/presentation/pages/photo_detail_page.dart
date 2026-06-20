@@ -195,7 +195,7 @@ class _PhotoDetailContent extends ConsumerWidget {
                   ] else if (showTagSkeleton) ...[
                     const SizedBox(height: 16),
                     _DeferredSectionSkeleton(
-                      key: ValueKey('photo-detail-tags-skeleton'),
+                      key: const ValueKey('photo-detail-tags-skeleton'),
                       title: l10n.tags,
                       lines: 2,
                     ),
@@ -224,7 +224,7 @@ class _PhotoDetailContent extends ConsumerWidget {
                   ] else if (showExifSkeleton) ...[
                     const SizedBox(height: 18),
                     _DeferredSectionSkeleton(
-                      key: ValueKey('photo-detail-exif-skeleton'),
+                      key: const ValueKey('photo-detail-exif-skeleton'),
                       title: l10n.cameraInfo,
                       lines: 3,
                     ),
