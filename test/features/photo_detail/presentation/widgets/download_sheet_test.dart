@@ -296,6 +296,7 @@ void main() {
               const StoredSettings(
                 language: AppLanguage.english,
                 downloadOverWifiOnly: true,
+                themeMode: AppThemeMode.system,
               ),
             ),
           ),

@@ -38,11 +38,44 @@ void main() {
       const StoredSettings(
         language: AppLanguage.simplifiedChinese,
         downloadOverWifiOnly: false,
+        themeMode: AppThemeMode.system,
       ),
     );
 
     final settings = await dataSource.readSettings();
     expect(settings.language, AppLanguage.simplifiedChinese);
     expect(settings.downloadOverWifiOnly, isFalse);
+  });
+
+  test('themeMode defaults to system when key is absent', () async {
+    // Fresh box: no theme_mode key on disk yet.
+    final settings = await dataSource.readSettings();
+    expect(settings.themeMode, AppThemeMode.system);
+  });
+
+  test('round-trips themeMode through save and read', () async {
+    await dataSource.saveSettings(
+      const StoredSettings(
+        language: AppLanguage.system,
+        downloadOverWifiOnly: true,
+        themeMode: AppThemeMode.dark,
+      ),
+    );
+
+    final settings = await dataSource.readSettings();
+    expect(settings.themeMode, AppThemeMode.dark);
+  });
+
+  test('reads existing settings without themeMode as system (backwards compat)',
+      () async {
+    // Simulate an old box that pre-dates themeMode.
+    final box = await Hive.openBox<dynamic>('settings');
+    await box.put('language', AppLanguage.english.storageValue);
+    await box.put('download_over_wifi_only', false);
+
+    final settings = await dataSource.readSettings();
+    expect(settings.language, AppLanguage.english);
+    expect(settings.downloadOverWifiOnly, isFalse);
+    expect(settings.themeMode, AppThemeMode.system);
   });
 }

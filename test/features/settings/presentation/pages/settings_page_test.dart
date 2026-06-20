@@ -75,6 +75,7 @@ class _FakeSettingsLocalDataSource implements SettingsLocalDataSource {
   StoredSettings value = const StoredSettings(
     language: AppLanguage.system,
     downloadOverWifiOnly: true,
+    themeMode: AppThemeMode.system,
   );
 
   @override

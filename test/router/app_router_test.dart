@@ -40,6 +40,7 @@ class _FakeSettingsLocalDataSource implements SettingsLocalDataSource {
   StoredSettings value = const StoredSettings(
     language: AppLanguage.system,
     downloadOverWifiOnly: true,
+    themeMode: AppThemeMode.system,
   );
 
   @override
@@ -332,6 +333,7 @@ void main() {
       ..value = const StoredSettings(
         language: AppLanguage.simplifiedChinese,
         downloadOverWifiOnly: true,
+        themeMode: AppThemeMode.system,
       );
 
     await tester.pumpWidget(
@@ -369,6 +371,7 @@ void main() {
       ..value = const StoredSettings(
         language: AppLanguage.simplifiedChinese,
         downloadOverWifiOnly: true,
+        themeMode: AppThemeMode.system,
       );
 
     await tester.pumpWidget(
