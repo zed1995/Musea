@@ -77,10 +77,34 @@ class CollectionsPage extends ConsumerWidget {
             ),
           );
         },
-        loading: () => const Center(child: LoadingIndicator()),
-        error: (error, stack) => ErrorState(
-          message: error.toString(),
-          onRetry: () => ref.invalidate(collectionsProvider),
+        loading: () => SafeArea(
+          child: Column(
+            children: [
+              _CollectionsHeader(
+                title: l10n.collectionsPageTitle,
+                onAddPressed: () =>
+                    _handleAddPressed(context, ref, authState),
+              ),
+              const Expanded(child: Center(child: LoadingIndicator())),
+            ],
+          ),
+        ),
+        error: (error, stack) => SafeArea(
+          child: Column(
+            children: [
+              _CollectionsHeader(
+                title: l10n.collectionsPageTitle,
+                onAddPressed: () =>
+                    _handleAddPressed(context, ref, authState),
+              ),
+              Expanded(
+                child: ErrorState(
+                  message: error.toString(),
+                  onRetry: () => ref.invalidate(collectionsProvider),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
