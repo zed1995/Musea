@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart' show SystemUiOverlayStyle;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:musea/core/theme/colors.dart';
@@ -42,7 +43,7 @@ class PhotoDetailPage extends ConsumerWidget {
         isUsingInitialPhoto && hydrateDeferredDetailsFromInitialPhoto;
 
     if (resolvedPhoto != null) {
-      return _PhotoDetailContent(
+      return _CollapsingPhotoDetailScrollView(
         photo: resolvedPhoto,
         heroPhoto: initialPhoto ?? resolvedPhoto,
         onHeroTap: () => context.push(
@@ -57,7 +58,7 @@ class PhotoDetailPage extends ConsumerWidget {
     }
 
     return photoAsync.when(
-      data: (photo) => _PhotoDetailContent(
+      data: (photo) => _CollapsingPhotoDetailScrollView(
         photo: photo,
         heroPhoto: photo,
         onHeroTap: () => context.push(
@@ -79,8 +80,8 @@ class PhotoDetailPage extends ConsumerWidget {
   }
 }
 
-class _PhotoDetailContent extends ConsumerWidget {
-  const _PhotoDetailContent({
+class _CollapsingPhotoDetailScrollView extends ConsumerStatefulWidget {
+  const _CollapsingPhotoDetailScrollView({
     required this.photo,
     required this.heroPhoto,
     this.onHeroTap,
@@ -97,13 +98,62 @@ class _PhotoDetailContent extends ConsumerWidget {
   final VoidCallback? onRetryDeferred;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final likeState = ref.watch(photoLikeStateProvider(photo));
-    final showTagSkeleton = isHydratingDeferredContent && photo.tags.isEmpty;
-    final showExifSkeleton = isHydratingDeferredContent && photo.exif == null;
-    final showDeferredError =
-        showDeferredRetry && (photo.tags.isEmpty || photo.exif == null);
+  ConsumerState<_CollapsingPhotoDetailScrollView> createState() =>
+      _CollapsingPhotoDetailScrollViewState();
+}
+
+class _CollapsingPhotoDetailScrollViewState
+    extends ConsumerState<_CollapsingPhotoDetailScrollView> {
+  final ScrollController _controller = ScrollController();
+  double? _heroHeight;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(_handleScroll);
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_handleScroll);
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!mounted) return;
+    setState(() {});
+  }
+
+  double get _progress {
+    if (!_controller.hasClients) return 0.0;
+    final heroHeight = _heroHeight ?? MediaQuery.sizeOf(context).height * 0.55;
+    if (heroHeight <= 0) return 0.0;
+    return (_controller.offset / heroHeight).clamp(0.0, 1.0);
+  }
+
+  bool get _scrolled => _progress >= 0.5;
+
+  void _onHeroHeightLocked(double height) {
+    if (_heroHeight == null && height > 0) {
+      setState(() {
+        _heroHeight = height;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final likeState = ref.watch(photoLikeStateProvider(widget.photo));
+    final showTagSkeleton =
+        widget.isHydratingDeferredContent && widget.photo.tags.isEmpty;
+    final showExifSkeleton =
+        widget.isHydratingDeferredContent && widget.photo.exif == null;
+    final showDeferredError = widget.showDeferredRetry &&
+        (widget.photo.tags.isEmpty || widget.photo.exif == null);
     final l10n = AppLocalizations.of(context)!;
+    final progress = _progress;
+    final scrolled = _scrolled;
 
     void handleBookmark() {
       final authState = ref.read(authControllerProvider);
@@ -115,154 +165,192 @@ class _PhotoDetailContent extends ConsumerWidget {
           body: l10n.signInToSavePhotosBody,
         );
       }
-      showSaveToCollectionSheet(context, photoId: photo.id);
+      showSaveToCollectionSheet(context, photoId: widget.photo.id);
     }
 
-    return Scaffold(
-      body: CustomScrollView(
-        slivers: [
-          SliverToBoxAdapter(
-            child: _PhotoHero(
-              photo: heroPhoto,
-              onTap: onHeroTap,
-              onBookmarkTap: handleBookmark,
-              onShareTap: () => showShareActionSheet(
-                context,
-                ref,
-                shareUrl: AppShareService.resolvePhotoUrl(photo),
-              ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: scrolled
+          ? const SystemUiOverlayStyle(
+              statusBarColor: AppColors.gray50,
+              statusBarIconBrightness: Brightness.dark,
+              statusBarBrightness: Brightness.light,
+            )
+          : const SystemUiOverlayStyle(
+              statusBarColor: Colors.transparent,
+              statusBarIconBrightness: Brightness.dark,
+              statusBarBrightness: Brightness.light,
             ),
-          ),
-          SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _UserRow(photo: photo),
-                  const SizedBox(height: 16),
-                  _StatsStrip(
-                    photo: photo,
-                    likeState: likeState,
-                    onLikeTap: () async {
-                      final authState = ref.read(authControllerProvider);
-                      if (!authState.isAuthenticated) {
-                        await showAuthGateSheet(context, ref);
-                        return;
-                      }
+      child: Scaffold(
+        body: Stack(
+          children: [
+            CustomScrollView(
+              controller: _controller,
+              slivers: [
+                SliverToBoxAdapter(
+                  child: _PhotoHero(
+                    photo: widget.heroPhoto,
+                    onTap: widget.onHeroTap,
+                    onHeightLocked: _onHeroHeightLocked,
+                  ),
+                ),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _UserRow(photo: widget.photo),
+                        const SizedBox(height: 16),
+                        _StatsStrip(
+                          photo: widget.photo,
+                          likeState: likeState,
+                          onLikeTap: () async {
+                            final authState = ref.read(authControllerProvider);
+                            if (!authState.isAuthenticated) {
+                              await showAuthGateSheet(context, ref);
+                              return;
+                            }
 
-                      final success = await ref
-                          .read(photoLikeControllerProvider.notifier)
-                          .toggle(photo: photo);
-                      if (!context.mounted || success) return;
+                            final success = await ref
+                                .read(photoLikeControllerProvider.notifier)
+                                .toggle(photo: widget.photo);
+                            if (!context.mounted || success) return;
 
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(l10n.likeError),
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(l10n.likeError)),
+                            );
+                          },
                         ),
-                      );
-                    },
+                        if (_description case final description?) ...[
+                          const SizedBox(height: 16),
+                          Text(
+                            description,
+                            style: const TextStyle(
+                              fontSize: 14,
+                              height: 1.55,
+                              color: Color(0xFF52525B),
+                            ),
+                          ),
+                        ],
+                        if (showDeferredError) ...[
+                          const SizedBox(height: 16),
+                          _DeferredRetryBanner(onRetry: widget.onRetryDeferred),
+                        ],
+                        if (widget.photo.tags.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: widget.photo.tags
+                                .map((tag) => _TagChip(
+                                      label: tag.title,
+                                      onTap: () => context.push(
+                                        '/search?q=${Uri.encodeComponent(tag.title)}',
+                                      ),
+                                    ))
+                                .toList(),
+                          ),
+                        ] else if (showTagSkeleton) ...[
+                          const SizedBox(height: 16),
+                          _DeferredSectionSkeleton(
+                            key: const ValueKey('photo-detail-tags-skeleton'),
+                            title: l10n.tags,
+                            lines: 2,
+                          ),
+                        ] else if (showDeferredError) ...[
+                          const SizedBox(height: 16),
+                          _DeferredSectionPlaceholder(
+                            title: l10n.tags,
+                            message: l10n.tagsUnavailable,
+                          ),
+                        ],
+                        if (_exifItems(l10n).isNotEmpty) ...[
+                          const SizedBox(height: 18),
+                          const _SectionDivider(),
+                          const SizedBox(height: 6),
+                          Text(
+                            l10n.cameraInfo,
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w700,
+                              color: Color(0xFF71717A),
+                              letterSpacing: 1.0,
+                            ),
+                          ),
+                          const SizedBox(height: 0),
+                          _ExifGrid(items: _exifItems(l10n)),
+                        ] else if (showExifSkeleton) ...[
+                          const SizedBox(height: 18),
+                          _DeferredSectionSkeleton(
+                            key: const ValueKey('photo-detail-exif-skeleton'),
+                            title: l10n.cameraInfo,
+                            lines: 3,
+                          ),
+                        ] else if (showDeferredError) ...[
+                          const SizedBox(height: 18),
+                          _DeferredSectionPlaceholder(
+                            title: l10n.cameraInfo,
+                            message: l10n.cameraDetailsUnavailable,
+                          ),
+                        ],
+                        if (widget.photo.color.isNotEmpty) ...[
+                          const SizedBox(height: 18),
+                          const _SectionDivider(),
+                          const SizedBox(height: 18),
+                          ColorPaletteSection(hexColor: widget.photo.color),
+                        ],
+                        const SizedBox(height: 18),
+                        _DownloadButton(
+                          onTap: () async {
+                            await DownloadSheet.show(context, widget.photo);
+                          },
+                        ),
+                        const SizedBox(height: 24),
+                      ],
+                    ),
                   ),
-                  if (_description case final description?) ...[
-                    const SizedBox(height: 16),
-                    Text(
-                      description,
-                      style: const TextStyle(
-                        fontSize: 14,
-                        height: 1.55,
-                        color: Color(0xFF52525B),
-                      ),
-                    ),
-                  ],
-                  if (showDeferredError) ...[
-                    const SizedBox(height: 16),
-                    _DeferredRetryBanner(onRetry: onRetryDeferred),
-                  ],
-                  if (photo.tags.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: photo.tags
-                          .map((tag) => _TagChip(
-                                label: tag.title,
-                                onTap: () => context.push(
-                                  '/search?q=${Uri.encodeComponent(tag.title)}',
-                                ),
-                              ))
-                          .toList(),
-                    ),
-                  ] else if (showTagSkeleton) ...[
-                    const SizedBox(height: 16),
-                    _DeferredSectionSkeleton(
-                      key: const ValueKey('photo-detail-tags-skeleton'),
-                      title: l10n.tags,
-                      lines: 2,
-                    ),
-                  ] else if (showDeferredError) ...[
-                    const SizedBox(height: 16),
-                    _DeferredSectionPlaceholder(
-                      title: l10n.tags,
-                      message: l10n.tagsUnavailable,
-                    ),
-                  ],
-                  if (_exifItems(l10n).isNotEmpty) ...[
-                    const SizedBox(height: 18),
-                    const _SectionDivider(),
-                    const SizedBox(height: 6),
-                    Text(
-                      l10n.cameraInfo,
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF71717A),
-                        letterSpacing: 1.0,
-                      ),
-                    ),
-                    const SizedBox(height: 0),
-                    _ExifGrid(items: _exifItems(l10n)),
-                  ] else if (showExifSkeleton) ...[
-                    const SizedBox(height: 18),
-                    _DeferredSectionSkeleton(
-                      key: const ValueKey('photo-detail-exif-skeleton'),
-                      title: l10n.cameraInfo,
-                      lines: 3,
-                    ),
-                  ] else if (showDeferredError) ...[
-                    const SizedBox(height: 18),
-                    _DeferredSectionPlaceholder(
-                      title: l10n.cameraInfo,
-                      message: l10n.cameraDetailsUnavailable,
-                    ),
-                  ],
-                  if (photo.color.isNotEmpty) ...[
-                    const SizedBox(height: 18),
-                    const _SectionDivider(),
-                    const SizedBox(height: 18),
-                    ColorPaletteSection(hexColor: photo.color),
-                  ],
-                  const SizedBox(height: 18),
-                  _DownloadButton(
-                    onTap: () async {
-                      await DownloadSheet.show(context, photo);
-                    },
+                ),
+                SliverToBoxAdapter(
+                  child: _MoreFromPhotographer(photo: widget.photo),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 32)),
+              ],
+            ),
+            Positioned(
+              top: 0,
+              left: 0,
+              right: 0,
+              child: ImmersiveHeroAppBar(
+                progress: progress,
+                scrolled: scrolled,
+                title: widget.photo.description ?? widget.photo.altDescription,
+                onBack: () => Navigator.maybePop(context),
+                actions: [
+                  IconButton(
+                    onPressed: handleBookmark,
+                    icon: const Icon(Icons.bookmark_border_rounded),
                   ),
-                  const SizedBox(height: 24),
+                  IconButton(
+                    onPressed: () => showShareActionSheet(
+                      context,
+                      ref,
+                      shareUrl: AppShareService.resolvePhotoUrl(widget.photo),
+                    ),
+                    icon: const Icon(Icons.ios_share_rounded),
+                  ),
                 ],
               ),
             ),
-          ),
-          SliverToBoxAdapter(child: _MoreFromPhotographer(photo: photo)),
-          const SliverToBoxAdapter(child: SizedBox(height: 32)),
-        ],
+          ],
+        ),
       ),
     );
   }
 
-  String? get _description => photo.description ?? photo.altDescription;
+  String? get _description => widget.photo.description ?? widget.photo.altDescription;
 
   List<_ExifItem> _exifItems(AppLocalizations l10n) {
-    final exif = photo.exif;
+    final exif = widget.photo.exif;
     if (exif == null) return const [];
 
     final items = <_ExifItem>[];
@@ -282,14 +370,16 @@ class _PhotoDetailContent extends ConsumerWidget {
     if (exif.focalLength != null) {
       items.add(_ExifItem(l10n.exifFocal, exif.focalLength!));
     }
-    if (photo.location != null &&
-        (photo.location!.city?.isNotEmpty == true ||
-            photo.location!.country?.isNotEmpty == true)) {
-      items.add(_ExifItem(l10n.exifLocation, photo.location!.displayName));
+    if (widget.photo.location != null &&
+        (widget.photo.location!.city?.isNotEmpty == true ||
+            widget.photo.location!.country?.isNotEmpty == true)) {
+      items.add(_ExifItem(l10n.exifLocation, widget.photo.location!.displayName));
     }
-    if (photo.width > 0 && photo.height > 0) {
-      items
-          .add(_ExifItem(l10n.exifSize, '${photo.width}\u00d7${photo.height}'));
+    if (widget.photo.width > 0 && widget.photo.height > 0) {
+      items.add(_ExifItem(
+        l10n.exifSize,
+        '${widget.photo.width}\u00d7${widget.photo.height}',
+      ));
     }
     return items;
   }
@@ -304,114 +394,52 @@ class _PhotoHero extends StatefulWidget {
   const _PhotoHero({
     required this.photo,
     this.onTap,
-    this.onBookmarkTap,
-    this.onShareTap,
+    this.onHeightLocked,
   });
 
   final Photo photo;
   final VoidCallback? onTap;
-  final VoidCallback? onBookmarkTap;
-  final VoidCallback? onShareTap;
+  final ValueChanged<double>? onHeightLocked;
 
   @override
   State<_PhotoHero> createState() => _PhotoHeroState();
 }
 
 class _PhotoHeroState extends State<_PhotoHero> {
-  final GlobalKey _frameKey = GlobalKey();
-  double? _lockedHeight;
-
-  @override
-  void initState() {
-    super.initState();
-    _scheduleHeightLock();
-  }
-
-  @override
-  void didUpdateWidget(covariant _PhotoHero oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (_lockedHeight == null) {
-      _scheduleHeightLock();
-    }
-  }
-
-  void _scheduleHeightLock() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted || _lockedHeight != null) return;
-      final context = _frameKey.currentContext;
-      final renderBox = context?.findRenderObject() as RenderBox?;
-      final height = renderBox?.size.height;
-      if (height != null && height > 0) {
-        setState(() {
-          _lockedHeight = height;
-        });
-      }
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    final heroImage = Hero(
-      tag: widget.photo.id,
-      child: GestureDetector(
-        key: const ValueKey('photo-detail-hero-tap-target'),
-        behavior: HitTestBehavior.opaque,
-        onTap: widget.onTap,
-        child: CachedNetworkImage(
-          imageUrl: widget.photo.urlRegular,
-          width: double.infinity,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => Container(
-            height: 320,
-            color: Color(
-              int.parse(widget.photo.color.replaceFirst('#', '0xFF')),
+    return _HeroFrame(
+      onHeightLocked: widget.onHeightLocked ?? _noop,
+      child: Hero(
+        tag: widget.photo.id,
+        child: GestureDetector(
+          key: const ValueKey('photo-detail-hero-tap-target'),
+          behavior: HitTestBehavior.opaque,
+          onTap: widget.onTap,
+          child: CachedNetworkImage(
+            imageUrl: widget.photo.urlRegular,
+            width: double.infinity,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Container(
+              height: 320,
+              color: Color(
+                int.parse(widget.photo.color.replaceFirst('#', '0xFF')),
+              ),
+              child: const Center(child: LoadingIndicator()),
             ),
-            child: const Center(child: LoadingIndicator()),
-          ),
-          errorWidget: (context, url, error) => Container(
-            height: 320,
-            color: AppColors.gray200,
-            child: const Icon(Icons.broken_image, size: 48),
+            errorWidget: (context, url, error) => Container(
+              height: 320,
+              color: AppColors.gray200,
+              child: const Icon(Icons.broken_image, size: 48),
+            ),
           ),
         ),
       ),
     );
-
-    return Stack(
-      key: _frameKey,
-      children: [
-        if (_lockedHeight != null)
-          SizedBox(
-            key: const ValueKey('photo-detail-hero-frame'),
-            height: _lockedHeight,
-            width: double.infinity,
-            child: heroImage,
-          )
-        else
-          heroImage,
-        ImmersiveHeroAppBar(
-          onBack: () => Navigator.maybePop(context),
-          actions: [
-            IconButton(
-              onPressed: widget.onBookmarkTap,
-              icon: const Icon(
-                Icons.bookmark_border_rounded,
-                color: Colors.white,
-              ),
-            ),
-            IconButton(
-              onPressed: widget.onShareTap,
-              icon: const Icon(
-                Icons.ios_share_rounded,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ],
-    );
   }
 }
+
+void _noop(double _) {}
 
 class _UserRow extends StatelessWidget {
   const _UserRow({required this.photo});
@@ -1077,6 +1105,53 @@ class _MoreFromPhotographer extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _HeroFrame extends StatefulWidget {
+  const _HeroFrame({
+    required this.child,
+    required this.onHeightLocked,
+  });
+
+  final Widget child;
+  final ValueChanged<double> onHeightLocked;
+
+  @override
+  State<_HeroFrame> createState() => _HeroFrameState();
+}
+
+class _HeroFrameState extends State<_HeroFrame> {
+  final GlobalKey _key = GlobalKey();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback(_reportHeight);
+  }
+
+  @override
+  void didUpdateWidget(covariant _HeroFrame oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    WidgetsBinding.instance.addPostFrameCallback(_reportHeight);
+  }
+
+  void _reportHeight(Duration _) {
+    if (!mounted) return;
+    final box = _key.currentContext?.findRenderObject() as RenderBox?;
+    final height = box?.size.height;
+    if (height != null && height > 0) {
+      widget.onHeightLocked(height);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      key: _key,
+      width: double.infinity,
+      child: widget.child,
     );
   }
 }

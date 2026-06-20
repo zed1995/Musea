@@ -86,7 +86,7 @@ void main() {
     );
 
     expect(find.text('Forest Archive'), findsOneWidget);
-    expect(find.text('Quiet light'), findsOneWidget);
+    expect(find.text('Quiet light'), findsAtLeastNWidgets(1));
     expect(find.byType(ErrorState), findsNothing);
     expect(
       find.byKey(const ValueKey('photo-detail-tags-skeleton')),
@@ -125,7 +125,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Forest Archive'), findsOneWidget);
-    expect(find.text('Quiet light'), findsOneWidget);
+    expect(find.text('Quiet light'), findsAtLeastNWidgets(1));
     expect(find.byType(ErrorState), findsNothing);
     expect(find.text('Retry loading details'), findsOneWidget);
   });
@@ -256,7 +256,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Quiet light'), findsOneWidget);
+    expect(find.text('Quiet light'), findsAtLeastNWidgets(1));
     expect(find.byKey(const ValueKey('photo-detail-tags-skeleton')),
         findsOneWidget);
     expect(find.byKey(const ValueKey('photo-detail-exif-skeleton')),
@@ -265,7 +265,7 @@ void main() {
     pending.complete(hydratedPhoto);
     await tester.pump();
 
-    expect(find.text('Hydrated detail'), findsOneWidget);
+    expect(find.text('Hydrated detail'), findsAtLeastNWidgets(1));
     expect(find.text('Kyoto'), findsOneWidget);
     expect(find.text('Temple'), findsOneWidget);
     expect(find.text('Camera'), findsOneWidget);
@@ -338,7 +338,7 @@ void main() {
     );
 
     expect(hydratedImage.imageUrl, initialImage.imageUrl);
-    expect(find.text('Hydrated detail'), findsOneWidget);
+    expect(find.text('Hydrated detail'), findsAtLeastNWidgets(1));
   });
 
   testWidgets('photo detail back button is safe when route cannot pop',

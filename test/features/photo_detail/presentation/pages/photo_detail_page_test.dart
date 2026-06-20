@@ -17,6 +17,7 @@ import 'package:musea/features/photo_detail/presentation/widgets/color_palette_b
 import 'package:musea/features/profile/presentation/providers/profile_provider.dart';
 import 'package:musea/l10n/generated/app_localizations.dart';
 import 'package:musea/router/detail_route_extras.dart';
+import 'package:musea/shared/widgets/immersive_hero_app_bar.dart';
 
 class MockPhotoRepository extends Mock implements PhotoRepository {}
 
@@ -168,7 +169,7 @@ void main() {
     await tester.pump();
 
     expect(find.text('Paula Poeira'), findsOneWidget);
-    expect(find.text('Quiet light'), findsOneWidget);
+    expect(find.text('Quiet light'), findsAtLeastNWidgets(1));
     expect(find.text('Download Free'), findsOneWidget);
     expect(find.byIcon(Icons.arrow_back_rounded), findsOneWidget);
     expect(find.byIcon(Icons.bookmark_border_rounded), findsOneWidget);
@@ -576,5 +577,68 @@ void main() {
       tester.getSize(find.byKey(const ValueKey('photo-viewer-viewport'))),
       const Size(390, 844),
     );
+  });
+
+  testWidgets('PhotoDetailPage bar background lerps as the hero scrolls out',
+      (tester) async {
+    // Use the default test surface (800x600 logical) so _MoreFromPhotographer
+    // has enough horizontal room. The default viewport is short enough that
+    // max scroll exceeds the 320px placeholder hero, so progress can reach 1.0.
+    addTearDown(tester.view.reset);
+
+    final photo = buildPhoto(
+      id: 'photo-collapse',
+      username: 'paula',
+      name: 'Paula Poeira',
+      color: '#5B7B9A',
+      tags: const [
+        {'title': 'landscape'},
+        {'title': 'mountains'},
+        {'title': 'sunset'},
+        {'title': 'golden-hour'},
+        {'title': 'nature'},
+        {'title': 'outdoor'},
+      ],
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          photoDetailProvider('photo-collapse')
+              .overrideWith((ref) => photo),
+          userPhotosProvider('paula').overrideWith((ref) => <Photo>[]),
+        ],
+        child: const MaterialApp(
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
+          home: PhotoDetailPage(photoId: 'photo-collapse'),
+        ),
+      ),
+    );
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 100));
+
+    ImmersiveHeroAppBar bar() => tester.widget<ImmersiveHeroAppBar>(
+          find.byType(ImmersiveHeroAppBar),
+        );
+
+    expect(bar().progress, 0.0);
+    expect(bar().scrolled, isFalse);
+
+    // Drive the inner scroll position directly so we can land on a known offset
+    // regardless of how much content the test photo happens to render.
+    final scrollableState = tester.state<ScrollableState>(find.byType(Scrollable));
+    scrollableState.position.jumpTo(160);
+    await tester.pump();
+
+    expect(bar().progress, closeTo(0.5, 0.05));
+    expect(bar().scrolled, isTrue);
+
+    scrollableState.position.jumpTo(320);
+    await tester.pump();
+
+    expect(bar().progress, 1.0);
+    expect(bar().scrolled, isTrue);
   });
 }
