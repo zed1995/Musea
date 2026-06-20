@@ -9,18 +9,22 @@ class SettingsState {
   const SettingsState({
     required this.language,
     required this.downloadOverWifiOnly,
+    required this.themeMode,
   });
 
   final AppLanguage language;
   final bool downloadOverWifiOnly;
+  final AppThemeMode themeMode;
 
   SettingsState copyWith({
     AppLanguage? language,
     bool? downloadOverWifiOnly,
+    AppThemeMode? themeMode,
   }) {
     return SettingsState(
       language: language ?? this.language,
       downloadOverWifiOnly: downloadOverWifiOnly ?? this.downloadOverWifiOnly,
+      themeMode: themeMode ?? this.themeMode,
     );
   }
 }
@@ -72,6 +76,7 @@ class SettingsController extends AsyncNotifier<SettingsState> {
     return SettingsState(
       language: stored.language,
       downloadOverWifiOnly: stored.downloadOverWifiOnly,
+      themeMode: stored.themeMode,
     );
   }
 
@@ -89,6 +94,13 @@ class SettingsController extends AsyncNotifier<SettingsState> {
     await _save(next);
   }
 
+  Future<void> setThemeMode(AppThemeMode mode) async {
+    final current = state.requireValue;
+    final next = current.copyWith(themeMode: mode);
+    state = AsyncData(next);
+    await _save(next);
+  }
+
   Future<void> clearCache() async {
     await ref.read(cacheSummaryServiceProvider).clearAll();
     ref.invalidate(cacheBytesProvider);
@@ -99,6 +111,7 @@ class SettingsController extends AsyncNotifier<SettingsState> {
           StoredSettings(
             language: stateValue.language,
             downloadOverWifiOnly: stateValue.downloadOverWifiOnly,
+            themeMode: stateValue.themeMode,
           ),
         );
   }
