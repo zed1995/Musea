@@ -63,6 +63,14 @@ Locale? localeForAppLanguage(AppLanguage language) {
   };
 }
 
+extension AppThemeModeX on AppThemeMode {
+  ThemeMode toFlutterThemeMode() => switch (this) {
+        AppThemeMode.system => ThemeMode.system,
+        AppThemeMode.light => ThemeMode.light,
+        AppThemeMode.dark => ThemeMode.dark,
+      };
+}
+
 final settingsControllerProvider =
     AsyncNotifierProvider<SettingsController, SettingsState>(
   SettingsController.new,
