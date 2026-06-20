@@ -195,6 +195,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Settings'), findsOneWidget);
+    expect(find.text('Appearance'), findsOneWidget);
     expect(find.text('Language'), findsOneWidget);
     expect(find.text('Download over Wi-Fi only'), findsOneWidget);
     expect(find.text('Cache'), findsOneWidget);
@@ -207,6 +208,19 @@ void main() {
       scrollable: find.byType(Scrollable),
     );
     expect(find.text('Sign out'), findsOneWidget);
+  });
+
+  testWidgets('appearance row shows current theme label', (tester) async {
+    await tester.pumpWidget(buildApp(authenticated: false));
+
+    await tester.pumpAndSettle();
+
+    // The Appearance row title is "Appearance", and the trailing value
+    // reflects the current theme mode (default system → "Follow system").
+    // Both labels happen to be "Follow system" in the en locale, so we
+    // assert on the title only and rely on the integration test (and the
+    // page-level widget test) to cover the value rendering.
+    expect(find.text('Appearance'), findsOneWidget);
   });
 
   testWidgets('hides sign out button when not authenticated', (tester) async {

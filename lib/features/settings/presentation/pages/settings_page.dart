@@ -35,6 +35,11 @@ class SettingsPage extends ConsumerWidget {
       AppLanguage.english => l10n.english,
       AppLanguage.simplifiedChinese => l10n.simplifiedChinese,
     };
+    final themeLabel = switch (current?.themeMode ?? AppThemeMode.system) {
+      AppThemeMode.system => l10n.themeSystem,
+      AppThemeMode.light => l10n.themeLight,
+      AppThemeMode.dark => l10n.themeDark,
+    };
 
     return Scaffold(
       backgroundColor: AppColors.gray50,
@@ -48,6 +53,12 @@ class SettingsPage extends ConsumerWidget {
           SettingsSection(
             title: l10n.preferencesTitle,
             children: [
+              SettingsRow(
+                icon: Icons.palette_outlined,
+                title: l10n.appearanceTitle,
+                trailing: _ChevronValue(value: themeLabel),
+                onTap: () => context.push('/settings/appearance'),
+              ),
               SettingsRow(
                 icon: Icons.translate_rounded,
                 title: l10n.languageSetting,
