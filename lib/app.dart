@@ -21,7 +21,8 @@ class MuseaApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode.system,
+      themeMode: settings.valueOrNull?.themeMode.toFlutterThemeMode() ??
+          ThemeMode.system,
       locale: localeForAppLanguage(
         settings.valueOrNull?.language ?? AppLanguage.system,
       ),
