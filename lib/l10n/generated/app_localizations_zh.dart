@@ -15,6 +15,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get preferencesTitle => '偏好设置';
 
   @override
+  String get appearanceTitle => '外观';
+
+  @override
+  String get themeSystem => '跟随系统';
+
+  @override
+  String get themeLight => '浅色';
+
+  @override
+  String get themeDark => '深色';
+
+  @override
   String get languageSetting => '语言';
 
   @override

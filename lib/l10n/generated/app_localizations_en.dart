@@ -15,6 +15,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get preferencesTitle => 'Preferences';
 
   @override
+  String get appearanceTitle => 'Appearance';
+
+  @override
+  String get themeSystem => 'Follow system';
+
+  @override
+  String get themeLight => 'Light';
+
+  @override
+  String get themeDark => 'Dark';
+
+  @override
   String get languageSetting => 'Language';
 
   @override
