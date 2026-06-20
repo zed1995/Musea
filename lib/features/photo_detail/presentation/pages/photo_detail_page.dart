@@ -105,6 +105,8 @@ class _CollapsingPhotoDetailScrollView extends ConsumerStatefulWidget {
 class _CollapsingPhotoDetailScrollViewState
     extends ConsumerState<_CollapsingPhotoDetailScrollView> {
   final ScrollController _controller = ScrollController();
+  final ValueNotifier<double> _scrollProgress = ValueNotifier(0);
+  final ValueNotifier<bool> _isScrolled = ValueNotifier(false);
   double? _heroHeight;
 
   @override
@@ -117,28 +119,30 @@ class _CollapsingPhotoDetailScrollViewState
   void dispose() {
     _controller.removeListener(_handleScroll);
     _controller.dispose();
+    _scrollProgress.dispose();
+    _isScrolled.dispose();
     super.dispose();
   }
 
   void _handleScroll() {
-    if (!mounted) return;
-    setState(() {});
-  }
-
-  double get _progress {
-    if (!_controller.hasClients) return 0.0;
+    if (!_controller.hasClients) return;
     final heroHeight = _heroHeight ?? MediaQuery.sizeOf(context).height * 0.55;
-    if (heroHeight <= 0) return 0.0;
-    return (_controller.offset / heroHeight).clamp(0.0, 1.0);
+    if (heroHeight <= 0) return;
+    final next = (_controller.offset / heroHeight).clamp(0.0, 1.0);
+    if (_scrollProgress.value != next) {
+      _scrollProgress.value = next;
+    }
+    final nextScrolled = next >= 0.5;
+    if (_isScrolled.value != nextScrolled) {
+      _isScrolled.value = nextScrolled;
+    }
   }
-
-  bool get _scrolled => _progress >= 0.5;
 
   void _onHeroHeightLocked(double height) {
     if (_heroHeight == null && height > 0) {
-      setState(() {
-        _heroHeight = height;
-      });
+      _heroHeight = height;
+      // Recompute progress now that the real hero height is known.
+      _handleScroll();
     }
   }
 
@@ -152,8 +156,8 @@ class _CollapsingPhotoDetailScrollViewState
     final showDeferredError = widget.showDeferredRetry &&
         (widget.photo.tags.isEmpty || widget.photo.exif == null);
     final l10n = AppLocalizations.of(context)!;
-    final progress = _progress;
-    final scrolled = _scrolled;
+    final description =
+        widget.photo.description ?? widget.photo.altDescription;
 
     void handleBookmark() {
       final authState = ref.read(authControllerProvider);
@@ -168,181 +172,197 @@ class _CollapsingPhotoDetailScrollViewState
       showSaveToCollectionSheet(context, photoId: widget.photo.id);
     }
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: scrolled
-          ? const SystemUiOverlayStyle(
-              statusBarColor: AppColors.gray50,
-              statusBarIconBrightness: Brightness.dark,
-              statusBarBrightness: Brightness.light,
-            )
-          : const SystemUiOverlayStyle(
-              statusBarColor: Colors.transparent,
-              statusBarIconBrightness: Brightness.dark,
-              statusBarBrightness: Brightness.light,
-            ),
-      child: Scaffold(
-        body: Stack(
-          children: [
-            CustomScrollView(
-              controller: _controller,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _PhotoHero(
-                    photo: widget.heroPhoto,
-                    onTap: widget.onHeroTap,
-                    onHeightLocked: _onHeroHeightLocked,
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _UserRow(photo: widget.photo),
-                        const SizedBox(height: 16),
-                        _StatsStrip(
-                          photo: widget.photo,
-                          likeState: likeState,
-                          onLikeTap: () async {
-                            final authState = ref.read(authControllerProvider);
-                            if (!authState.isAuthenticated) {
-                              await showAuthGateSheet(context, ref);
-                              return;
-                            }
+    void handleShare() {
+      showShareActionSheet(
+        context,
+        ref,
+        shareUrl: AppShareService.resolvePhotoUrl(widget.photo),
+      );
+    }
 
-                            final success = await ref
-                                .read(photoLikeControllerProvider.notifier)
-                                .toggle(photo: widget.photo);
-                            if (!context.mounted || success) return;
-
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text(l10n.likeError)),
-                            );
-                          },
-                        ),
-                        if (_description case final description?) ...[
-                          const SizedBox(height: 16),
-                          Text(
-                            description,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              height: 1.55,
-                              color: Color(0xFF52525B),
-                            ),
-                          ),
-                        ],
-                        if (showDeferredError) ...[
-                          const SizedBox(height: 16),
-                          _DeferredRetryBanner(onRetry: widget.onRetryDeferred),
-                        ],
-                        if (widget.photo.tags.isNotEmpty) ...[
-                          const SizedBox(height: 16),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: widget.photo.tags
-                                .map((tag) => _TagChip(
-                                      label: tag.title,
-                                      onTap: () => context.push(
-                                        '/search?q=${Uri.encodeComponent(tag.title)}',
-                                      ),
-                                    ))
-                                .toList(),
-                          ),
-                        ] else if (showTagSkeleton) ...[
-                          const SizedBox(height: 16),
-                          _DeferredSectionSkeleton(
-                            key: const ValueKey('photo-detail-tags-skeleton'),
-                            title: l10n.tags,
-                            lines: 2,
-                          ),
-                        ] else if (showDeferredError) ...[
-                          const SizedBox(height: 16),
-                          _DeferredSectionPlaceholder(
-                            title: l10n.tags,
-                            message: l10n.tagsUnavailable,
-                          ),
-                        ],
-                        if (_exifItems(l10n).isNotEmpty) ...[
-                          const SizedBox(height: 18),
-                          const _SectionDivider(),
-                          const SizedBox(height: 6),
-                          Text(
-                            l10n.cameraInfo,
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w700,
-                              color: Color(0xFF71717A),
-                              letterSpacing: 1.0,
-                            ),
-                          ),
-                          const SizedBox(height: 0),
-                          _ExifGrid(items: _exifItems(l10n)),
-                        ] else if (showExifSkeleton) ...[
-                          const SizedBox(height: 18),
-                          _DeferredSectionSkeleton(
-                            key: const ValueKey('photo-detail-exif-skeleton'),
-                            title: l10n.cameraInfo,
-                            lines: 3,
-                          ),
-                        ] else if (showDeferredError) ...[
-                          const SizedBox(height: 18),
-                          _DeferredSectionPlaceholder(
-                            title: l10n.cameraInfo,
-                            message: l10n.cameraDetailsUnavailable,
-                          ),
-                        ],
-                        if (widget.photo.color.isNotEmpty) ...[
-                          const SizedBox(height: 18),
-                          const _SectionDivider(),
-                          const SizedBox(height: 18),
-                          ColorPaletteSection(hexColor: widget.photo.color),
-                        ],
-                        const SizedBox(height: 18),
-                        _DownloadButton(
-                          onTap: () async {
-                            await DownloadSheet.show(context, widget.photo);
-                          },
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    ),
-                  ),
+    return Scaffold(
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _controller,
+            slivers: [
+              SliverToBoxAdapter(
+                child: _PhotoHero(
+                  photo: widget.heroPhoto,
+                  onTap: widget.onHeroTap,
+                  onHeightLocked: _onHeroHeightLocked,
                 ),
-                SliverToBoxAdapter(
-                  child: _MoreFromPhotographer(photo: widget.photo),
-                ),
-                const SliverToBoxAdapter(child: SizedBox(height: 32)),
-              ],
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: ImmersiveHeroAppBar(
-                progress: progress,
-                scrolled: scrolled,
-                title: widget.photo.description ?? widget.photo.altDescription,
-                onBack: () => Navigator.maybePop(context),
-                actions: [
-                  IconButton(
-                    onPressed: handleBookmark,
-                    icon: const Icon(Icons.bookmark_border_rounded),
-                  ),
-                  IconButton(
-                    onPressed: () => showShareActionSheet(
-                      context,
-                      ref,
-                      shareUrl: AppShareService.resolvePhotoUrl(widget.photo),
-                    ),
-                    icon: const Icon(Icons.ios_share_rounded),
-                  ),
-                ],
               ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 16, 12, 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _UserRow(photo: widget.photo),
+                      const SizedBox(height: 16),
+                      _StatsStrip(
+                        photo: widget.photo,
+                        likeState: likeState,
+                        onLikeTap: () async {
+                          final authState = ref.read(authControllerProvider);
+                          if (!authState.isAuthenticated) {
+                            await showAuthGateSheet(context, ref);
+                            return;
+                          }
+
+                          final success = await ref
+                              .read(photoLikeControllerProvider.notifier)
+                              .toggle(photo: widget.photo);
+                          if (!context.mounted || success) return;
+
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text(l10n.likeError)),
+                          );
+                        },
+                      ),
+                      if (_description case final desc?) ...[
+                        const SizedBox(height: 16),
+                        Text(
+                          desc,
+                          style: const TextStyle(
+                            fontSize: 14,
+                            height: 1.55,
+                            color: Color(0xFF52525B),
+                          ),
+                        ),
+                      ],
+                      if (showDeferredError) ...[
+                        const SizedBox(height: 16),
+                        _DeferredRetryBanner(onRetry: widget.onRetryDeferred),
+                      ],
+                      if (widget.photo.tags.isNotEmpty) ...[
+                        const SizedBox(height: 16),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: widget.photo.tags
+                              .map((tag) => _TagChip(
+                                    label: tag.title,
+                                    onTap: () => context.push(
+                                      '/search?q=${Uri.encodeComponent(tag.title)}',
+                                    ),
+                                  ))
+                              .toList(),
+                        ),
+                      ] else if (showTagSkeleton) ...[
+                        const SizedBox(height: 16),
+                        _DeferredSectionSkeleton(
+                          key: const ValueKey('photo-detail-tags-skeleton'),
+                          title: l10n.tags,
+                          lines: 2,
+                        ),
+                      ] else if (showDeferredError) ...[
+                        const SizedBox(height: 16),
+                        _DeferredSectionPlaceholder(
+                          title: l10n.tags,
+                          message: l10n.tagsUnavailable,
+                        ),
+                      ],
+                      if (_exifItems(l10n).isNotEmpty) ...[
+                        const SizedBox(height: 18),
+                        const _SectionDivider(),
+                        const SizedBox(height: 6),
+                        Text(
+                          l10n.cameraInfo,
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w700,
+                            color: Color(0xFF71717A),
+                            letterSpacing: 1.0,
+                          ),
+                        ),
+                        const SizedBox(height: 0),
+                        _ExifGrid(items: _exifItems(l10n)),
+                      ] else if (showExifSkeleton) ...[
+                        const SizedBox(height: 18),
+                        _DeferredSectionSkeleton(
+                          key: const ValueKey('photo-detail-exif-skeleton'),
+                          title: l10n.cameraInfo,
+                          lines: 3,
+                        ),
+                      ] else if (showDeferredError) ...[
+                        const SizedBox(height: 18),
+                        _DeferredSectionPlaceholder(
+                          title: l10n.cameraInfo,
+                          message: l10n.cameraDetailsUnavailable,
+                        ),
+                      ],
+                      if (widget.photo.color.isNotEmpty) ...[
+                        const SizedBox(height: 18),
+                        const _SectionDivider(),
+                        const SizedBox(height: 18),
+                        ColorPaletteSection(hexColor: widget.photo.color),
+                      ],
+                      const SizedBox(height: 18),
+                      _DownloadButton(
+                        onTap: () async {
+                          await DownloadSheet.show(context, widget.photo);
+                        },
+                      ),
+                      const SizedBox(height: 24),
+                    ],
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: _MoreFromPhotographer(photo: widget.photo),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 32)),
+            ],
+          ),
+          // The app bar + status bar overlay is isolated so scroll ticks
+          // only repaint this small subtree, not the scrollable content.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ValueListenableBuilder<double>(
+              valueListenable: _scrollProgress,
+              builder: (context, progress, _) {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: _isScrolled,
+                  builder: (context, scrolled, _) {
+                    return AnnotatedRegion<SystemUiOverlayStyle>(
+                      value: scrolled
+                          ? const SystemUiOverlayStyle(
+                              statusBarColor: AppColors.gray50,
+                              statusBarIconBrightness: Brightness.dark,
+                              statusBarBrightness: Brightness.light,
+                            )
+                          : const SystemUiOverlayStyle(
+                              statusBarColor: Colors.transparent,
+                              statusBarIconBrightness: Brightness.dark,
+                              statusBarBrightness: Brightness.light,
+                            ),
+                      child: ImmersiveHeroAppBar(
+                        progress: progress,
+                        scrolled: scrolled,
+                        title: description,
+                        onBack: () => Navigator.maybePop(context),
+                        actions: [
+                          IconButton(
+                            onPressed: handleBookmark,
+                            icon: const Icon(Icons.bookmark_border_rounded),
+                          ),
+                          IconButton(
+                            onPressed: handleShare,
+                            icon: const Icon(Icons.ios_share_rounded),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

@@ -159,6 +159,8 @@ class _CollectionDetailContent extends StatefulWidget {
 
 class _CollectionDetailContentState extends State<_CollectionDetailContent> {
   final ScrollController _controller = ScrollController();
+  final ValueNotifier<double> _scrollProgress = ValueNotifier(0);
+  final ValueNotifier<bool> _isScrolled = ValueNotifier(false);
   double? _heroHeight;
 
   @override
@@ -171,29 +173,31 @@ class _CollectionDetailContentState extends State<_CollectionDetailContent> {
   void dispose() {
     _controller.removeListener(_handleScroll);
     _controller.dispose();
+    _scrollProgress.dispose();
+    _isScrolled.dispose();
     super.dispose();
   }
 
   void _handleScroll() {
-    if (!mounted) return;
-    setState(() {});
-  }
-
-  double get _progress {
-    if (!_controller.hasClients) return 0.0;
+    if (!_controller.hasClients) return;
     final heroHeight =
         _heroHeight ?? MediaQuery.sizeOf(context).height * 0.55;
-    if (heroHeight <= 0) return 0.0;
-    return (_controller.offset / heroHeight).clamp(0.0, 1.0);
+    if (heroHeight <= 0) return;
+    final next = (_controller.offset / heroHeight).clamp(0.0, 1.0);
+    if (_scrollProgress.value != next) {
+      _scrollProgress.value = next;
+    }
+    final nextScrolled = next >= 0.5;
+    if (_isScrolled.value != nextScrolled) {
+      _isScrolled.value = nextScrolled;
+    }
   }
-
-  bool get _scrolled => _progress >= 0.5;
 
   void _onHeroHeightLocked(double height) {
     if (_heroHeight == null && height > 0) {
-      setState(() {
-        _heroHeight = height;
-      });
+      _heroHeight = height;
+      // Recompute progress now that the real hero height is known.
+      _handleScroll();
     }
   }
 
@@ -223,173 +227,180 @@ class _CollectionDetailContentState extends State<_CollectionDetailContent> {
       widget.photosAsync,
       allowPhotosFallback: widget.allowPhotoFeedPreviewFallback,
     );
-    final progress = _progress;
-    final scrolled = _scrolled;
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: scrolled
-          ? const SystemUiOverlayStyle(
-              statusBarColor: AppColors.gray50,
-              statusBarIconBrightness: Brightness.dark,
-              statusBarBrightness: Brightness.light,
-            )
-          : const SystemUiOverlayStyle(
-              statusBarColor: Colors.transparent,
-              statusBarIconBrightness: Brightness.dark,
-              statusBarBrightness: Brightness.light,
-            ),
-      child: Scaffold(
-        backgroundColor: Colors.white,
-        body: Stack(
-          children: [
-            CustomScrollView(
-              controller: _controller,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: _CollectionHero(
-                    collection: collection,
-                    coverUrl: _coverUrl(collection),
-                    isOwner: widget.isOwner,
-                    onManageTap: () => _showManageSheet(context),
-                    onShareTap: widget.onShareTap,
-                    onHeightLocked: _onHeroHeightLocked,
-                  ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Stack(
+        children: [
+          CustomScrollView(
+            controller: _controller,
+            slivers: [
+              SliverToBoxAdapter(
+                child: _CollectionHero(
+                  collection: collection,
+                  coverUrl: _coverUrl(collection),
+                  isOwner: widget.isOwner,
+                  onManageTap: () => _showManageSheet(context),
+                  onShareTap: widget.onShareTap,
+                  onHeightLocked: _onHeroHeightLocked,
                 ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _SectionCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _sectionEyebrow(l10n.collectionSummary),
-                              const SizedBox(height: 8),
-                              Text(
-                                _summaryText(collection, l10n),
-                                style: AppTextStyles.bodyMedium.copyWith(
-                                  color: AppColors.gray600,
-                                  height: 1.5,
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              SingleChildScrollView(
-                                scrollDirection: Axis.horizontal,
-                                child: Row(
-                                  children: _buildMetaPills(
-                                      collection, l10n, locale),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _SectionCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _DetailSectionHeader(
-                                eyebrow: l10n.preview,
-                                title: l10n.firstFourPhotos,
-                                actionLabel: l10n.openGrid,
-                              ),
-                              const SizedBox(height: 12),
-                              if (previewUrls.isNotEmpty)
-                                _PreviewGrid(
-                                  previewUrls: previewUrls,
-                                  remainingCount:
-                                      (collection.totalPhotos - 4)
-                                          .clamp(0, 999999),
-                                )
-                              else if (widget.showDeferredPreviewSkeleton)
-                                const _PreviewSectionSkeleton(
-                                  key: ValueKey(
-                                      'collection-detail-preview-skeleton'),
-                                )
-                              else if (widget.showDeferredPreviewRetry)
-                                Column(
-                                  crossAxisAlignment:
-                                      CrossAxisAlignment.start,
-                                  children: [
-                                    _DeferredRetryBanner(
-                                        onRetry: widget.onRetryDeferred),
-                                    const SizedBox(height: 12),
-                                    _DeferredSectionPlaceholder(
-                                      message: l10n.previewUnavailable,
-                                    ),
-                                  ],
-                                )
-                              else
-                                _EmptyFeedCard(
-                                  message: l10n.previewWillAppear,
-                                ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _SectionCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              _sectionEyebrow(l10n.collectionFacts),
-                              const SizedBox(height: 10),
-                              ...factRows,
-                              if (widget.showDeferredFactSkeleton) ...[
-                                const SizedBox(height: 8),
-                                const _DeferredSectionSkeleton(
-                                  key: ValueKey(
-                                      'collection-detail-facts-skeleton'),
-                                  lines: 2,
-                                ),
-                              ] else if (widget.showDeferredFactRetry) ...[
-                                const SizedBox(height: 8),
-                                _DeferredRetryBanner(
-                                    onRetry: widget.onRetryDeferred),
-                                const SizedBox(height: 12),
-                                _DeferredSectionPlaceholder(
-                                  message: l10n.factsWillAppear,
-                                ),
-                              ],
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        _SectionCard(
-                          child: _ContinueExploringSection(
-                              collection: collection),
-                        ),
-                        const SizedBox(height: 12),
-                        _FeedSection(
-                          photosAsync: widget.photosAsync,
-                          onRetry: widget.onRetryFeed,
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            Positioned(
-              top: 0,
-              left: 0,
-              right: 0,
-              child: ImmersiveHeroAppBar(
-                progress: progress,
-                scrolled: scrolled,
-                title: collection.title,
-                onBack: () => Navigator.maybePop(context),
-                actions: [
-                  IconButton(
-                    onPressed: widget.onShareTap,
-                    icon: const Icon(Icons.ios_share_rounded),
-                  ),
-                ],
               ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(12, 12, 12, 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _sectionEyebrow(l10n.collectionSummary),
+                            const SizedBox(height: 8),
+                            Text(
+                              _summaryText(collection, l10n),
+                              style: AppTextStyles.bodyMedium.copyWith(
+                                color: AppColors.gray600,
+                                height: 1.5,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: _buildMetaPills(
+                                    collection, l10n, locale),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _SectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _DetailSectionHeader(
+                              eyebrow: l10n.preview,
+                              title: l10n.firstFourPhotos,
+                              actionLabel: l10n.openGrid,
+                            ),
+                            const SizedBox(height: 12),
+                            if (previewUrls.isNotEmpty)
+                              _PreviewGrid(
+                                previewUrls: previewUrls,
+                                remainingCount:
+                                    (collection.totalPhotos - 4)
+                                        .clamp(0, 999999),
+                              )
+                            else if (widget.showDeferredPreviewSkeleton)
+                              const _PreviewSectionSkeleton(
+                                key: ValueKey(
+                                    'collection-detail-preview-skeleton'),
+                              )
+                            else if (widget.showDeferredPreviewRetry)
+                              Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  _DeferredRetryBanner(
+                                      onRetry: widget.onRetryDeferred),
+                                  const SizedBox(height: 12),
+                                  _DeferredSectionPlaceholder(
+                                    message: l10n.previewUnavailable,
+                                  ),
+                                ],
+                              )
+                            else
+                              _EmptyFeedCard(
+                                message: l10n.previewWillAppear,
+                              ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _SectionCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            _sectionEyebrow(l10n.collectionFacts),
+                            const SizedBox(height: 10),
+                            ...factRows,
+                            if (widget.showDeferredFactSkeleton) ...[
+                              const SizedBox(height: 8),
+                              const _DeferredSectionSkeleton(
+                                key: ValueKey(
+                                    'collection-detail-facts-skeleton'),
+                                lines: 2,
+                              ),
+                            ] else if (widget.showDeferredFactRetry) ...[
+                              const SizedBox(height: 8),
+                              _DeferredRetryBanner(
+                                  onRetry: widget.onRetryDeferred),
+                              const SizedBox(height: 12),
+                              _DeferredSectionPlaceholder(
+                                message: l10n.factsWillAppear,
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      _SectionCard(
+                        child: _ContinueExploringSection(
+                            collection: collection),
+                      ),
+                      const SizedBox(height: 12),
+                      _FeedSection(
+                        photosAsync: widget.photosAsync,
+                        onRetry: widget.onRetryFeed,
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+          // The app bar + status bar overlay is isolated so scroll ticks
+          // only repaint this small subtree, not the scrollable content.
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: ValueListenableBuilder<double>(
+              valueListenable: _scrollProgress,
+              builder: (context, progress, _) {
+                return ValueListenableBuilder<bool>(
+                  valueListenable: _isScrolled,
+                  builder: (context, scrolled, _) {
+                    return AnnotatedRegion<SystemUiOverlayStyle>(
+                      value: scrolled
+                          ? const SystemUiOverlayStyle(
+                              statusBarColor: AppColors.gray50,
+                              statusBarIconBrightness: Brightness.dark,
+                              statusBarBrightness: Brightness.light,
+                            )
+                          : const SystemUiOverlayStyle(
+                              statusBarColor: Colors.transparent,
+                              statusBarIconBrightness: Brightness.dark,
+                              statusBarBrightness: Brightness.light,
+                            ),
+                      child: ImmersiveHeroAppBar(
+                        progress: progress,
+                        scrolled: scrolled,
+                        title: collection.title,
+                        onBack: () => Navigator.maybePop(context),
+                        actions: [
+                          _ShareIconButton(onPressed: widget.onShareTap),
+                        ],
+                      ),
+                    );
+                  },
+                );
+              },
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -1524,6 +1535,20 @@ class _HeroFrameState extends State<_HeroFrame> {
       key: _key,
       width: double.infinity,
       child: widget.child,
+    );
+  }
+}
+
+class _ShareIconButton extends StatelessWidget {
+  const _ShareIconButton({required this.onPressed});
+
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: const Icon(Icons.ios_share_rounded),
     );
   }
 }
